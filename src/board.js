@@ -2,15 +2,17 @@
 
 var JSTicTacToe = {};
 
+// BOARD***************
 JSTicTacToe.Board = function(){
-  this.positions = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ]
+
+  this.allPositions = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ];
   this.moves = {};
 
-  this.add = function(position, player){
+  this.addMove = function(position, player){
     this.moves[position] = player;
   }
 
-  this.get = function(position){
+  this.getPlayer = function(position){
     return this.moves[position];
   }
 
@@ -23,7 +25,7 @@ JSTicTacToe.Board = function(){
 
   this.available = function(){
     var taken = this.taken();
-    var available = this.positions.filter(function(position){
+    var available = this.allPositions.filter(function(position){
       return !taken.hasElement(position);
     });
     return available;
@@ -35,7 +37,7 @@ JSTicTacToe.Board = function(){
         playerMoves = taken.filter(function(position){
           return allMoves[position] == player;
         });
-    return playerMoves.sort();
+    return playerMoves.ascending();
   }
 
   this.cellType = function(position){
@@ -51,24 +53,19 @@ JSTicTacToe.Board = function(){
     };
   };
 
-
-
-  // validations:
-  // cell not occupied
-  // correct turn
-  // correct player value
-  // correct position
-  // game is active
-
 };
 
+
+// ARRAY HELPERS***********************
 Array.prototype.hasElement = function(value){
   'use strict';
   return (this.indexOf(value) != -1) ? true : false;
 }
 
-Array.prototype.lastElement = function(){
-  return this[this.length - 1];
+Array.prototype.ascending = function(){
+  return this.sort(function(a, b){
+    return a - b;
+  });
 }
 
 Array.prototype.allValuesSame = function(){
@@ -79,3 +76,11 @@ Array.prototype.allValuesSame = function(){
   };
   return true;
 }
+
+
+// validations:
+// cell not occupied
+// correct turn
+// correct player value
+// correct position
+// game is active

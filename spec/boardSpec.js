@@ -8,38 +8,38 @@ describe('Board', function(){
     expect(board.moves).toEqual({});
   });
 
-  describe('#add', function(){
+  describe('#addMove', function(){
     it('adds a new move to the board', function(){
-      board.add(0, 'x');
+      board.addMove(0, 'x');
       expect(board.moves).toEqual({0: 'x'});
     });
   });
 
-  describe('#get', function(){
+  describe('#getPlayer', function(){
     it('returns player who played the given position', function(){
-      board.add(0, 'x');
-      board.add(1, 'o');
-      expect(board.get(0)).toEqual('x');
-      expect(board.get(1)).toEqual('o');
+      board.addMove(0, 'x');
+      board.addMove(1, 'o');
+      expect(board.getPlayer(0)).toEqual('x');
+      expect(board.getPlayer(1)).toEqual('o');
     });
   });
 
   describe('#available', function(){
     it('returns only unoccupied positions on the board', function(){
-      board.add(5, 'x');
-      board.add(7, 'o');
-      board.add(0, 'x');
-      board.add(4, 'o');
+      board.addMove(5, 'x');
+      board.addMove(7, 'o');
+      board.addMove(0, 'x');
+      board.addMove(4, 'o');
       expect(board.available().sort(function(a, b){ return (a-b)})).toEqual([1, 2, 3, 6, 8]);
     });
   });
 
   describe('#playerMoves', function(){
     it('returns moves for a given player', function(){
-      board.add(5, 'x');
-      board.add(7, 'o');
-      board.add(0, 'x');
-      board.add(4, 'o');
+      board.addMove(5, 'x');
+      board.addMove(7, 'o');
+      board.addMove(0, 'x');
+      board.addMove(4, 'o');
       expect(board.playerMoves('x')).toEqual([0, 5]);
       expect(board.playerMoves('o')).toEqual([4, 7]);
 
