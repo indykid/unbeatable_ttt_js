@@ -28,7 +28,7 @@ JSTicTacToe.Board = function(){
     var available = this.allPositions.filter(function(position){
       return !taken.hasElement(position);
     });
-    return available;
+    return available.ascending();
   }
 
   this.playerMoves = function(player){

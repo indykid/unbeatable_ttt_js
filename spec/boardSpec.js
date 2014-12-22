@@ -30,7 +30,7 @@ describe('Board', function(){
       board.addMove(7, 'o');
       board.addMove(0, 'x');
       board.addMove(4, 'o');
-      expect(board.available().sort(function(a, b){ return (a-b)})).toEqual([1, 2, 3, 6, 8]);
+      expect(board.available()).toEqual([1, 2, 3, 6, 8]);
     });
   });
 
