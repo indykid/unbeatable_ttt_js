@@ -69,7 +69,7 @@ JSTicTacToe.Game = function(){
   }
 
   this.isFinished = function(){
-    var hasNoAvailableMoves = !( this.board.available().length > 0 )
+    var hasNoAvailableMoves = ( this.board.available().length < 1 );
     return ( this.isWon() || hasNoAvailableMoves );
   }
 
@@ -79,10 +79,7 @@ JSTicTacToe.Game = function(){
 
   // private
   function checkDiagonals(board){
-    if ( checkFirstDiagonalForWin(board) || checkSecondDiagonalForWin(board) ) {
-      return true;
-    }
-    return false;
+    return ( checkFirstDiagonalForWin(board) || checkSecondDiagonalForWin(board) );
   }
 
   function checkRowsAndColumns(board){
@@ -95,9 +92,9 @@ JSTicTacToe.Game = function(){
   }
 
   function checkRowForWin(rowNumber, board) {
-    var rowValues = [],
-        startIndex = rowNumber * board.size,
-        endIndex = startIndex + (board.size - 1);
+    var startIndex = rowNumber * board.size,
+        endIndex = startIndex + (board.size - 1),
+        rowValues = [];
     if ( winImpossible(startIndex, endIndex, board) ) return false;
     rowValues = getValues(board, startIndex, endIndex, 1);
     return compareValuesForWin(board, rowValues);
@@ -153,7 +150,6 @@ JSTicTacToe.Game = function(){
   function compareValuesForWin(board, values){
     return (values.allValuesSame() && values.length == board.size);
   }
-
 }
 
 
@@ -182,8 +178,8 @@ Array.prototype.allValuesSame = function(){
 
 
 // validations:
+// game is still active, can't play otherwise
 // cell not occupied
 // correct turn
 // correct player value
 // correct position
-// game is active
