@@ -25,12 +25,36 @@ describe('Board', function(){
   });
 
   describe('#available', function(){
-    it('returns only unoccupied positions on the board', function(){
+    it('returns only unoccupied positions', function(){
       board.addMove(5, 'x');
       board.addMove(7, 'o');
       board.addMove(0, 'x');
       board.addMove(4, 'o');
       expect(board.available()).toEqual([1, 2, 3, 6, 8]);
+    });
+    it('returns only unoccupied positions', function(){
+      board.addMove(6, 'x');
+      board.addMove(3, 'o');
+      board.addMove(0, 'x');
+      board.addMove(2, 'o');
+      expect(board.available()).toEqual([1, 4, 5, 7, 8]);
+    });
+  });
+
+  describe('#taken', function(){
+    it('returns only occupied positions', function(){
+      board.addMove(5, 'x');
+      board.addMove(7, 'o');
+      board.addMove(0, 'x');
+      board.addMove(4, 'o');
+      expect(board.taken()).toEqual([0, 4, 5, 7]);
+    });
+    it('returns only occupied positions', function(){
+      board.addMove(6, 'x');
+      board.addMove(3, 'o');
+      board.addMove(0, 'x');
+      board.addMove(2, 'o');
+      expect(board.taken()).toEqual([0, 2, 3, 6]);
     });
   });
 
