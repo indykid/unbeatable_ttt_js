@@ -59,8 +59,68 @@ describe('Board', function(){
       expect(board.cellType(2)).toEqual('edge');
     });
   });
+});
 
+describe('Game', function(){
+  var game;
+  beforeEach(function(){
+    game = new JSTicTacToe.Game();
+  });
 
+  it('has an empty board at the start', function(){
+    expect(game.board).not.toBeUndefined();
+    expect(game.board.moves).toEqual({});
+  });
 
+  describe('#addToBoard', function(){
+    it('adds moves to the board', function(){
+      game.addToBoard(0, 'x');
+      expect(game.board.moves).toEqual({0: 'x'})
+    });
+  });
 
+  describe('#isFinished', function(){
+    describe('context: game is not won and has available moves', function(){
+      it('returns false', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(1, 'o');
+        expect(game.isFinished()).toBe(false)
+      });
+      it('returns false', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(1, 'o');
+        game.addToBoard(5, 'x');
+        game.addToBoard(3, 'o');
+        game.addToBoard(6, 'x');
+        game.addToBoard(7, 'o');
+        expect(game.isFinished()).toBe(false)
+      });
+    });
+    describe('context: game is won but has available moves', function(){
+      it('returns true', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(1, 'o');
+        game.addToBoard(4, 'x');
+        game.addToBoard(2, 'o');
+        game.addToBoard(8, 'x');
+        expect(game.isFinished()).toBe(true)
+      });
+    });
+    describe('context: no available moves, but has not been won', function(){
+      it('returns true', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(4, 'o');
+        game.addToBoard(8, 'x');
+        game.addToBoard(5, 'o');
+        game.addToBoard(3, 'x');
+        game.addToBoard(6, 'o');
+        game.addToBoard(2, 'x');
+        game.addToBoard(1, 'o');
+        game.addToBoard(7, 'x');
+        expect(game.isFinished()).toBe(true);
+      });
+    });
+  });
+
+  
 });
