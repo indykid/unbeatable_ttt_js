@@ -79,8 +79,130 @@ describe('Game', function(){
     });
   });
 
+  describe('#won', function(){
+    describe('context: human won on a ...', function(){
+      describe('fist diagonal', function(){
+        it('returns true', function(){
+          game.addToBoard(0, 'x');
+          game.addToBoard(6, 'o');
+          game.addToBoard(4, 'x');
+          game.addToBoard(5, 'o');
+          game.addToBoard(8, 'x');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+      describe('second diagonal', function(){
+        it('returns true', function(){
+          game.addToBoard(2, 'x');
+          game.addToBoard(3, 'o');
+          game.addToBoard(4, 'x');
+          game.addToBoard(5, 'o');
+          game.addToBoard(6, 'x');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+      describe('row', function(){
+        it('returns true', function(){
+          game.addToBoard(0, 'x');
+          game.addToBoard(4, 'o');
+          game.addToBoard(1, 'x');
+          game.addToBoard(5, 'o');
+          game.addToBoard(2, 'x');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+      describe('column', function(){
+        it('returns true', function(){
+          game.addToBoard(0, 'x');
+          game.addToBoard(4, 'o');
+          game.addToBoard(3, 'x');
+          game.addToBoard(5, 'o');
+          game.addToBoard(6, 'x');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+    });
+
+    describe('context: AI won on a ...', function(){
+      describe('first diagonal', function(){
+        it('returns true', function(){
+          game.addToBoard(6, 'x');
+          game.addToBoard(0, 'o');
+          game.addToBoard(5, 'x');
+          game.addToBoard(4, 'o');
+          game.addToBoard(1, 'x');
+          game.addToBoard(8, 'o');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+      describe('second diagonal', function(){
+        it('returns true', function(){
+          game.addToBoard(3, 'x');
+          game.addToBoard(2, 'o');
+          game.addToBoard(5, 'x');
+          game.addToBoard(4, 'o');
+          game.addToBoard(7, 'x');
+          game.addToBoard(6, 'o');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+      describe('row', function(){
+        it('returns true', function(){
+          game.addToBoard(4, 'x');
+          game.addToBoard(0, 'o');
+          game.addToBoard(5, 'x');
+          game.addToBoard(1, 'o');
+          game.addToBoard(7, 'x');
+          game.addToBoard(2, 'o');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+      describe('column', function(){
+        it('returns true', function(){
+          game.addToBoard(4, 'x');
+          game.addToBoard(0, 'o');
+          game.addToBoard(5, 'x');
+          game.addToBoard(3, 'o');
+          game.addToBoard(7, 'x');
+          game.addToBoard(6, 'o');
+          expect(game.isWon()).toBe(true);
+        });
+      });
+    });
+
+    describe('context: no one won', function(){
+      it('returns false', function(){
+        game.addToBoard(2, 'x');
+        game.addToBoard(3, 'o');
+        game.addToBoard(1, 'x');
+        expect(game.isWon()).toBe(false);
+      });
+
+      it('returns false', function(){
+        game.addToBoard(3, 'x');
+        game.addToBoard(0, 'o');
+        game.addToBoard(4, 'x');
+        expect(game.isWon()).toBe(false);
+      });
+
+      it('returns false', function(){
+        game.addToBoard(6, 'x');
+        game.addToBoard(0, 'o');
+        game.addToBoard(8, 'x');
+        expect(game.isWon()).toBe(false);
+      });
+
+      it('returns false', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(1, 'o');
+        game.addToBoard(3, 'x');
+        expect(game.isWon()).toBe(false);
+      });
+    });
+  });
+
   describe('#isFinished', function(){
-    describe('context: game is not won and has available moves', function(){
+    describe('context: game is not won and still has available moves', function(){
       it('returns false', function(){
         game.addToBoard(0, 'x');
         game.addToBoard(1, 'o');
@@ -96,7 +218,7 @@ describe('Game', function(){
         expect(game.isFinished()).toBe(false)
       });
     });
-    describe('context: game is won but has available moves', function(){
+    describe('context: game is won and still has available moves', function(){
       it('returns true', function(){
         game.addToBoard(0, 'x');
         game.addToBoard(1, 'o');
@@ -106,7 +228,7 @@ describe('Game', function(){
         expect(game.isFinished()).toBe(true)
       });
     });
-    describe('context: no available moves, but has not been won', function(){
+    describe('context: game is not won, but no available moves', function(){
       it('returns true', function(){
         game.addToBoard(0, 'x');
         game.addToBoard(4, 'o');

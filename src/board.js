@@ -69,109 +69,90 @@ JSTicTacToe.Game = function(){
   }
 
   this.isFinished = function(){
-    console.log('this.won', this.won())
-    console.log('this.fullBoard', this.fullBoard())
-    return ( this.won() || this.fullBoard() );
+    var hasNoAvailableMoves = !( this.board.available().length > 0 )
+    return ( this.isWon() || hasNoAvailableMoves );
   }
 
-  this.won = function(){
-    for (var i = 0; i < this.board.size; i ++){
-      if ( checkColumnForWin(i, this.board) || checkRowForWin(i, this.board) ) {
-        return true;
-      };
-    }
-    if ( checkFirstDiagonalForWin(this.board) || checkSecondDiagonalForWin(this.board) ) {
+  this.isWon = function(){
+    return ( checkRowsAndColumns(this.board) || checkDiagonals(this.board) );    
+  }
+
+  // private
+  function checkDiagonals(board){
+    if ( checkFirstDiagonalForWin(board) || checkSecondDiagonalForWin(board) ) {
       return true;
     }
     return false;
   }
 
-  this.fullBoard = function(){
-    console.log(this.board.taken().length)
-    return !(this.board.taken().length < 9)
+  function checkRowsAndColumns(board){
+    for (var i = 0; i < board.size; i ++){
+      if ( checkColumnForWin(i, board) || checkRowForWin(i, board) ) {
+        return true;
+      };
+    }
+    return false;
   }
 
-  // private
   function checkRowForWin(rowNumber, board) {
-    var movesHash = board.moves,
-        entries = [],
+    var rowValues = [],
         startIndex = rowNumber * board.size,
         endIndex = startIndex + (board.size - 1);
-    if ( winExclusionCheck(startIndex, endIndex, board) ){
-      return false;
-    }
-    for ( var i = startIndex; i <= endIndex; i++) {
-      if (movesHash[i] != undefined){
-        entries.push(movesHash[i]);
-      }
-    }
-    return (entries.allValuesSame() && entries.length == board.size);
+    if ( winImpossible(startIndex, endIndex, board) ) return false;
+    rowValues = getValues(board, startIndex, endIndex, 1);
+    return compareValuesForWin(board, rowValues);
   };
 
   function checkColumnForWin(columnNumber, board){
-    var movesHash = board.moves,
-        entries = [],
+    var columnValues = [],
         startIndex = columnNumber,
         endIndex = startIndex + (board.size * (board.size - 1));
-    if ( winExclusionCheck(startIndex, endIndex, board) ){
-      return false;
-    }
-    for ( var i = startIndex; i <= endIndex; i += board.size) {
-      if (movesHash[i] != undefined){
-        entries.push(movesHash[i]);
-      }    
-    }
-    return (entries.allValuesSame() && entries.length == board.size);
+    if ( winImpossible(startIndex, endIndex, board) ) return false;
+    columnValues = getValues(board, startIndex, endIndex, board.size);
+    return compareValuesForWin(board, columnValues);
   };
 
   function checkFirstDiagonalForWin(board) {
-    var movesHash = board.moves,
-        entries = [],
+    var diagonalValues = [],
         startIndex = 0,
         endIndex = board.cellCount - 1;
-    
-    if ( winExclusionCheck(startIndex, endIndex, board) ){
-      return false;
-    }
-    for ( var i = startIndex; i <= endIndex; i += (board.size + 1) ) {
-      if (movesHash[i] != undefined){
-        entries.push(movesHash[i]);
-      }
-    }
-    return (entries.allValuesSame() && entries.length == board.size);
+    if ( winImpossible(startIndex, endIndex, board) ) return false;
+    diagonalValues = getValues(board, startIndex, endIndex, (board.size + 1));
+    return compareValuesForWin(board, diagonalValues);
   };
 
   function checkSecondDiagonalForWin(board) {
     var startIndex = board.size - 1,
         endIndex = board.cellCount - board.size,
-        movesHash = board.moves,
-        entries = [];
-    
-    if ( winExclusionCheck(startIndex, endIndex, board) ){
-      return false;
-    }
-    for ( var i = startIndex; i <= endIndex; i += (board.size - 1) ) {
-      if (movesHash[i] != undefined){
-        entries.push(movesHash[i]);
-      }
-    }
-      return (entries.allValuesSame() && entries.length == board.size);
+        diagonalValues = [];
+    if ( winImpossible(startIndex, endIndex, board) ) return false;
+    diagonalValues = getValues(board, startIndex, endIndex, (board.size - 1));
+    return compareValuesForWin(board, diagonalValues);
   };
 
-  function winExclusionCheck(start, end, board){
-    if ( emptyCell(start, board) || emptyCell(end, board) ) {
-      return true;
-    }
-    if ( (board.moves[start] != board.moves[end]) ) {
-      return true;
-    } 
+  function winImpossible(start, end, board){
+    var anyEmptyCells = ( isCellEmpty(start, board) || isCellEmpty(end, board) ),
+        twoCellsAreSame = (board.moves[start] != board.moves[end]);
+    return anyEmptyCells || twoCellsAreSame; 
   }
 
-  function emptyCell(cell, board) {
-    return !(board.playerMoves('x').hasElement(cell) || board.playerMoves('o').hasElement(cell));
+  function isCellEmpty(cell, board) {
+    return board.available().hasElement(cell);
   };
 
+  function getValues(board, start, end, increment ){
+    var values = [];
+    for ( var i = start; i <= end; i+= increment) {
+      if (board.moves[i] != undefined){
+        values.push(board.moves[i]);
+      }
+    }
+    return values;
+  }
 
+  function compareValuesForWin(board, values){
+    return (values.allValuesSame() && values.length == board.size);
+  }
 
 }
 
