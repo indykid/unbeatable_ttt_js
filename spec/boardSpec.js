@@ -1,3 +1,7 @@
+// BOARD********************************
+// BOARD********************************
+// BOARD********************************
+
 describe('Board', function(){
   var board;
   beforeEach(function(){
@@ -70,34 +74,173 @@ describe('Board', function(){
     });
   });
 
-  describe('#cellType', function(){
-    it('returns "corner" cell type if corner is played', function(){
-      expect(board.cellType(1)).toEqual('corner')
+  describe('#positionType', function(){
+    it('returns "corner" position type if corner is given', function(){
+      expect(board.positionType(1)).toEqual('corner')
     });
 
-    it('returns "center" cell type if center is played', function(){
-      expect(board.cellType(4)).toEqual('center');
+    it('returns "center" position type if center is given', function(){
+      expect(board.positionType(4)).toEqual('center');
     });
 
-    it('returns "edge" cell type if edge is played', function(){
-      expect(board.cellType(2)).toEqual('edge');
+    it('returns "edge" position type if edge is given', function(){
+      expect(board.positionType(2)).toEqual('edge');
     });
   });
 
-  describe('#isCellEmpty', function(){
+  describe('#isPositionEmpty', function(){
     describe('context: cell is occupied', function(){
       it('returns false', function(){
         board.addMove(0, 'x');
-        expect(board.isCellEmpty(0)).toBe(false);
+        expect(board.isPositionEmpty(0)).toBe(false);
       });
     });
     describe('context: cell is unoccupied', function(){
       it('returns true', function(){
-        expect(board.isCellEmpty(0)).toBe(true);
+        expect(board.isPositionEmpty(0)).toBe(true);
       });
     })
   });
+
+  describe('#availableOnAGivenLine', function(){
+    it('returns [0, 1, 2], for an empty line [0, 1, 2]', function(){
+      expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([0, 1, 2]);
+    });
+
+    it('returns [0, 8] cells for a given line [0, 4, 8], where, 4 is occupied', function(){
+      board.addMove(4, 'x');
+      expect(board.availableOnAGivenLine([0, 4, 8])).toEqual([0, 8]);
+    });
+    it('returns empty array, for a full line [0, 1, 2]', function(){
+      board.addMove(0, 'x');
+      board.addMove(1, 'o');
+      board.addMove(2, 'x');
+      expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([]);
+    });
+  });
+
+  describe('#takenOnAGivenLine', function(){
+    it('returns empty array, for an empty line [0, 1, 2]', function(){
+      expect(board.takenOnAGivenLine([0, 1, 2])).toEqual([]);
+    });
+
+    it('returns [4] for a given line [0, 4, 8], where, 4 is occupied', function(){
+      board.addMove(4, 'x');
+      expect(board.takenOnAGivenLine([0, 4, 8])).toEqual([4]);
+    });
+
+    it('returns [3, 5] for a given line [0, 4, 8], where, 4 is occupied', function(){
+      board.addMove(3, 'x');
+      board.addMove(2, 'x');
+      board.addMove(5, 'x');
+      expect(board.takenOnAGivenLine([3, 4, 5])).toEqual([3, 5]);
+    });
+  });
+
+  describe('#singlePlayerLine', function(){
+    describe('context: only 2 moves on a line, both by the same player', function(){
+      it('returns true if asking for 2 of the same', function(){
+        board.addMove(4, 'x');
+        board.addMove(3, 'o');
+        board.addMove(8, 'x');
+        expect(board.singlePlayerLine([0, 4, 8], 2)).toBe(true);
+      });
+
+      it('returns false if asking for 1 of the same', function(){
+        board.addMove(1, 'x');
+        board.addMove(2, 'o');
+        board.addMove(3, 'x');
+        board.addMove(8, 'o');
+        expect(board.singlePlayerLine([2, 5, 8]), 1).toBe(false);
+      });
+    });
+    describe('context: only 1 move on a line', function(){
+      it('returns true when asking for 1 of the same', function(){
+        board.addMove(4, 'x');
+        board.addMove(3, 'o');
+        expect(board.singlePlayerLine([0, 3, 6], 1)).toBe(true);
+      });
+
+      it('returns false when asking for 2 of the same', function(){
+        board.addMove(5, 'x');
+        expect(board.singlePlayerLine([3, 4, 5], 2)).toBe(false);
+      });
+    });
+
+    describe('context: 2 moves on a line, by different players', function(){
+      it('returns false when asking for 1 of the same', function(){
+        board.addMove(4, 'x');
+        board.addMove(8, 'o');
+        board.addMove(3, 'x');
+        expect(board.singlePlayerLine([0, 4, 8], 1)).toBe(false);
+      });
+
+      it('returns false when asking for 2 of the same', function(){
+        board.addMove(8, 'x');
+        board.addMove(2, 'o');
+        board.addMove(3, 'x');
+        board.addMove(1, 'o');
+        expect(board.singlePlayerLine([2, 5, 8], 2)).toBe(false);
+      });
+    });
+
+  });
+
+  describe('#singlePlayerLinesForPlayer', function(){
+    var game;
+    // board = undefined;
+    beforeEach(function(){
+      game = new JSTicTacToe.Game();
+    });
+    describe('context: no two positions in a row belong to player x', function(){
+      it('given the moves, for player "x" it returns correct lines when asking for 1 in a line, and no lines when asking for 2', function(){
+        game.board.addMove(8, 'x');
+        game.board.addMove(2, 'o');
+        game.board.addMove(3, 'x');
+        game.board.addMove(1, 'o');
+        expect(game.board.singlePlayerLinesForPlayer('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
+        expect(game.board.singlePlayerLinesForPlayer('x'), 2).toEqual([]);
+      });
+      it('given the moves, for player "o" it returns correct lines when asking for 2 or 1 moves in a line', function(){
+        game.board.addMove(8, 'x');
+        game.board.addMove(2, 'o');
+        game.board.addMove(3, 'x');
+        game.board.addMove(1, 'o');
+        expect(game.board.singlePlayerLinesForPlayer('o', 1)).toEqual([[2, 4, 6], [1, 4, 7]]);
+        expect(game.board.singlePlayerLinesForPlayer('o', 2)).toEqual([[0, 1, 2]]);
+      });
+    });
+    
+  });
+
+  // describe('#onlySamePlayerOnALine', function(){
+  //   describe('context: only 2 same cells on a:', function(){
+  //     describe('first diagonal', function(){
+  //       it('returns positions of 2 cells', function(){
+  //         board.addMove(0, 'x');
+  //         board.addMove(1, 'o');
+  //         board.addMove(4, 'x');
+  //         expect(board.onlySameCellsOnALine('x', [0, 4, 8], 2)).toEqual([0, 4]);
+  //       });
+  //     });
+  //   });
+
+  //   describe('context: only 1 of the same cell on a:', function(){
+  //     describe('first diagonal', function(){
+  //       it('returns position of the cell', function(){
+  //         board.addMove(0, 'x');
+  //         board.addMove(1, 'o');
+  //         board.addMove(5, 'x');
+  //         expect(board.onlySameCellsOnALine('x', [0, 4, 8], 1)).toEqual([0, 4])
+  //       });
+  //     });
+  //   });
+  // });
 });
+
+// GAME********************************
+// GAME********************************
+// GAME********************************
 
 describe('Game', function(){
   var game;
@@ -283,6 +426,9 @@ describe('Game', function(){
   });
 });
 
+// AIPlayer********************************
+// AIPlayer********************************
+// AIPlayer********************************
 describe('AIPlayer', function(){
   var game;
   beforeEach(function(){
