@@ -35,7 +35,7 @@ JSTicTacToe.Board = function(game){
 
   this.available = function(){
     var available = this.allPositions.filter(function(position){
-      return this.moves[position] === undefined;
+      return this.getPlayer(position) === undefined;
     }.bind(this));
     return available.ascending();
   }
@@ -65,21 +65,21 @@ JSTicTacToe.Board = function(game){
   this.isPositionEmpty = function(position) {
     // might need to extract cell validation check
     if (this.allPositions.hasElement(position)){
-      return this.moves[position] === undefined;
+      return this.getPlayer(position) === undefined;
     }
     // return this.available().hasElement(position);
   };
 
   this.availableOnAGivenLine = function(line){
     var available = line.filter(function(position){
-      return this.moves[position] === undefined;
+      return this.getPlayer(position) === undefined;
     }.bind(this));
     return available.ascending();
   }
 
   this.takenOnAGivenLine = function(line){
     var taken = line.filter(function(position){
-      return this.moves[position] != undefined;
+      return this.getPlayer(position) != undefined;
     }.bind(this));
     return taken.ascending();
   }  
@@ -94,7 +94,7 @@ JSTicTacToe.Board = function(game){
     // console.log(howMany)
     if (taken.length == howMany){
       var moves = taken.map(function(position){
-        return this.moves[position];
+        return this.getPlayer(position);
       }.bind(this));    
       return moves.allDefinedValuesSame();
     }
@@ -106,7 +106,7 @@ JSTicTacToe.Board = function(game){
       if (this.singlePlayerLine(combination, howMany)){
         var linePlayer;
         var takenPosition = combination.find(function(position){
-          return this.moves[position] != undefined;
+          return this.getPlayer(position) != undefined;
         }.bind(this));
         var linePlayer = this.moves[takenPosition];
         return linePlayer != undefined && linePlayer == player
@@ -114,15 +114,6 @@ JSTicTacToe.Board = function(game){
     }.bind(this));
     return playerLines;
   } // needs refactor at some point
-
-  //********* NOT TESTED oops
-  this.getPositionPlayers = function(positions){
-    var positionPlayers = [];
-    positions.forEach(function(position){
-      positionPlayers.push(this.moves[position]);
-    }.bind(this));
-    return positionPlayers;
-  }
 
   function setPossiblePositions(amount){
     var positions = [];
@@ -164,6 +155,8 @@ JSTicTacToe.Game = function(){
     return singlePlayerFullLine != undefined;
   }
 
+
+
   // private
   function setWinningCombinations(board){
     var winningCombinations = [];
@@ -188,7 +181,7 @@ JSTicTacToe.Game = function(){
 
     firstDiagonal = setLine(startIndex, endIndex, increment);
     // board.addDiagonal(firstDiagonal);
-    addWinningCombo(firstDiagonal, combinations);
+    addWinningCombination(firstDiagonal, combinations);
   }
 
   function setSecondDiagonal(board, combinations){
@@ -199,7 +192,7 @@ JSTicTacToe.Game = function(){
 
     secondDiagonal = setLine(startIndex, endIndex, increment);
     // board.addDiagonal(secondDiagonal);
-    addWinningCombo(secondDiagonal, combinations);
+    addWinningCombination(secondDiagonal, combinations);
   }
 
   function setRow(rowNumber, board, combinations){
@@ -208,7 +201,7 @@ JSTicTacToe.Game = function(){
         increment = 1,
         row = [];
     row = setLine(startIndex, endIndex, increment);
-    addWinningCombo(row, combinations);
+    addWinningCombination(row, combinations);
     // board.addRow(row);
   }
 
@@ -219,7 +212,7 @@ JSTicTacToe.Game = function(){
         increment = board.size;
 
     column = setLine(startIndex, endIndex, increment);
-    addWinningCombo(column, combinations);
+    addWinningCombination(column, combinations);
     // board.addColumn(column)
   }
 
@@ -231,8 +224,8 @@ JSTicTacToe.Game = function(){
     return line;
   }
 
-  function addWinningCombo(combo, combinations){
-    combinations.push(combo);
+  function addWinningCombination(combination, combinations){
+    combinations.push(combination);
   }
 
 
