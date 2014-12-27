@@ -381,4 +381,10 @@ describe('AIPlayer', function(){
       });
     });
   });
+
+  // describe('#basicStrategy', function(){
+  //   describe('allows', function(){
+
+  //   });
+  // });
 });

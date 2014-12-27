@@ -7,6 +7,9 @@ var JSTicTacToe = {};
 JSTicTacToe.Board = function(){
 
   this.allPositions = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ];
+  // this.diagonals = [];
+  // this.rows = [];
+  // this.columns = [];
   this.moves = {};
   this.size = 3;
   this.cellCount = Math.pow(this.size, 2);
@@ -60,6 +63,18 @@ JSTicTacToe.Board = function(){
     return this.available().hasElement(cell);
   };
 
+  // this.addDiagonal = function(diagonal){
+  //   this.diagonals.push(diagonal);
+  // }
+
+  // this.addRow = function(row){
+  //   this.rows.push(row);
+  // }
+
+  // this.addColumn = function(column){
+  //   this.columns.push(column);
+  // }
+
 };
 
 
@@ -67,7 +82,10 @@ JSTicTacToe.Board = function(){
 
 JSTicTacToe.Game = function(){
   this.board = new JSTicTacToe.Board();
-  this.ai = new JSTicTacToe.AIPlayer();
+  this.ai = new JSTicTacToe.AIPlayer(this);
+  this.winningCombinations = [];
+  
+  this.winningCombinations = setWinningCombinations(this.board);
 
   this.addToBoard = function(position, player){
     this.board.addMove(position, player);
@@ -79,76 +97,100 @@ JSTicTacToe.Game = function(){
   }
 
   this.isWon = function(){
-    return ( checkRowsAndColumns(this.board) || checkDiagonals(this.board) );    
-  }
-
-  // private
-  function checkDiagonals(board){
-    return ( checkFirstDiagonalForWin(board) || checkSecondDiagonalForWin(board) );
-  }
-
-  function checkRowsAndColumns(board){
-    for (var i = 0; i < board.size; i ++){
-      if ( checkColumnForWin(i, board) || checkRowForWin(i, board) ) return true;
+    var sameValueLines = this.winningCombinations.find(function(combo){
+      var lineValues = getLineValues(this.board, combo);
+      return lineValues.allDefinedValuesSame();
+    }.bind(this));
+    if (sameValueLines !== undefined && sameValueLines.length > 0){
+      // ? this.winnerMark = this.board.moves[sameValueLines[0]];
+      return true;
     }
     return false;
   }
 
-  function checkRowForWin(rowNumber, board) {
-    var startIndex = rowNumber * board.size,
-        endIndex = startIndex + (board.size - 1),
-        rowValues = [];
-    if ( winImpossible(startIndex, endIndex, board) ) return false;
-    rowValues = getValues(board, startIndex, endIndex, 1);
-    return compareValuesForWin(board, rowValues);
-  };
+  // private
 
-  function checkColumnForWin(columnNumber, board){
-    var columnValues = [],
-        startIndex = columnNumber,
-        endIndex = startIndex + (board.size * (board.size - 1));
-    if ( winImpossible(startIndex, endIndex, board) ) return false;
-    columnValues = getValues(board, startIndex, endIndex, board.size);
-    return compareValuesForWin(board, columnValues);
-  };
+  function setWinningCombinations(board){
+    var winningCombinations = [];
+    setDiagonals(board, winningCombinations);
+    for (var i = 0; i < board.size; i++) {
+      setColumn(i, board, winningCombinations);
+      setRow(i, board, winningCombinations);
+    };
+    return winningCombinations;
+  }
 
-  function checkFirstDiagonalForWin(board) {
-    var diagonalValues = [],
-        startIndex = 0,
-        endIndex = board.cellCount - 1;
-    if ( winImpossible(startIndex, endIndex, board) ) return false;
-    diagonalValues = getValues(board, startIndex, endIndex, (board.size + 1));
-    return compareValuesForWin(board, diagonalValues);
-  };
+  function setDiagonals(board, combinations){
+    setFirstDiagonal(board, combinations);
+    setSecondDiagonal(board, combinations);
+  }
 
-  function checkSecondDiagonalForWin(board) {
+  function setFirstDiagonal(board, combinations){
+    var startIndex = 0,
+        endIndex = board.cellCount - 1,
+        increment = board.size + 1,
+        firstDiagonal = [];
+
+    firstDiagonal = setLine(startIndex, endIndex, increment);
+    // board.addDiagonal(firstDiagonal);
+    addWinningCombo(firstDiagonal, combinations);
+  }
+
+  function setSecondDiagonal(board, combinations){
     var startIndex = board.size - 1,
         endIndex = board.cellCount - board.size,
-        diagonalValues = [];
-    if ( winImpossible(startIndex, endIndex, board) ) return false;
-    diagonalValues = getValues(board, startIndex, endIndex, (board.size - 1));
-    return compareValuesForWin(board, diagonalValues);
-  };
+        increment = board.size - 1,
+        secondDiagonal = [];
 
-  function winImpossible(start, end, board){
-    var anyEmptyCells = ( board.isCellEmpty(start) || board.isCellEmpty(end) ),
-        twoCellsAreSame = (board.moves[start] != board.moves[end]);
-    return anyEmptyCells || twoCellsAreSame; 
+    secondDiagonal = setLine(startIndex, endIndex, increment);
+    // board.addDiagonal(secondDiagonal);
+    addWinningCombo(secondDiagonal, combinations);
   }
 
-  function getValues(board, start, end, increment ){
-    var values = [];
-    for ( var i = start; i <= end; i+= increment) {
-      if (board.moves[i] != undefined){
-        values.push(board.moves[i]);
-      }
-    }
-    return values;
+  function setRow(rowNumber, board, combinations){
+    var startIndex = rowNumber * board.size,
+        endIndex = startIndex + (board.size - 1),
+        increment = 1,
+        row = [];
+    row = setLine(startIndex, endIndex, increment);
+    addWinningCombo(row, combinations);
+    // board.addRow(row);
   }
 
-  function compareValuesForWin(board, values){
-    return (values.allValuesSame() && values.length == board.size);
+  function setColumn(columnNumber, board, combinations){
+    var column = [],
+        startIndex = columnNumber,
+        endIndex = startIndex + (board.size * (board.size - 1)),
+        increment = board.size;
+
+    column = setLine(startIndex, endIndex, increment);
+    addWinningCombo(column, combinations);
+    // board.addColumn(column)
   }
+
+  function setLine(start, end, increment){
+    var line = [];
+    for (var i = start; i <= end; i+=increment) {
+      line.push(i);
+    };
+    return line;
+  }
+
+  function addWinningCombo(combo, combinations){
+    combinations.push(combo);
+  }
+  
+  function getLineValues(board, positions){
+    var lineValues = [];
+    positions.forEach(function(position){
+      lineValues.push(board.moves[position]);
+    });
+    return lineValues;
+  }
+
+  // function compareValuesAreSame(board, values, howMany){
+  //   return (values.allDefinedValuesSame() && values.length == board.size);
+  // }
 
   // validations:
   // game is still active, can't play otherwise
@@ -159,24 +201,25 @@ JSTicTacToe.Game = function(){
 }
 
 // AIPlayer********************************
-JSTicTacToe.AIPlayer = function(){
-  
+JSTicTacToe.AIPlayer = function(game){
+
   this.mark = 'o';
   this.opponentMark = 'x';
+  this.game = game;
   // var winningPosition,
   //     threatPosition;
   var emptyCellOnALine;
-  this.winningMove = function(game){
+  this.winningMove = function(){
     emptyCellOnALine = undefined;
-    if (twoInALine(this.mark, game.board)){
+    if (twoInALine(this.mark, this.game.board)){
       return emptyCellOnALine;
     }
     return false;
   }
 
-  this.threatPosition = function(game){
+  this.threatPosition = function(){
     emptyCellOnALine = undefined;
-    if (twoInALine(this.opponentMark, game.board)){
+    if (twoInALine(this.opponentMark, this.game.board)){
       return emptyCellOnALine;
     }
     return false;
@@ -185,6 +228,21 @@ JSTicTacToe.AIPlayer = function(){
   function twoInALine(player, board){
     return ( checkDiagonalsForTwo(player, board) || checkRowsAndColumnsForTwo(player, board) );
   }
+
+  function sameCellsInALine(player, board, howMany){
+    // all
+  }
+
+
+
+
+
+
+
+
+
+
+
 
   function checkDiagonalsForTwo(player, board){
     return ( checkFirstDiagonalForTwo(player, board) || checkSecondDiagonalForTwo(player, board));
@@ -223,7 +281,6 @@ JSTicTacToe.AIPlayer = function(){
         increment = 1,
         emptyCells = [];
     emptyCells = findEmptyCells(startIndex, endIndex, increment, board);
-    console.log('empty on row', rowNumber, emptyCells);
     return checkEmptyCells(emptyCells, startIndex, endIndex, increment, board, player);
   }
 
@@ -232,9 +289,7 @@ JSTicTacToe.AIPlayer = function(){
         startIndex = columnNumber,
         increment = board.size,
         endIndex = startIndex + (board.size * (board.size - 1));
-        console.log('column endIndex', endIndex)
     emptyCells = findEmptyCells(startIndex, endIndex, increment, board);
-    console.log('empty on column', columnNumber, emptyCells);
     return checkEmptyCells(emptyCells, startIndex, endIndex, increment, board, player);
   }
 
@@ -280,13 +335,42 @@ Array.prototype.ascending = function(){
   });
 }
 
-Array.prototype.allValuesSame = function(){
-  for (var i = 1; i < this.length; i++) {
-    if ( this[i] !== this[0] ){
-      return false;
-    }
-  };
+Array.prototype.allDefinedValuesSame = function(){
+  // if (this[0] != undefined){
+    for (var i = 1; i < this.length; i++) {
+      if ( this[0] == undefined || this[i] !== this[0] ){
+        return false;
+      }
+    };
+  // } 
   return true;
 }
+
+Array.prototype.lastElement = function(){
+  return this[this.length - 1];
+}
+
+// if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this == null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+// }
 
 
