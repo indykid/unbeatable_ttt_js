@@ -2,9 +2,9 @@
 
 var JSTicTacToe = {};
 
-// BOARD********************************
-// BOARD********************************
-// BOARD********************************
+// ================================================
+// BOARD:
+// ================================================
 
 JSTicTacToe.Board = function(game){
 
@@ -113,15 +113,9 @@ JSTicTacToe.Board = function(game){
       }
     }.bind(this));
     return playerLines;
-  }
+  } // needs refactor at some point
 
-  // var moves = [];
-  // var playerMoves = this.playerMoves(player);
-  // combination.forEach(function(position){
-  //   if (playerMoves)
-  // }); 
-  // return 
-
+  //********* NOT TESTED oops
   this.getPositionPlayers = function(positions){
     var positionPlayers = [];
     positions.forEach(function(position){
@@ -129,21 +123,6 @@ JSTicTacToe.Board = function(game){
     }.bind(this));
     return positionPlayers;
   }
-
-  // isLineEmpty
-
-
-  // this.addDiagonal = function(diagonal){
-  //   this.diagonals.push(diagonal);
-  // }
-
-  // this.addRow = function(row){
-  //   this.rows.push(row);
-  // }
-
-  // this.addColumn = function(column){
-  //   this.columns.push(column);
-  // }
 
   function setPossiblePositions(amount){
     var positions = [];
@@ -156,10 +135,9 @@ JSTicTacToe.Board = function(game){
 };
 
 
-// GAME********************************
-// GAME********************************
-// GAME********************************
-
+// ================================================
+// GAME:
+// ================================================
 JSTicTacToe.Game = function(){
   this.board = new JSTicTacToe.Board(this);
   this.ai = new JSTicTacToe.AIPlayer(this);
@@ -258,82 +236,48 @@ JSTicTacToe.Game = function(){
   }
 
 
-  // function compareValuesAreSame(board, values, howMany){
-  //   return (values.allDefinedValuesSame() && values.length == board.size);
-  // }
-
-  // validations:
-  // game is still active, can't play otherwise
-  // cell not occupied
-  // correct turn
-  // correct player value
-  // correct position
+ 
 }
 
-// AIPlayer********************************
-// AIPlayer********************************
-// AIPlayer********************************
+
+// ================================================
+// AI-PLAYER:
+// ================================================
 
 JSTicTacToe.AIPlayer = function(game){
 
   this.mark = 'o';
   this.opponentMark = 'x';
   this.game = game;
-  // var winningPosition,
-  //     threatPosition;
-
-
+  
   this.winningMove = function(){
-    var winPosition,
-        board = this.game.board,
+    var board = this.game.board,
         winLines = board.singlePlayerLinesForPlayer(this.mark, (board.size - 1));
     if (winLines.length > 0){
-      var winLine = winLines[0];
-      winLine.forEach(function(position){
-        if (board.isPositionEmpty(position)) winPosition = position;
-      });
-      return winPosition;
+      return board.availableOnAGivenLine(winLines[0])[0];
     }
     return false;
   }
-
 
   this.threatPosition = function(){
-    var threatPosition,
-        board = this.game.board,
+    var board = this.game.board,
         threatLines = board.singlePlayerLinesForPlayer(this.opponentMark, (board.size - 1));
     if (threatLines.length > 0){
-      var threatLine = threatLines[0];
-      threatLine.forEach(function(position){
-        if (board.isPositionEmpty(position)) threatPosition = position;
-      });
-      return threatPosition;
+      return board.availableOnAGivenLine(threatLines[0])[0];
     }
     return false;
   }
-
-
-
   
-  
-
-
-
-
-
-
-
-
-
-
 
 
 }
 
 
 
+// ================================================
+// ARRAY EXTENSIONS:
+// ================================================
 
-// ARRAY HELPERS***********************
 Array.prototype.hasElement = function(value){
   'use strict';
   return (this.indexOf(value) != -1) ? true : false;
@@ -383,4 +327,37 @@ if (!Array.prototype.find) {
   };
 }
 
+// ================================================
+// DEFINITELY WILL NEED:
+// ================================================
+// validations:
+// game is still active, can't play otherwise
+// cell not occupied
+// correct turn
+// correct player value
+// correct position
 
+
+
+
+// ================================================
+// MAY BE?
+// ================================================
+
+
+// BOARD===========================================
+// isLineEmpty
+
+
+// this.addDiagonal = function(diagonal){
+//   this.diagonals.push(diagonal);
+// }
+
+// this.addRow = function(row){
+//   this.rows.push(row);
+// }
+
+// this.addColumn = function(column){
+//   this.columns.push(column);
+// }
+// BOARD===========================================

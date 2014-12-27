@@ -1,6 +1,6 @@
-// BOARD********************************
-// BOARD********************************
-// BOARD********************************
+// ================================================
+// BOARD:
+// ================================================
 
 describe('Board', function(){
   var board;
@@ -213,34 +213,12 @@ describe('Board', function(){
     
   });
 
-  // describe('#onlySamePlayerOnALine', function(){
-  //   describe('context: only 2 same cells on a:', function(){
-  //     describe('first diagonal', function(){
-  //       it('returns positions of 2 cells', function(){
-  //         board.addMove(0, 'x');
-  //         board.addMove(1, 'o');
-  //         board.addMove(4, 'x');
-  //         expect(board.onlySameCellsOnALine('x', [0, 4, 8], 2)).toEqual([0, 4]);
-  //       });
-  //     });
-  //   });
-
-  //   describe('context: only 1 of the same cell on a:', function(){
-  //     describe('first diagonal', function(){
-  //       it('returns position of the cell', function(){
-  //         board.addMove(0, 'x');
-  //         board.addMove(1, 'o');
-  //         board.addMove(5, 'x');
-  //         expect(board.onlySameCellsOnALine('x', [0, 4, 8], 1)).toEqual([0, 4])
-  //       });
-  //     });
-  //   });
-  // });
 });
 
-// GAME********************************
-// GAME********************************
-// GAME********************************
+// ================================================
+// GAME:
+// ================================================
+
 
 describe('Game', function(){
   var game;
@@ -426,9 +404,9 @@ describe('Game', function(){
   });
 });
 
-// AIPlayer********************************
-// AIPlayer********************************
-// AIPlayer********************************
+// ================================================
+// AI-PLAYER:
+// ================================================
 describe('AIPlayer', function(){
   var game;
   beforeEach(function(){
@@ -499,8 +477,15 @@ describe('AIPlayer', function(){
         game.addToBoard(5, 'x');
         expect(game.ai.winningMove(game)).toBe(false);
       });
+
+      it('returns false', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(2, 'o');
+        game.addToBoard(4, 'x');
+        expect(game.ai.winningMove(game)).toBe(false);
+      });
+
     });
-    
   });
 
   describe('#threatPosition', function(){
@@ -538,6 +523,21 @@ describe('AIPlayer', function(){
         game.addToBoard(4, 'o');
         game.addToBoard(8, 'x');
         expect(game.ai.threatPosition(game)).toEqual(2);
+      });
+    });
+
+    describe('context: no threat', function(){
+      it('returns false', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(2, 'o');
+        game.addToBoard(5, 'x');
+        expect(game.ai.threatPosition()).toBe(false);
+      });
+      it('returns false', function(){
+        game.addToBoard(0, 'x');
+        game.addToBoard(4, 'o');
+        game.addToBoard(5, 'x');
+        expect(game.ai.threatPosition()).toBe(false);
       });
     });
   });
