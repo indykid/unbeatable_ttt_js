@@ -83,6 +83,20 @@ describe('Board', function(){
       expect(board.cellType(2)).toEqual('edge');
     });
   });
+
+  describe('#isCellEmpty', function(){
+    describe('context: cell is occupied', function(){
+      it('returns false', function(){
+        board.addMove(0, 'x');
+        expect(board.isCellEmpty(0)).toBe(false);
+      });
+    });
+    describe('context: cell is unoccupied', function(){
+      it('returns true', function(){
+        expect(board.isCellEmpty(0)).toBe(true);
+      });
+    })
+  });
 });
 
 describe('Game', function(){

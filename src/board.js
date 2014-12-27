@@ -30,10 +30,9 @@ JSTicTacToe.Board = function(){
   }
 
   this.available = function(){
-    var taken = this.taken();
     var available = this.allPositions.filter(function(position){
-      return !taken.hasElement(position);
-    });
+      return this.moves[position] === undefined;
+    }.bind(this));
     return available.ascending();
   }
 
@@ -60,7 +59,11 @@ JSTicTacToe.Board = function(){
   };
 
   this.isCellEmpty = function(cell) {
-    return this.available().hasElement(cell);
+    // might need to extract cell validation check
+    if (this.allPositions.hasElement(cell)){
+      return this.moves[cell] === undefined;
+    }
+    // return this.available().hasElement(cell);
   };
 
   // this.addDiagonal = function(diagonal){
@@ -179,7 +182,7 @@ JSTicTacToe.Game = function(){
   function addWinningCombo(combo, combinations){
     combinations.push(combo);
   }
-  
+
   function getLineValues(board, positions){
     var lineValues = [];
     positions.forEach(function(position){
@@ -302,6 +305,10 @@ JSTicTacToe.AIPlayer = function(game){
     return emptyCells;
   }
 
+  function findEmptyCellsNew(positions, board){
+
+  }
+
   function checkEmptyCells(emptyCells, start, end, increment, board, player){
     var moves = board.playerMoves(player);
     if ( emptyCells.length == 1 ){
@@ -350,7 +357,7 @@ Array.prototype.lastElement = function(){
   return this[this.length - 1];
 }
 
-// if (!Array.prototype.find) {
+if (!Array.prototype.find) {
   Array.prototype.find = function(predicate) {
     if (this == null) {
       throw new TypeError('Array.prototype.find called on null or undefined');
@@ -371,6 +378,6 @@ Array.prototype.lastElement = function(){
     }
     return undefined;
   };
-// }
+}
 
 
