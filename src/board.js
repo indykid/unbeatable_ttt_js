@@ -14,14 +14,18 @@ JSTicTacToe.Board = function(game){
   // this.columns = [];
   this.game = game;
   this.moves = {};
+  this.movesInOrder = [];
   this.size = 3;
-  this.cellAmount = Math.pow(this.size, 2);
-  this.allPositions = setPossiblePositions(this.cellAmount);
+  this.positionsAmount = Math.pow(this.size, 2);
+  this.allPositions = setPossiblePositions(this.positionsAmount);
 
   this.addMove = function(position, player){
     this.moves[position] = player;
-    
+    var move = {};
+    move[position] = player;
+    this.movesInOrder.push(move);
   }
+
 
   this.getPlayer = function(position){
     return this.moves[position];
@@ -57,7 +61,7 @@ JSTicTacToe.Board = function(game){
     if (position == 4){
       return "center";
     } 
-    else if (remainder != 0){
+    else if (remainder == 0){
       return "corner";
     } 
     else {
@@ -118,6 +122,18 @@ JSTicTacToe.Board = function(game){
     return playerLines;
   } // needs refactor at some point
 
+  this.corners = function(){
+    return this.allPositions.filter(function(position){
+      return this.positionType(position) == 'corner';
+    }.bind(this)).ascending();
+  }
+
+  this.center = function(){
+    return this.allPositions.find(function(position){
+      return this.positionType(position) == 'center';
+    }.bind(this));
+  }
+
   function setPossiblePositions(amount){
     var positions = [];
     for (var i = 0; i < amount; i++) {
@@ -125,6 +141,8 @@ JSTicTacToe.Board = function(game){
     };
     return positions;
   }
+
+  
 
 };
 
@@ -136,18 +154,6 @@ JSTicTacToe.Game = function(firstPlayer){
   this.board = new JSTicTacToe.Board(this);
   this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
   this.winningCombinations = setWinningCombinations(this.board);
-
-  // this.setFirstPlayer = function(firstPlayer){
-  //   // this.firstPlayer = player;
-  //   // this.assignMarks();
-  //   console.log(firstPlayer);
-  //   this.ai.setMark(firstPlayer);
-  // }
-
-  // this.assignMarks = function(){
-  //   this.ai.getMark();
-  // }
-
 
   this.addToBoard = function(position, player){
     this.board.addMove(position, player);
@@ -167,7 +173,34 @@ JSTicTacToe.Game = function(firstPlayer){
     return singlePlayerFullLine != undefined;
   }
 
+  this.canMove = function(player){
+    var moveCount = this.board.movesInOrder.length;
+    if ( (isOddMove(moveCount) && player == 'x') || (!isOddMove(moveCount) && player == 'o') ){
+      return true;
+    }
+    return false;
+  }
 
+  this.humanPlay = function(position){
+    if (this.canMove(this.ai.opponentMark)){
+      this.addToBoard(position, this.ai.opponentMark);
+      // this.ai.play();
+      console.log('added to human', position)
+    } else {
+      console.log('no can do');
+
+    }
+    this.ai.play();
+    console.log(this.board.movesInOrder);
+  }
+
+  this.isFirstEverMove = function(){
+    return this.board.movesInOrder.length == 0;
+  }
+
+  function isOddMove(movesSoFar){
+    return movesSoFar % 2 == 0;
+  }
 
   // private
   function setWinningCombinations(board){
@@ -187,7 +220,7 @@ JSTicTacToe.Game = function(firstPlayer){
 
   function setFirstDiagonal(board, combinations){
     var startIndex = 0,
-        endIndex = board.cellAmount - 1,
+        endIndex = board.positionsAmount - 1,
         increment = board.size + 1,
         firstDiagonal = [];
 
@@ -198,7 +231,7 @@ JSTicTacToe.Game = function(firstPlayer){
 
   function setSecondDiagonal(board, combinations){
     var startIndex = board.size - 1,
-        endIndex = board.cellAmount - board.size,
+        endIndex = board.positionsAmount - board.size,
         increment = board.size - 1,
         secondDiagonal = [];
 
@@ -253,21 +286,8 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
   this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
   this.game = game;
-
-  this.setMark = function(firstPlayer){
-    switch (firstPlayer){
-      case 'human':
-        this.mark = 'o';
-        break;
-      case 'ai':
-        this.mark = 'x';
-        break;
-    }
-    this.opponentMark = this.mark == 'x' ? 'o' : 'x'
-    console.log('comp mark', this.mark, 'h mark', this.opponentMark)
-  }
   
-  this.winningMove = function(){
+  this.winningPosition = function(){
     var board = this.game.board,
         winLines = board.singlePlayerLinesForPlayer(this.mark, (board.size - 1));
     if (winLines.length > 0){
@@ -284,6 +304,69 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     }
     return false;
   }
+
+  this.play = function(){
+    if ( this.game.canMove(this.mark)){
+      var position;
+      // console.log(this.game)
+      if (this.game.isFirstEverMove()){
+        console.log('here')
+        position = this.firstMove();
+      } else if (this.winningPosition()){
+        position = this.winningPosition();
+      } else if ( this.threatPosition() ){
+        position = this.threatPosition();
+      } else if ( this.strategicPosition() ){
+        position = this.strategicPosition();
+      } else {
+        position = this.basicStrategy();
+      }
+      this.game.addToBoard(position, this.mark);
+    } else {
+      console.log('ai, hold fire')
+    }
+    
+    // console.log(position);
+  }
+
+  this.firstMove = function(){
+    var board = this.game.board,
+        center = board.center(),
+        corner = randomElement(board.corners());
+    return randomElement([corner, center]);
+  }
+
+  this.strategicPosition = function(){
+
+  }
+
+  this.basicStrategy = function(){
+
+  }
+
+  this.firstPlayerStrategy = function(){
+    
+    
+    // console.log(position)
+    // this.game.addMove()
+    // play in the corner or center
+
+    // corner
+  }
+
+
+  // this.strategicPlay = function(){
+  //   // is this game's first move?
+  //   // yes:
+  //   // play corner or centre
+
+
+  //   // no:
+  //   // what did human play?
+  //   // center: play corner
+  //   // corner: play center
+
+  // }
   
 
 
@@ -342,6 +425,22 @@ if (!Array.prototype.find) {
     }
     return undefined;
   };
+}
+
+// ================================================
+// HELPERS:
+// ================================================
+
+function randomize(data){
+  return data.sort(function(){
+    return 0.5 - Math.random();
+  });
+}
+
+function randomElement(data){
+  var myArray = randomize(data);
+  var index = Math.floor(Math.random() * myArray.length);
+  return myArray[index];
 }
 
 // ================================================
