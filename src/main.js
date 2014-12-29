@@ -19,6 +19,9 @@ $(function(){
     grid.show();
     newGameButton.show();
     game = new JSTicTacToe.Game(firstPlayer);
+    if (firstPlayer == 'ai'){
+      game.ai.play();
+    }
   });
 
   positions.on('click', function(){

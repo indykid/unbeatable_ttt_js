@@ -45,20 +45,20 @@ describe('Board', function(){
     });
   });
 
-  describe('#taken', function(){
+  describe('#takenPositions', function(){
     it('returns only occupied positions', function(){
       board.addMove(5, 'x');
       board.addMove(7, 'o');
       board.addMove(0, 'x');
       board.addMove(4, 'o');
-      expect(board.taken()).toEqual([0, 4, 5, 7]);
+      expect(board.takenPositions()).toEqual([0, 4, 5, 7]);
     });
     it('returns only occupied positions', function(){
       board.addMove(6, 'x');
       board.addMove(3, 'o');
       board.addMove(0, 'x');
       board.addMove(2, 'o');
-      expect(board.taken()).toEqual([0, 2, 3, 6]);
+      expect(board.takenPositions()).toEqual([0, 2, 3, 6]);
     });
   });
 
