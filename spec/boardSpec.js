@@ -62,17 +62,17 @@ describe('Board', function(){
     });
   });
 
-  describe('#playerMoves', function(){
-    it('returns moves for a given player', function(){
-      board.addMove(5, 'x');
-      board.addMove(7, 'o');
-      board.addMove(0, 'x');
-      board.addMove(4, 'o');
-      expect(board.playerMoves('x')).toEqual([0, 5]);
-      expect(board.playerMoves('o')).toEqual([4, 7]);
+  // describe('#playerMoves', function(){
+  //   it('returns moves for a given player', function(){
+  //     board.addMove(5, 'x');
+  //     board.addMove(7, 'o');
+  //     board.addMove(0, 'x');
+  //     board.addMove(4, 'o');
+  //     expect(board.playerMoves('x')).toEqual([0, 5]);
+  //     expect(board.playerMoves('o')).toEqual([4, 7]);
 
-    });
-  });
+  //   });
+  // });
 
   describe('#positionType', function(){
     it('returns "corner" position type if corner is given', function(){
@@ -190,7 +190,7 @@ describe('Board', function(){
     var game;
     // board = undefined;
     beforeEach(function(){
-      game = new JSTicTacToe.Game();
+      game = new JSTicTacToe.Game('human');
     });
     describe('context: no two positions in a row belong to player x', function(){
       it('given the moves, for player "x" it returns correct lines when asking for 1 in a line, and no lines when asking for 2', function(){
@@ -223,7 +223,7 @@ describe('Board', function(){
 describe('Game', function(){
   var game;
   beforeEach(function(){
-    game = new JSTicTacToe.Game();
+    game = new JSTicTacToe.Game('human');
   });
 
   it('has an empty board at the start', function(){
@@ -410,16 +410,16 @@ describe('Game', function(){
 describe('AIPlayer', function(){
   var game;
   beforeEach(function(){
-    game = new JSTicTacToe.Game();
+    game = new JSTicTacToe.Game('human');
   });
 
-  // it('has been assigned a mark', function(){
-  //   expect(game.ai.mark).toBeDefined();
-  // });
+  it('has been assigned a mark', function(){
+    expect(game.ai.mark).toBeDefined();
+  });
 
-  // it("knows opponent's mark", function(){
-  //   expect(game.ai.opponentMark).toBeDefined();
-  // });
+  it("knows opponent's mark", function(){
+    expect(game.ai.opponentMark).toBeDefined();
+  });
 
   describe('#winningMove', function(){
     describe('context: there is a potential win on a:', function(){

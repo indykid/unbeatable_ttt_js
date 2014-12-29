@@ -20,6 +20,7 @@ JSTicTacToe.Board = function(game){
 
   this.addMove = function(position, player){
     this.moves[position] = player;
+    
   }
 
   this.getPlayer = function(position){
@@ -40,14 +41,16 @@ JSTicTacToe.Board = function(game){
     return available.ascending();
   }
 
-  this.playerMoves = function(player){
-    var taken = this.taken(),
-        allMoves = this.moves,
-        playerMoves = taken.filter(function(position){
-          return allMoves[position] == player;
-        });
-    return playerMoves.ascending();
-  }
+  // this.playerMoves = function(player){
+  //   var taken = this.taken(),
+  //       allMoves = this.moves,
+  //       playerMoves = taken.filter(function(position){
+  //         return allMoves[position] == player;
+  //       });
+  //   return playerMoves.ascending();
+  // }
+
+
 
   this.positionType = function(position){
     var remainder = position % 2;
@@ -247,10 +250,8 @@ JSTicTacToe.Game = function(firstPlayer){
 // ================================================
 
 JSTicTacToe.AIPlayer = function(game, firstPlayer){
-  console.log(firstPlayer);
   this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
   this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
-  console.log(this.mark)
   this.game = game;
 
   this.setMark = function(firstPlayer){

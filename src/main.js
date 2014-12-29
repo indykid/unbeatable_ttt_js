@@ -5,11 +5,10 @@ var JSTicTacToe = JSTicTacToe || {};
 $(function(){
 
   var grid = $('table'),
-      cells = $('td'),
+      positions = $('td'),
       newGameButton = $('#newGame'),
       form = $('#firstPlayerForm'),
       game;
-
 
   grid.hide();
   newGameButton.hide();
@@ -22,12 +21,10 @@ $(function(){
     game = new JSTicTacToe.Game(firstPlayer);
   });
 
-  cells.on('click', function(){
-    // check turn
-    // register the move
-    // comp play
-  });
+  // positions.on('click', function(){
+  //   // check turn
+  //   // register the move
+  //   // comp play
+  // });
 
 });
-
-// JSTicTacToe.getMarks = function()
