@@ -21,10 +21,14 @@ $(function(){
     game = new JSTicTacToe.Game(firstPlayer);
   });
 
-  // positions.on('click', function(){
-  //   // check turn
-  //   // register the move
-  //   // comp play
-  // });
+  positions.on('click', function(){
+    // check turn
+    // register the move
+    // comp play
+    
+    position = $(this).data('position');
+    // console.log('human played', position);
+    game.humanPlay(position);
+  });
 
 });
