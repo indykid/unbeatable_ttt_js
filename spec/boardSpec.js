@@ -413,13 +413,13 @@ describe('AIPlayer', function(){
     game = new JSTicTacToe.Game();
   });
 
-  it('has been assigned a mark', function(){
-    expect(game.ai.mark).toBeDefined();
-  });
+  // it('has been assigned a mark', function(){
+  //   expect(game.ai.mark).toBeDefined();
+  // });
 
-  it("knows opponent's mark", function(){
-    expect(game.ai.opponentMark).toBeDefined();
-  });
+  // it("knows opponent's mark", function(){
+  //   expect(game.ai.opponentMark).toBeDefined();
+  // });
 
   describe('#winningMove', function(){
     describe('context: there is a potential win on a:', function(){
@@ -542,11 +542,8 @@ describe('AIPlayer', function(){
     });
   });
 
-  
+  describe('#pickFirstStrategy', function(){
 
-  // describe('#basicStrategy', function(){
-  //   describe('allows', function(){
+  });
 
-  //   });
-  // });
 });

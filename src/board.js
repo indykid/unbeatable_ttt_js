@@ -1,6 +1,6 @@
 'use strict';
 
-var JSTicTacToe = {};
+var JSTicTacToe = JSTicTacToe || {};
 
 // ================================================
 // BOARD:
@@ -129,13 +129,22 @@ JSTicTacToe.Board = function(game){
 // ================================================
 // GAME:
 // ================================================
-JSTicTacToe.Game = function(){
+JSTicTacToe.Game = function(firstPlayer){
   this.board = new JSTicTacToe.Board(this);
-  this.ai = new JSTicTacToe.AIPlayer(this);
-  this.winningCombinations = [];
-  
+  this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
   this.winningCombinations = setWinningCombinations(this.board);
-  // console.log(this.winningCombinations)
+
+  // this.setFirstPlayer = function(firstPlayer){
+  //   // this.firstPlayer = player;
+  //   // this.assignMarks();
+  //   console.log(firstPlayer);
+  //   this.ai.setMark(firstPlayer);
+  // }
+
+  // this.assignMarks = function(){
+  //   this.ai.getMark();
+  // }
+
 
   this.addToBoard = function(position, player){
     this.board.addMove(position, player);
@@ -237,11 +246,25 @@ JSTicTacToe.Game = function(){
 // AI-PLAYER:
 // ================================================
 
-JSTicTacToe.AIPlayer = function(game){
-
-  this.mark = 'o';
-  this.opponentMark = 'x';
+JSTicTacToe.AIPlayer = function(game, firstPlayer){
+  console.log(firstPlayer);
+  this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
+  this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
+  console.log(this.mark)
   this.game = game;
+
+  this.setMark = function(firstPlayer){
+    switch (firstPlayer){
+      case 'human':
+        this.mark = 'o';
+        break;
+      case 'ai':
+        this.mark = 'x';
+        break;
+    }
+    this.opponentMark = this.mark == 'x' ? 'o' : 'x'
+    console.log('comp mark', this.mark, 'h mark', this.opponentMark)
+  }
   
   this.winningMove = function(){
     var board = this.game.board,

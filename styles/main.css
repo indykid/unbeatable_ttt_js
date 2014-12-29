@@ -1,0 +1,24 @@
+table {
+  text-align: center;
+  font-size: 90px;
+}
+
+td {
+  width: 200px;
+  height: 200px;
+  border: 2px solid black;
+
+}
+
+input[type="text"] {
+  min-width: 300px;
+  max-width: auto;
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+a {
+  text-decoration: none;
+}
