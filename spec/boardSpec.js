@@ -76,7 +76,8 @@ describe('Board', function(){
 
   describe('#positionType', function(){
     it('returns "corner" position type if corner is given', function(){
-      expect(board.positionType(1)).toEqual('corner')
+      expect(board.positionType(0)).toEqual('corner');
+      expect(board.positionType(8)).toEqual('corner');
     });
 
     it('returns "center" position type if center is given', function(){
@@ -84,7 +85,8 @@ describe('Board', function(){
     });
 
     it('returns "edge" position type if edge is given', function(){
-      expect(board.positionType(2)).toEqual('edge');
+      expect(board.positionType(1)).toEqual('edge');
+      expect(board.positionType(5)).toEqual('edge');
     });
   });
 
@@ -211,6 +213,17 @@ describe('Board', function(){
       });
     });
     
+  });
+
+  describe('#corners', function(){
+    it('always returns [0, 2, 6, 8] for 3x3 grid', function(){
+      expect(board.corners()).toEqual([0, 2, 6, 8]);
+    });
+  });
+  describe('#center', function(){
+    it('always returns [4] for 3x3 grid', function(){
+      expect(board.center()).toEqual(4);
+    });
   });
 
 });
@@ -421,7 +434,7 @@ describe('AIPlayer', function(){
     expect(game.ai.opponentMark).toBeDefined();
   });
 
-  describe('#winningMove', function(){
+  describe('#winningPosition', function(){
     describe('context: there is a potential win on a:', function(){
       it('row, returns a winning position 3', function(){
         game.addToBoard(0, 'x');
@@ -429,7 +442,7 @@ describe('AIPlayer', function(){
         game.addToBoard(8, 'x');
         game.addToBoard(5, 'o');
         game.addToBoard(7, 'x');
-        expect(game.ai.winningMove(game)).toEqual(3);
+        expect(game.ai.winningPosition(game)).toEqual(3);
       });
 
       it('first diagonal, returns a winning position 4', function(){
@@ -438,7 +451,7 @@ describe('AIPlayer', function(){
         game.addToBoard(3, 'x');
         game.addToBoard(8, 'o');
         game.addToBoard(2, 'x');
-        expect(game.ai.winningMove(game)).toEqual(4);
+        expect(game.ai.winningPosition(game)).toEqual(4);
       });
 
       it('first diagonal, returns a winning position 0', function(){
@@ -447,7 +460,7 @@ describe('AIPlayer', function(){
         game.addToBoard(3, 'x');
         game.addToBoard(8, 'o');
         game.addToBoard(2, 'x');
-        expect(game.ai.winningMove(game)).toEqual(0);
+        expect(game.ai.winningPosition(game)).toEqual(0);
       });
 
       it('second diagonal, returns a winning position 2', function(){
@@ -456,7 +469,7 @@ describe('AIPlayer', function(){
         game.addToBoard(1, 'x');
         game.addToBoard(6, 'o');
         game.addToBoard(8, 'x');
-        expect(game.ai.winningMove(game)).toEqual(2);
+        expect(game.ai.winningPosition(game)).toEqual(2);
       });
 
       it('column, returns a winning position 3', function(){
@@ -465,7 +478,7 @@ describe('AIPlayer', function(){
         game.addToBoard(4, 'x');
         game.addToBoard(8, 'o');
         game.addToBoard(6, 'x');
-        expect(game.ai.winningMove(game)).toEqual(5);
+        expect(game.ai.winningPosition(game)).toEqual(5);
       });
       
     });
@@ -475,14 +488,14 @@ describe('AIPlayer', function(){
         game.addToBoard(0, 'x');
         game.addToBoard(2, 'o');
         game.addToBoard(5, 'x');
-        expect(game.ai.winningMove(game)).toBe(false);
+        expect(game.ai.winningPosition(game)).toBe(false);
       });
 
       it('returns false', function(){
         game.addToBoard(0, 'x');
         game.addToBoard(2, 'o');
         game.addToBoard(4, 'x');
-        expect(game.ai.winningMove(game)).toBe(false);
+        expect(game.ai.winningPosition(game)).toBe(false);
       });
 
     });
@@ -542,7 +555,7 @@ describe('AIPlayer', function(){
     });
   });
 
-  describe('#pickFirstStrategy', function(){
+  describe('#firstPlayerStrategy', function(){
 
   });
 
