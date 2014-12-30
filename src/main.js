@@ -4,14 +4,30 @@ var JSTicTacToe = JSTicTacToe || {};
 
 $(function(){
 
+// ================================================
+// VARIABLES:
+// ================================================
+
+
   var grid = $('table'),
-      positions = $('td'),
+      gridPositions = $('td'),
       newGameButton = $('#newGame'),
       form = $('#firstPlayerForm'),
       game;
 
+
+// ================================================
+// VISUALS:
+// ================================================
+
   grid.hide();
   newGameButton.hide();
+
+
+// ================================================
+// EVENT LISTENERS:
+// ================================================
+
   form.on('submit', function(e){
     e.preventDefault();
     var firstPlayer = $('input[name=firstPlay]:checked').val();
@@ -24,13 +40,8 @@ $(function(){
     }
   });
 
-  positions.on('click', function(){
-    // check turn
-    // register the move
-    // comp play
-    
+  gridPositions.on('click', function(){
     position = $(this).data('position');
-    // console.log('human played', position);
     game.humanPlay(position);
   });
 

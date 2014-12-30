@@ -122,6 +122,18 @@ JSTicTacToe.Board = function(game){
     }.bind(this));
   }
 
+  this.lastPositionFor = function(player){
+    var position,
+        movesReverse = this.movesInOrder.slice().reverse();
+
+    movesReverse.find(function(move){
+      position = parseInt(Object.keys(move)[0]);
+      return move[position] == player;
+    });
+    return position;
+  }
+
+
   function setPossiblePositions(amount){
     var positions = [];
     for (var i = 0; i < amount; i++) {
@@ -178,7 +190,6 @@ JSTicTacToe.Game = function(firstPlayer){
       console.log('no can do');
     }
     this.ai.play();
-    console.log(this.board.movesInOrder);
   }
 
   this.isFirstEverMove = function(){
@@ -187,6 +198,7 @@ JSTicTacToe.Game = function(firstPlayer){
 
   this.updateBoardView = function(game){
     console.log('taken', this.board.takenPositions())
+    // console.log(this.board.movesInOrder);
     this.board.takenPositions().forEach(function(position){
       // console.log(this)
       $('td').each(function(index){
@@ -288,7 +300,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
   this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
   this.game = game;
-  this.strategy;
+  this.mainStrategy;
   
   this.winningPosition = function(){
     var board = this.game.board,
@@ -311,28 +323,32 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   this.play = function(){
     if ( this.game.canMove(this.mark)){
       var position;
-      // console.log(this.game)
+
       if (this.game.isFirstEverMove()){
         position = this.firstMove();
-      } else if (this.winningPosition()){
+        console.log('in first move IF')
+      } else if (typeof this.winningPosition() == 'number'){
         position = this.winningPosition();
-      } else if ( this.threatPosition() ){
+        console.log('in winning position IF')
+      } else if (typeof this.threatPosition() == 'number'){
         position = this.threatPosition();
-      } else if ( this.strategicPosition() ){
+        console.log('in threatPosition IF')
+      } else if (typeof this.strategicPosition() == 'number'){
         position = this.strategicPosition();
+        console.log('in strategicPosition IF')
       } else {
         position = this.basicStrategy();
-      }
-      if (position){
+        console.log('in basicStrategy IF')
+      } // calling functions twice, need to do something about it
+
+      // if (typeof position == 'number'){
         this.game.addToBoard(position, this.mark);
         this.game.updateBoardView(this.game);
-      }
+      // }
       
     } else {
       console.log('ai, hold fire')
-    }
-    
-    // console.log(position);
+    }    
   }
 
   this.firstMove = function(){
@@ -343,103 +359,200 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   this.strategicPosition = function(){
-    var movesSoFar = this.board.movesInOrder.length
-
-    if (this.strategy != undefined){
-
-      switch (this.strategy){
-        case 'cornerAsFirst':
-          this.cornerAsFirst(movesSoFar);
-          break;
-
-        case 'centerAsFirst':
-          this.centerAsFirst(movesSoFar);
-          break;
-
-        case 'cornerAsSecond':
-          this.cornerAsSecond(movesSoFar);
-          break;
-
-        case 'centerAsSecond':
-          this.centerAsSecond(movesSoFar);
-          break;
-
-        case 'edgeAsSecond':
-          this.edgeAsSecond(movesSoFar);
-          break;
-      }
-
-    } else {
-
-      switch (this.mark){
-        case 'x':
-          this.pickStrategyAsFirst(movesSoFar);
-          break;
-
-        case 'o':
-          this.pickStrategyAsSecond(movesSoFar);
-          break;
-      }
+    if (this.mainStrategy == undefined){
+      this.pickAIStrategy();
     }
-  }
+    // if (this.mainStrategy != undefined){
+    var position,
+        movesSoFar = this.game.board.movesInOrder.length;
 
-  this.pickStrategyAsFirst = function(movesSoFar){
-    var position;
-    switch (movesSoFar){
-      case 2:
-        // what did you play
-        // this.strategy
+    switch (this.mainStrategy){
+      case 'cornerAsFirst':
+        position = this.cornerAsFirst(movesSoFar);
         break;
-
-      case 4:
-        var aiLastMoveType = this.aiLastMoveType();
-        switch ( aiLastMoveType ){
-          case 'center':
-            // code
-            break;
-          case 'corner':
-            // code
-            break;
-        }
+      case 'centerAsFirst':
+        position = this.centerAsFirst(movesSoFar);
         break;
-
-      case 3:
-        // code
+      case 'cornerAsSecond':
+        position = this.cornerAsSecond(movesSoFar);
+        // console.log('inside strategicPosition/cornerAsSecond')
+        // console.log(position)
         break;
-
+      case 'centerAsSecond':
+        position = this.centerAsSecond(movesSoFar);
+        break;
+      case 'edgeAsSecond':
+        position = this.edgeAsSecond(movesSoFar);
+        break;
     }
     return position;
   }
+  // switch (movesSoFar){
+  //   case 1:
 
-  this.pickStrategyAsSecond = function(movesSoFar){
+
+  //     // check opponents last move
+  //     // if they played corner, 
+  //     // this.mainStrategy = 'cornerAsSecond'
+  //     // cornerAsSecond(movesSoFar)
+
+  //     // play center
+  //     // if they played center, play corner
+  //     // otherwise, play center
+  //     break;
+
+  // switch (movesSoFar){
+  //   case 2:
+  //     // what did you play, ownLastMove
+  //     // this.strategy
+  //     this.strategicPosition();
+  //     break;
+
+  //   case 4:
+  //     var aiLastMoveType = this.aiLastMoveType();
+  //     switch ( aiLastMoveType ){
+  //       case 'center':
+  //         // code
+  //         break;
+  //       case 'corner':
+  //         // code
+  //         break;
+  //     }
+  //     break;
+
+  // }
+
+  this.pickAIStrategy = function(){
+    if ( this.mark == 'x'){
+      this.pickAIStrategyAsFirst()
+    } else {
+      this.pickAIStrategyAsSecond();
+    }
+  }
+
+  this.pickAIStrategyAsFirst = function(){
+    var board = this.game.board,
+        myLastPosition = board.lastPositionFor(this.mark),
+        myLastPositionType = board.positionType(myLastPosition);
+
+    switch (myLastPositionType){
+      case 'corner':
+        this.mainStrategy = 'cornerAsFirst';
+        break;
+      case 'center':
+        this.mainStrategy = 'centerAsFirst';
+        break;
+    }
+  }
+
+  this.pickAIStrategyAsSecond = function(){ 
+    var board = this.game.board,
+        opponentsLastPosition = board.lastPositionFor(this.opponentMark),
+        lastPositionType = board.positionType(opponentsLastPosition);
+    
+    switch (lastPositionType){
+      case 'corner':
+        this.mainStrategy = 'cornerAsSecond';
+        break;
+      case 'center':
+        this.mainStrategy = 'centerAsSecond';
+        break;
+      case 'edge':
+        this.mainStrategy = 'edgeAsSecond';
+        break;
+    }
+  }
+
+  this.cornerAsSecond = function(movesSoFar){
     var position;
     switch (movesSoFar){
       case 1:
-        // code
-        // check opponents last move
-        // if they played corner, play center
-        // if they played center, play corner
-        // otherwise, play center
+        console.log('in cornerAsSecond');
+        console.log(movesSoFar)
+        position = this.game.board.center();
+
         break;
 
       case 3:
-        var aiLastMoveType = this.aiLastMoveType();
-        switch ( aiLastMoveType ){
-          case 'center':
-            // code
-            break;
-          case 'corner':
-            // code
-            break;
-        }
+        
         break;
 
       case 5:
-        // code
+
         break;
     }
     return position;
   }
+
+  this.centerAsSecond = function(movesSoFar){
+    console.log('in centerAsSecond')
+    switch (movesSoFar){
+      case 1:
+        
+        break;
+
+      case 3:
+        
+        break;
+
+      case 5:
+
+        break;
+    }
+  }
+
+  this.edgeAsSecond = function(movesSoFar){
+    console.log('in edgeAsSecond')
+    switch (movesSoFar){
+      case 1:
+        
+        break;
+
+      case 3:
+        
+        break;
+
+      case 5:
+
+        break;
+    }
+  }
+
+  this.cornerAsFirst = function(movesSoFar){
+    console.log('in cornerAsFirst')
+    switch (movesSoFar){
+      case 2:
+        
+        break;
+
+      case 4:
+        
+        break;
+
+      case 6:
+
+        break;
+    }
+  }
+
+  this.centerAsFirst = function(movesSoFar){
+    console.log('in centerAsFirst')
+    switch (movesSoFar){
+      case 2:
+        
+        break;
+
+      case 4:
+        
+        break;
+
+      case 6:
+
+        break;
+    }
+  }
+
+
 
   this.basicStrategy = function(){
 
@@ -590,6 +703,19 @@ function randomElement(data){
 //       });
 //   return playerMoves.ascending();
 // }
+
+// describe('#playerMoves', function(){
+//   it('returns moves for a given player', function(){
+//     board.addMove(5, 'x');
+//     board.addMove(7, 'o');
+//     board.addMove(0, 'x');
+//     board.addMove(4, 'o');
+//     expect(board.playerMoves('x')).toEqual([0, 5]);
+//     expect(board.playerMoves('o')).toEqual([4, 7]);
+
+//   });
+// });
+
 
 // this.taken = function(){
 //   var moves = Object.keys(this.moves).map(function(move){

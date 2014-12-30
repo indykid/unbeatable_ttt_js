@@ -62,18 +62,6 @@ describe('Board', function(){
     });
   });
 
-  // describe('#playerMoves', function(){
-  //   it('returns moves for a given player', function(){
-  //     board.addMove(5, 'x');
-  //     board.addMove(7, 'o');
-  //     board.addMove(0, 'x');
-  //     board.addMove(4, 'o');
-  //     expect(board.playerMoves('x')).toEqual([0, 5]);
-  //     expect(board.playerMoves('o')).toEqual([4, 7]);
-
-  //   });
-  // });
-
   describe('#positionType', function(){
     it('returns "corner" position type if corner is given', function(){
       expect(board.positionType(0)).toEqual('corner');
@@ -215,13 +203,24 @@ describe('Board', function(){
     
   });
 
+  describe('#lastPositionFor', function(){
+    it('returns last position for a given player', function(){
+      board.addMove(8, 'x');
+      board.addMove(2, 'o');
+      board.addMove(3, 'x');
+      board.addMove(1, 'o');
+      expect(board.lastPositionFor('x')).toEqual(3);
+      expect(board.lastPositionFor('o')).toEqual(1);
+    });
+  });
+
   describe('#corners', function(){
     it('always returns [0, 2, 6, 8] for 3x3 grid', function(){
       expect(board.corners()).toEqual([0, 2, 6, 8]);
     });
   });
   describe('#center', function(){
-    it('always returns [4] for 3x3 grid', function(){
+    it('always returns 4 for 3x3 grid', function(){
       expect(board.center()).toEqual(4);
     });
   });
