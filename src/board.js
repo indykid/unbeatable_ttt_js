@@ -70,7 +70,7 @@ JSTicTacToe.Board = function(game){
 
   this.availableOnAGivenLine = function(line){
     var available = line.filter(function(position){
-      return this.getPlayer(position) === undefined;
+      return this.isPositionEmpty(position);
     }.bind(this));
     return available.ascending();
   }
@@ -249,7 +249,7 @@ JSTicTacToe.Game = function(firstPlayer){
   }
 
   this.humanPlay = function(position){
-    //////////////////////add validation for non-occupancy
+    //!!!!!!!!!!!!!add validation for non-occupancy!!!!!!!!!!!!!!!!!!!!!!
     if (this.canMove(this.ai.opponentMark)){
       this.addToBoard(position, this.ai.opponentMark);
       this.updateBoardView(this);
@@ -390,10 +390,11 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
 
   this.play = function(){
     if ( this.game.canMove(this.mark)){
-      var position;
+      var position,
+          board = this.game.board;
 
       if (this.game.isFirstEverMove()){
-        var board = this.game.board;
+        
         position = board.cornerOrCenter(board.possiblePositions);
         console.log('in first move IF')
       } else if (typeof(position = this.winningPosition()) == 'number'){
@@ -410,11 +411,14 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         console.log('in basicStrategy IF')
       } // calling functions twice, need to do something about it
 
-      // if (typeof position == 'number'){
+        // potentially unnecessary validation for non-occupancy if moves are only picked from available ones:
+      if ( board.isPositionEmpty(position)){
         this.game.addToBoard(position, this.mark);
         this.game.updateBoardView(this.game);
-      // }
-      
+      } else {
+        console.log('POSITION WAS FULL')
+        this.play();
+      }
     } else {
       console.log('ai, hold fire')
     }    
@@ -633,7 +637,35 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   // }
 
   this.basicStrategy = function(){
+    // this is a fallback if there are no strategic moves to be made
+    var position,
+        line,
+        available,
+        board = this.game.board,
+    // find line where i already have 1 move
+    // if none then find an empty line and play there
+        aiOnlyLines = board.singlePlayerLinesForPlayer(this.mark, 1),
+        emptyLines = this.game.winningCombinations.filter(function(combination){
+          return board.availableOnAGivenLine(combination).length == board.size;
+        });
 
+    // console.log()
+    if (aiOnlyLines.length > 0){
+      // find available position:
+      line = randomElement(aiOnlyLines);
+    } else if (emptyLines.length > 0){
+      // find empty line:
+      line = randomElement(emptyLines);
+    } 
+
+    if (line != undefined){
+      available = board.availableOnAGivenLine(line);
+      position = randomElement(available);
+    } else {
+      // find available pick a random
+      position = randomElement(board.available());
+    }
+    return position;
   }
 
   // this.firstPlayerStrategy = function(){
