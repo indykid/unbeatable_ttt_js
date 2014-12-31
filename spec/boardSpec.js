@@ -16,6 +16,7 @@ describe('Board', function(){
     it('adds a new move to the board', function(){
       board.addMove(0, 'x');
       expect(board.moves).toEqual({0: 'x'});
+      expect(board.movesInOrder).toEqual([{0: 'x'}]);
     });
   });
 
@@ -189,7 +190,7 @@ describe('Board', function(){
         game.board.addMove(3, 'x');
         game.board.addMove(1, 'o');
         expect(game.board.singlePlayerLinesForPlayer('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
-        expect(game.board.singlePlayerLinesForPlayer('x'), 2).toEqual([]);
+        expect(game.board.singlePlayerLinesForPlayer('x', 2)).toEqual([]);
       });
       it('given the moves, for player "o" it returns correct lines when asking for 2 or 1 moves in a line', function(){
         game.board.addMove(8, 'x');
@@ -214,9 +215,36 @@ describe('Board', function(){
     });
   });
 
+  describe('#oppositePosition', function(){
+    it('returns symmetrically opposite position', function(){
+      expect(board.oppositePosition(1)).toEqual(7);
+      expect(board.oppositePosition(6)).toEqual(2);
+      expect(board.oppositePosition(8)).toEqual(0);
+      expect(board.oppositePosition(3)).toEqual(5);
+    });
+  });
+
+  describe('#adjacentPositions', function(){
+    it('returns array with correct positions for a given one (does not incl center)', function(){
+      expect(board.adjacentPositions(0)).toEqual([1, 3]);
+      expect(board.adjacentPositions(1)).toEqual([0, 2]);
+      expect(board.adjacentPositions(2)).toEqual([1, 5]);
+      expect(board.adjacentPositions(3)).toEqual([0, 6]);
+      expect(board.adjacentPositions(6)).toEqual([3, 7]);
+      expect(board.adjacentPositions(7)).toEqual([6, 8]);
+    });
+  });
+
+  describe('#positionOfMove', function(){
+    it('returns the integer representing position', function(){
+      expect(board.positionOfMove({0: 'x'})).toEqual(0);
+      expect(board.positionOfMove({4: 'x'})).toEqual(4);
+    });
+  });
+
   describe('#corners', function(){
-    it('always returns [0, 2, 6, 8] for 3x3 grid', function(){
-      expect(board.corners()).toEqual([0, 2, 6, 8]);
+    it('out of all possible positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
+      expect(board.corners(board.possiblePositions)).toEqual([0, 2, 6, 8]);
     });
   });
   describe('#center', function(){
