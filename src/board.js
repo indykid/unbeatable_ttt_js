@@ -172,34 +172,6 @@ JSTicTacToe.Board = function(game){
     return parseInt(Object.keys(move)[0]);
   }
 
-  // hardcoded version... might be better?:
-  // this.adjacentPositions = function(position){
-  //   var positions;
-  //   switch (position){
-  //     case 0:
-  //       positions = [1, 3]
-  //       break;
-  //     case 1:
-  //       positions = [0, 2]
-  //       break;
-  //     case 2:
-  //       positions = [1, 5]
-  //       break;
-  //     case 3:
-  //       break;
-  //     case 4:
-  //       break;
-  //     case 5:
-  //       break;
-  //     case 6:
-  //       break;
-  //     case 7:
-  //       break;
-  //     case 8:
-  //       break;
-  //   }
-  // }
-
 
   function setPossiblePositions(amount){
     var positions = [];
@@ -453,7 +425,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   this.play = function(){
-    // game active check?
+    // game active check? 
     var position,
         board = this.game.board;
     if (this.game.isFirstEverMove()){
@@ -473,15 +445,17 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
       console.log('in basicStrategy IF')
     } // calling functions twice, need to do something about it
 
-      // potentially unnecessary validation for non-occupancy if moves are only picked from available ones:
+      // potentially redundant validation for non-occupancy if moves are only picked from available ones anyway:
     if ( board.isPositionEmpty(position)){
       this.game.addToBoard(position, this.mark);
       this.game.updateBoardView(this.game);
       this.game.checkAndUpdateGameState();
       this.game.updateUI();
     } else {
-      console.log('POSITION WAS FULL');
-      this.play();
+      console.log('POSITION WAS OCCUPIED');
+      if ( this.game.isActive()){
+        this.play();
+      }
     }  
   }
 
@@ -588,8 +562,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
             var oppositeToFirstMove = board.oppositePosition(board.positionOfMove(board.movesInOrder[0]));
             var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
             var lines = board.singlePlayerLinesForPlayer(this.opponentMark, 1);
-            
-            
+ 
             // console.log(adjacentToLastMove)
             var line = lines.find(function(line){
               return !line.hasElement(oppositeToFirstMove) && (commonValues(line, adjacentToLastMove).length > 0);
@@ -603,43 +576,44 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     return position;
   }
 
-  // var almostFilledDiagonal = this.game.winningCombinations.find(function(combination){
-  //   return board.isLineFilledWith(board.size - 1, combination);
-  // });
-  // position = board.availableOnAGivenLine(almostFilledDiagonal);
-
   this.centerAsSecond = function(movesSoFar){
-    console.log('in centerAsSecond')
+    var board = this.game.board,
+        opponentsLastPosition = board.lastPositionFor(this.opponentMark),
+        position;
+
     switch (movesSoFar){
       case 1:
-        
+        console.log('in centerAsSecond case 1');
+        position = randomElement(this.game.board.corners(board.available()));
         break;
 
       case 3:
-        
-        break;
-
-      case 5:
-
+        if ( opponentsLastPosition == board.oppositePosition(board.lastPositionFor(this.mark)) ){
+          position = randomElement(this.game.board.corners(board.available()));
+        } else {
+          position = this.commonSenseStrategy();
+        }
         break;
     }
+    return position;
   }
 
   this.edgeAsSecond = function(movesSoFar){
+    var position,
+        board = this.game.board,
+        opponentsLastPosition = board.lastPositionFor(this.opponentMark);
     console.log('in edgeAsSecond')
     switch (movesSoFar){
       case 1:
-        
+        console.log('in edgeAsSecond case 1');
+        position = this.game.board.center(); 
         break;
 
       case 3:
         
         break;
-
-      case 5:
-
-        break;
     }
+    return position;
   }
 
   this.cornerAsFirst = function(movesSoFar){
@@ -660,6 +634,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   this.centerAsFirst = function(movesSoFar){
+    // beware of playing on adjacent sides (followed by adjacent corner) to his corner defence move
     console.log('in centerAsFirst')
     switch (movesSoFar){
       case 2:
@@ -722,31 +697,6 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     }
     return position;
   }
-
-  // this.firstPlayerStrategy = function(){
-    
-    
-  //   // console.log(position)
-  //   // this.game.addMove()
-  //   // play in the corner or center
-
-  //   // corner
-  // }
-
-
-  // this.strategicPlay = function(){
-  //   // is this game's first move?
-  //   // yes:
-  //   // play corner or center
-
-
-  //   // no:
-  //   // what did human play?
-  //   // center: play corner
-  //   // corner: play center
-
-  // }
-  
 
 
 }
@@ -858,6 +808,35 @@ function commonValues(a, b){
 // MAY BE?
 // ================================================
 
+// declare draw when no possible wins even if empty cells remain?
+
+// hardcoded version... might be better?:
+// this.adjacentPositions = function(position){
+//   var positions;
+//   switch (position){
+//     case 0:
+//       positions = [1, 3]
+//       break;
+//     case 1:
+//       positions = [0, 2]
+//       break;
+//     case 2:
+//       positions = [1, 5]
+//       break;
+//     case 3:
+//       break;
+//     case 4:
+//       break;
+//     case 5:
+//       break;
+//     case 6:
+//       break;
+//     case 7:
+//       break;
+//     case 8:
+//       break;
+//   }
+// }
 
 // BOARD===========================================
 // isLineEmpty

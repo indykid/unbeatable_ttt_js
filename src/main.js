@@ -49,7 +49,7 @@ $(function(){
     if (game.isActive()){ 
 
       var position = $(this).data('position');      
-      if (this.board.isPositionEmpty(position)){  
+      if (game.board.isPositionEmpty(position)){  
         game.humanPlay(position);
       } else {
         alert('this cell is occupied, please try another one');
