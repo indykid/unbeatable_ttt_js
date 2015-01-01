@@ -82,7 +82,7 @@ JSTicTacToe.Board = function(game){
     return taken.ascending();
   }  
 
-  this.isLineFilledWith = function(line, howMany){
+  this.isLineFilledWith = function(howMany, line){
     var taken = this.takenOnAGivenLine(line);
     return taken.length == howMany;
   }
@@ -209,10 +209,7 @@ JSTicTacToe.Board = function(game){
     return positions;
   }
 
-  
-
 };
-
 
 // ================================================
 // GAME:
@@ -221,26 +218,64 @@ JSTicTacToe.Game = function(firstPlayer){
   this.board = new JSTicTacToe.Board(this);
   this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
   this.winningCombinations = setWinningCombinations(this.board);
+  this.firstPlayer = firstPlayer;
+  this.winner = {player:undefined, mark: undefined};
+  this.status = 'active'; // other states: won, drawn
 
   this.addToBoard = function(position, player){
     this.board.addMove(position, player);
   }
 
-  this.isFinished = function(){
-    var hasNoAvailableMoves = ( this.board.available().length < 1 );
-    return ( this.isWon() || hasNoAvailableMoves );
+  this.isActive = function(){
+    return ( !this.isWon() && !this.isDrawn() );
+  }
+
+  this.isDrawn = function(){
+    return this.board.available().length < 1 && !this.isWon();
+  }
+
+  this.winnerMark = function(){
+    var singlePlayerFullLine = this.winningCombinations.find(function(combination){
+      return this.board.isLineFilledWith(this.board.size, combination) && this.board.singlePlayerLine(combination, this.board.size);
+    }.bind(this));
+    if (singlePlayerFullLine!=undefined){
+      return this.board.getPlayer(singlePlayerFullLine[0]);
+    }
+    
+  } // returns winner's Mark, if there's one
+
+  this.findWinner = function(mark){
+    var winner = mark == this.ai.mark ? 'ai' : 'human';
+    return winner;
+  }
+
+  this.setWinner = function(winner, mark){
+    this.winner['player'] = winner;
+    this.winner['mark'] = mark;
   }
 
   this.isWon = function(){
-    var board = this.board;
-    var singlePlayerFullLine = this.winningCombinations.find(function(combination){
-      return board.isLineFilledWith(combination, board.size) && board.singlePlayerLine(combination, board.size);
-    });
-    // ? this.winnerMark = board.moves[singlePlayerFullLine[0]];
-    return singlePlayerFullLine != undefined;
+    // var board = this.board;
+    // var singlePlayerFullLine = this.winningCombinations.find(function(combination){
+    //   return board.singlePlayerLine(combination, board.size);
+    // });
+    // // ? this.winnerMark = board.moves[singlePlayerFullLine[0]];
+    // return singlePlayerFullLine != undefined;
+    return this.winner.player != undefined;
   }
 
-  this.canMove = function(player){
+  this.checkAndUpdateGameState = function(){
+    var winnerMark = this.winnerMark();
+    if (winnerMark){
+      var winner = this.findWinner(winnerMark);
+      this.setWinner(winner, winnerMark);
+      this.status = 'won';
+    } else if ( this.isDrawn() ){
+      this.status = 'draw';
+    }
+  }
+
+  this.isPlayerTurn = function(player){
     var moveCount = this.board.movesInOrder.length;
     if ( (isOddMove(moveCount) && player == 'x') || (!isOddMove(moveCount) && player == 'o') ){
       return true;
@@ -249,15 +284,22 @@ JSTicTacToe.Game = function(firstPlayer){
   }
 
   this.humanPlay = function(position){
-    //!!!!!!!!!!!!!add validation for non-occupancy!!!!!!!!!!!!!!!!!!!!!!
-    if (this.canMove(this.ai.opponentMark)){
+    // if (this.board.isPositionEmpty(position)){      
+      
+    if (this.isPlayerTurn(this.ai.opponentMark)){
       this.addToBoard(position, this.ai.opponentMark);
+      // console.log('added to human', position);
+      this.checkAndUpdateGameState();
       this.updateBoardView(this);
-      // console.log('added to human', position)
+      this.updateUI();
     } else {
-      console.log('no can do');
+      alert('easy tiger, not your turn');
     }
-    this.ai.play();
+
+    if (this.isActive() && this.isPlayerTurn(this.ai.mark)){
+      // not sure if necessary to check the turn here or inside ai.play...
+      this.ai.play();
+    } 
   }
 
   this.isFirstEverMove = function(){
@@ -278,6 +320,28 @@ JSTicTacToe.Game = function(firstPlayer){
           $this.text(text);        }
       });
     });
+  }
+
+  this.updateUI = function(){
+    // update any on screen messages, like game status, won drawn, active..., or who is winner
+    var status = $('#status'),
+        winner = $('#winner'),
+        notice = $('#notice');
+    status.text(this.status);
+    if (this.winner.player){
+      winner.text(uiFriendlyPlayer(this.winner.player));
+      notice.show();
+    }
+  }
+
+  function markToPlayer(mark, game){
+    return game.ai.mark == mark ? 'ai' :'human'
+  }
+
+  function uiFriendlyPlayer(player){
+    var friendly = player == 'ai' ? 'computer' : 'you';
+    console.log(friendly)
+    return friendly;
   }
 
   function isOddMove(movesSoFar){
@@ -389,46 +453,42 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   this.play = function(){
-    if ( this.game.canMove(this.mark)){
-      var position,
-          board = this.game.board;
-
-      if (this.game.isFirstEverMove()){
-        
-        position = board.cornerOrCenter(board.possiblePositions);
-        console.log('in first move IF')
-      } else if (typeof(position = this.winningPosition()) == 'number'){
-        // position = this.winningPosition();
-        console.log('in winning position IF')
-      } else if (typeof(position = this.threatPosition()) == 'number'){
-        // position = this.threatPosition();
-        console.log('in threatPosition IF')
-      } else if (typeof(position = this.strategicPosition()) == 'number'){
-        // position = this.strategicPosition();
-        console.log('in strategicPosition IF')
-      } else {
-        position = this.basicStrategy();
-        console.log('in basicStrategy IF')
-      } // calling functions twice, need to do something about it
-
-        // potentially unnecessary validation for non-occupancy if moves are only picked from available ones:
-      if ( board.isPositionEmpty(position)){
-        this.game.addToBoard(position, this.mark);
-        this.game.updateBoardView(this.game);
-      } else {
-        console.log('POSITION WAS FULL')
-        this.play();
-      }
+    // game active check?
+    var position,
+        board = this.game.board;
+    if (this.game.isFirstEverMove()){
+      position = board.cornerOrCenter(board.possiblePositions);
+      console.log('in first move IF')
+    } else if (typeof(position = this.winningPosition()) == 'number'){
+      // position = this.winningPosition();
+      console.log('in winning position IF')
+    } else if (typeof(position = this.threatPosition()) == 'number'){
+      // position = this.threatPosition();
+      console.log('in threatPosition IF')
+    } else if (typeof(position = this.strategicPosition()) == 'number'){
+      // position = this.strategicPosition();
+      console.log('in strategicPosition IF')
     } else {
-      console.log('ai, hold fire')
-    }    
+      position = this.basicStrategy();
+      console.log('in basicStrategy IF')
+    } // calling functions twice, need to do something about it
+
+      // potentially unnecessary validation for non-occupancy if moves are only picked from available ones:
+    if ( board.isPositionEmpty(position)){
+      this.game.addToBoard(position, this.mark);
+      this.game.updateBoardView(this.game);
+      this.game.checkAndUpdateGameState();
+      this.game.updateUI();
+    } else {
+      console.log('POSITION WAS FULL');
+      this.play();
+    }  
   }
 
   this.strategicPosition = function(){
     if (this.mainStrategy == undefined){
       this.pickAIStrategy();
     }
-    // if (this.mainStrategy != undefined){
     var position,
         movesSoFar = this.game.board.movesInOrder.length;
 
@@ -441,7 +501,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         break;
       case 'cornerAsSecond':
         position = this.cornerAsSecond(movesSoFar);
-        console.log('inside strategicPosition/cornerAsSecond')
+        // console.log('inside strategicPosition/cornerAsSecond')
         // console.log(position)
         break;
       case 'centerAsSecond':
@@ -508,7 +568,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
       case 3:
       console.log('in cornerAsSecond case 3');
         var fullLine = this.game.winningCombinations.find(function(combination){
-          return board.isLineFilledWith(combination, board.size);
+          return board.isLineFilledWith(board.size, combination);
         });
         // if there's a full diagonal
         if (fullLine != undefined){
@@ -525,12 +585,14 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
           } else {
             // opponent must have played opposite edge to its first move (x1)
             // cannot play the corner opposite x1, and need to play any cell on the same side as the opponent's last move
-            var lines = board.singlePlayerLinesForPlayer(this.opponentMark, 1);
             var oppositeToFirstMove = board.oppositePosition(board.positionOfMove(board.movesInOrder[0]));
-            var adjacentToLast = board.adjacentPositions(opponentsLastPosition);
-            // console.log(adjacentToLast)
+            var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
+            var lines = board.singlePlayerLinesForPlayer(this.opponentMark, 1);
+            
+            
+            // console.log(adjacentToLastMove)
             var line = lines.find(function(line){
-              return !line.hasElement(oppositeToFirstMove) && (commonValues(line, adjacentToLast).length > 0);
+              return !line.hasElement(oppositeToFirstMove) && (commonValues(line, adjacentToLastMove).length > 0);
             });
             var available = board.availableOnAGivenLine(line);
             position = randomElement(available);
@@ -542,7 +604,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   // var almostFilledDiagonal = this.game.winningCombinations.find(function(combination){
-  //   return board.isLineFilledWith(combination, board.size - 1);
+  //   return board.isLineFilledWith(board.size - 1, combination);
   // });
   // position = board.availableOnAGivenLine(almostFilledDiagonal);
 
@@ -626,24 +688,17 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     return position;
   }
 
-  // this.winOrDefend = function(){
-  //   var position;
-  //   if (typeof(position = this.winningPosition()) == 'number'){
-  //           // position = this.winningPosition();
-  //   } else if (typeof(position = this.threatPosition()) == 'number'){
-  //     // position = this.threatPosition();
-  //   }
-  //   return position;
-  // }
-
   this.basicStrategy = function(){
     // this is a fallback if there are no strategic moves to be made
+    // find line where i already have 1 move
+    // if none then find an empty line and play there
+    // if none of the above, just take any available position
+    // note: no need to check if occupied as only picking from empty anyway
     var position,
         line,
         available,
         board = this.game.board,
-    // find line where i already have 1 move
-    // if none then find an empty line and play there
+   
         aiOnlyLines = board.singlePlayerLinesForPlayer(this.mark, 1),
         emptyLines = this.game.winningCombinations.filter(function(combination){
           return board.availableOnAGivenLine(combination).length == board.size;
@@ -781,16 +836,23 @@ function commonValues(a, b){
 // DEFINITELY WILL NEED:
 // ================================================
 // validations:
-// game is still active, can't play otherwise
+
   // clear event listener on cells if someone won the game?
 
-// cell not occupied
-// correct turn
+
 // possible player value
 // possible position
 
 
+// i should draw grid from JS instead of just showing it...
 
+
+// ================================================
+// DONE
+// ================================================
+// game is still active, can't play otherwise
+// cell not occupied check
+// correct turn
 
 // ================================================
 // MAY BE?
