@@ -552,24 +552,20 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
           });
           position = randomElement(edges);
         } else {
-          // should i defend myself
-          if (typeof(position = this.threatPosition()) == 'number'){
-            // break;
-            // return position
-          } else {
-            // opponent must have played opposite edge to its first move (x1)
-            // cannot play the corner opposite x1, and need to play any cell on the same side as the opponent's last move
-            var oppositeToFirstMove = board.oppositePosition(board.positionOfMove(board.movesInOrder[0]));
-            var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
-            var lines = board.singlePlayerLinesForPlayer(this.opponentMark, 1);
- 
-            // console.log(adjacentToLastMove)
-            var line = lines.find(function(line){
-              return !line.hasElement(oppositeToFirstMove) && (commonValues(line, adjacentToLastMove).length > 0);
-            });
-            var available = board.availableOnAGivenLine(line);
-            position = randomElement(available);
-          }
+          
+          // opponent must have played opposite edge to its first move (x1)
+          // cannot play the corner opposite x1, and need to play any cell on the same side as the opponent's last move
+          var oppositeToFirstMove = board.oppositePosition(board.positionOfMove(board.movesInOrder[0]));
+          var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
+          var lines = board.singlePlayerLinesForPlayer(this.opponentMark, 1);
+
+          // console.log(adjacentToLastMove)
+          var line = lines.find(function(line){
+            return !line.hasElement(oppositeToFirstMove) && (commonValues(line, adjacentToLastMove).length > 0);
+          });
+          var available = board.availableOnAGivenLine(line);
+          position = randomElement(available);
+          
         }
         break;
     }
@@ -601,7 +597,8 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   this.edgeAsSecond = function(movesSoFar){
     var position,
         board = this.game.board,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark);
+        opponentsLastPosition = board.lastPositionFor(this.opponentMark),
+        opponentsFirstPosition = board.positionOfMove(board.movesInOrder[0]);
     console.log('in edgeAsSecond')
     switch (movesSoFar){
       case 1:
@@ -610,7 +607,18 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         break;
 
       case 3:
-        
+      // in the rare case that x2 is opposite to x1, play any corner
+        if( opponentsLastPosition == board.oppositePosition(opponentsFirstPosition)){
+          position = randomElement(board.corners(board.available()));
+        } else {
+          // play corner adjacent to x1 and on the same side as x2
+          var adjacentToFirstMove = board.adjacentPositions(opponentsFirstPosition);
+          var opponentsLines = board.singlePlayerLinesForPlayer(this.opponentMark, 1);
+          var lines = opponentsLines.filter(function(line){
+            return commonValues(line, adjacentToFirstMove).length > 0;
+          });
+          position = commonValues(lines[0], lines.lastElement())[0];
+        }
         break;
     }
     return position;
