@@ -41,14 +41,14 @@ JSTicTacToe.Board = function(game){
   this.takenPositions = function(){
     return this.movesInOrder.map(function(move){
       return this.positionOfMove(move);
-    }.bind(this)).ascending();
+    }.bind(this));
   }
 
   this.available = function(){
     var available = this.possiblePositions.filter(function(position){
       return !this.takenPositions().hasElement(position);
     }.bind(this));
-    return available.ascending();
+    return available;
   }
 
   this.positionType = function(position){
@@ -116,7 +116,7 @@ JSTicTacToe.Board = function(game){
   this.corners = function(fromMoves){
     return fromMoves.filter(function(position){
       return this.positionType(position) == 'corner';
-    }.bind(this)).ascending();
+    }.bind(this));
   }
 
   this.center = function(){
@@ -270,6 +270,7 @@ JSTicTacToe.Game = function(firstPlayer){
 
     if (this.isActive() && this.isPlayerTurn(this.ai.mark)){
       // not sure if necessary to check the turn here or inside ai.play...
+      console.log('game active && ai turn')
       this.ai.play();
     } 
   }
@@ -429,7 +430,8 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     var position,
         board = this.game.board;
     if (this.game.isFirstEverMove()){
-      position = board.cornerOrCenter(board.possiblePositions);
+      position = randomElement(board.corners(board.available()))
+      // position = board.cornerOrCenter(board.possiblePositions); //this method should be in ai not in board
       console.log('in first move IF')
     } else if (typeof(position = this.winningPosition()) == 'number'){
       // position = this.winningPosition();
@@ -446,17 +448,18 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     } // calling functions twice, need to do something about it
 
       // potentially redundant validation for non-occupancy if moves are only picked from available ones anyway:
-    if ( board.isPositionEmpty(position)){
+    // if ( board.isPositionEmpty(position)){
       this.game.addToBoard(position, this.mark);
       this.game.updateBoardView(this.game);
       this.game.checkAndUpdateGameState();
       this.game.updateUI();
-    } else {
-      console.log('POSITION WAS OCCUPIED');
-      if ( this.game.isActive()){
-        this.play();
-      }
-    }  
+    // } else {
+    //   // ?
+    //   console.log('POSITION WAS OCCUPIED');
+    //   // if ( this.game.isActive()){
+    //     this.play();
+    //   // }
+    // }  
   }
 
   this.strategicPosition = function(){
@@ -625,20 +628,46 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   this.cornerAsFirst = function(movesSoFar){
-    console.log('in cornerAsFirst')
+    var position,
+        board = this.game.board,
+        opponentsLastPosition = board.lastPositionFor(this.opponentMark);
     switch (movesSoFar){
       case 2:
+        var lastPositionType = board.positionType(opponentsLastPosition);
+        var oppositeToFirstMove = board.oppositePosition(board.positionOfMove(board.movesInOrder[0]));
         
+        if (lastPositionType == 'center'){
+          position = oppositeToFirstMove;
+        } else {
+          console.log('in cornerAsFirst case 2, human didnt play center')
+
+          // play corner which is not opposite to the first move and is on adjacent to opponentsLastMove
+          var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
+          var corners = board.corners(board.available()).filter(function(corner){
+            return corner != oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
+          });
+          position = randomElement(corners);      
+        }
         break;
 
       case 4:
-        
-        break;
-
-      case 6:
-
+        console.log('in cornerAsFirst case 4')
+        // would only end up here if human didn't block with center
+          // play on an empty intersection of ai-only lines?
+        var lines = board.singlePlayerLinesForPlayer(this.mark, 1);
+        console.log('lines',lines)
+        var positions = [];
+        for (var i = 0; i < lines.length - 1; i++){
+          positions.push(commonValues(lines[i], lines[i+1])[0]);
+        }
+        positions.push(commonValues(lines[i], lines.lastElement())[0])
+        position = randomElement(positions.filter(function(position){
+          return board.isPositionEmpty(position);
+        }));
         break;
     }
+    console.log('position',position)
+    return position
   }
 
   this.centerAsFirst = function(movesSoFar){
@@ -781,10 +810,10 @@ function randomElement(data){
 }
 
 function commonValues(a, b){
-  // console.log(a)
-  // console.log(b)
+  console.log('a',a)
+  console.log('b',b)
   var result = a.filter(function(n) {
-    return b.indexOf(n) != -1;
+    return b.hasElement(n);
   });
   return result;
 }

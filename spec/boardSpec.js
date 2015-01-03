@@ -35,14 +35,14 @@ describe('Board', function(){
       board.addMove(7, 'o');
       board.addMove(0, 'x');
       board.addMove(4, 'o');
-      expect(board.available()).toEqual([1, 2, 3, 6, 8]);
+      expect(board.available().ascending()).toEqual([1, 2, 3, 6, 8]);
     });
     it('returns only unoccupied positions', function(){
       board.addMove(6, 'x');
       board.addMove(3, 'o');
       board.addMove(0, 'x');
       board.addMove(2, 'o');
-      expect(board.available()).toEqual([1, 4, 5, 7, 8]);
+      expect(board.available().ascending()).toEqual([1, 4, 5, 7, 8]);
     });
   });
 
@@ -52,14 +52,14 @@ describe('Board', function(){
       board.addMove(7, 'o');
       board.addMove(0, 'x');
       board.addMove(4, 'o');
-      expect(board.takenPositions()).toEqual([0, 4, 5, 7]);
+      expect(board.takenPositions()).toEqual([5, 7, 0, 4]);
     });
     it('returns only occupied positions', function(){
       board.addMove(6, 'x');
       board.addMove(3, 'o');
       board.addMove(0, 'x');
       board.addMove(2, 'o');
-      expect(board.takenPositions()).toEqual([0, 2, 3, 6]);
+      expect(board.takenPositions()).toEqual([6, 3, 0, 2]);
     });
   });
 
@@ -244,7 +244,10 @@ describe('Board', function(){
 
   describe('#corners', function(){
     it('out of all possible positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
-      expect(board.corners(board.possiblePositions)).toEqual([0, 2, 6, 8]);
+      expect(board.corners(board.possiblePositions).ascending()).toEqual([0, 2, 6, 8]);
+    });
+    it('out of given positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
+      expect(board.corners([0, 4, 5, 6]).ascending()).toEqual([0, 6]);
     });
   });
   describe('#center', function(){
