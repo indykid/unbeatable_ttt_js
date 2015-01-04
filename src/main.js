@@ -1,74 +1,78 @@
 'use strict';
 
 var JSTicTacToe = JSTicTacToe || {};
-// console.log(require)
-require(["./board", "game", "./ai"], function(Board, Game, AIPlayer) {
-  
-  console.log(Game)
-  console.log(AIPlayer)
-  // JSTicTacToe.Board = Board;
-  // JSTicTacToe.Game = Game;
-  // JSTicTacToe.AIPlayer = AIPlayer; 
-  console.log(Board)
+
+requirejs.config({
+  "paths": {
+    "jquery": "http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min"
+  }
 });
 
-$(function(){
-  console.log(JSTicTacToe)
-// ================================================
-// DOM ELEMENTS:
-// ================================================
+require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer) {
+  JSTicTacToe.Board = Board;
+  JSTicTacToe.Game = Game;
+  JSTicTacToe.AIPlayer = AIPlayer; 
 
-  JSTicTacToe.grid = $('#grid');
-  JSTicTacToe.emptyGridPositions = $('td:not(.occupied)');
-  JSTicTacToe.newGameButton = $('#newGame');
-  JSTicTacToe.selectPlayer = $('#selectPlayer');
-  JSTicTacToe.firstPlayer = $('.firstPlayer');
-  JSTicTacToe.notice = $('#notice');
-  JSTicTacToe.gameStatus = $('#gameStatus');
-  JSTicTacToe.status = $('#status');
-  JSTicTacToe.winner = $('#winner');
+  $(function(){
+    console.log(JSTicTacToe)
+  // ================================================
+  // DOM ELEMENTS:
+  // ================================================
 
-// ================================================
-// VISUAL SETUP:
-// ================================================
+    JSTicTacToe.grid = $('#grid');
+    JSTicTacToe.emptyGridPositions = $('td:not(.occupied)');
+    JSTicTacToe.newGameButton = $('#newGame');
+    JSTicTacToe.selectPlayer = $('#selectPlayer');
+    JSTicTacToe.firstPlayer = $('.firstPlayer');
+    JSTicTacToe.notice = $('#notice');
+    JSTicTacToe.gameStatus = $('#gameStatus');
+    JSTicTacToe.status = $('#status');
+    JSTicTacToe.winner = $('#winner');
 
-  JSTicTacToe.grid.hide();
-  JSTicTacToe.newGameButton.hide();
-  JSTicTacToe.notice.hide();
-  JSTicTacToe.gameStatus.hide();
+  // ================================================
+  // VISUAL SETUP:
+  // ================================================
 
-// ================================================
-// EVENT LISTENERS:
-// ================================================
+    JSTicTacToe.grid.hide();
+    JSTicTacToe.newGameButton.hide();
+    JSTicTacToe.notice.hide();
+    JSTicTacToe.gameStatus.hide();
 
-  JSTicTacToe.firstPlayer.on('click', function(){
-    var firstPlayer = $(this).data('player');
-    JSTicTacToe.selectPlayer.hide();
-    JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
-    JSTicTacToe.game.updateUI();
-    JSTicTacToe.grid.show();
-    JSTicTacToe.gameStatus.show();
-    JSTicTacToe.newGameButton.show();
+  // ================================================
+  // EVENT LISTENERS:
+  // ================================================
 
-    if (firstPlayer == 'ai'){
-      JSTicTacToe.game.ai.play();
-    } //REVIEW: not sure this check belongs here or better on game initialization within game...
-  });
+    JSTicTacToe.firstPlayer.on('click', function(){
+      var firstPlayer = $(this).data('player');
+      JSTicTacToe.selectPlayer.hide();
+      JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
+      JSTicTacToe.game.updateUI();
+      JSTicTacToe.grid.show();
+      JSTicTacToe.gameStatus.show();
+      JSTicTacToe.newGameButton.show();
 
-  JSTicTacToe.emptyGridPositions.on('click', function(){
-    if (JSTicTacToe.game.isActive()){ 
-      var position = $(this).data('position');      
-      if (JSTicTacToe.game.board.isPositionEmpty(position)){  
-        JSTicTacToe.game.humanPlay(position);
+      if (firstPlayer == 'ai'){
+        JSTicTacToe.game.ai.play();
+      } //REVIEW: not sure this check belongs here or better on game initialization within game...
+    });
+
+    JSTicTacToe.emptyGridPositions.on('click', function(){
+      if (JSTicTacToe.game.isActive()){ 
+        var position = $(this).data('position');      
+        if (JSTicTacToe.game.board.isPositionEmpty(position)){  
+          JSTicTacToe.game.humanPlay(position);
+        } else {
+          alert('this cell is occupied, please try another one');
+        }
       } else {
-        alert('this cell is occupied, please try another one');
+        alert('game over');
       }
-    } else {
-      alert('game over');
-    }
-    // REVIEW: not sure game active check belongs here or better within the humanPlay itself...  
+      // REVIEW: not sure game active check belongs here or better within the humanPlay itself...  
+    });
   });
+
 });
+
 
 // ================================================
 // ARRAY EXTENSIONS:

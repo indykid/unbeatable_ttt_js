@@ -2,7 +2,8 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-(function(){
+define(["./game","./ai"], function(Game, AIPlayer) {
+  // console.log(AIPlayer)
   return JSTicTacToe.Board = function(game){
     this.game = game;
     this.moves = [];
@@ -141,7 +142,7 @@ var JSTicTacToe = JSTicTacToe || {};
       return positions;
     }
   };
-}());
+});
 
 
 
