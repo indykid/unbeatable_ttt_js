@@ -1,7 +1,5 @@
 'use strict';
 
-
-
 var JSTicTacToe = JSTicTacToe || {};
 
 // ================================================
@@ -9,7 +7,6 @@ var JSTicTacToe = JSTicTacToe || {};
 // ================================================
 
 JSTicTacToe.Board = function(game){
-
   this.game = game;
   this.moves = [];
   this.size = 3;
@@ -263,6 +260,7 @@ JSTicTacToe.Game = function(firstPlayer){
     }
     if (!this.isActive()){
       $('td').addClass('occupied');
+      // JSTicTacToe.emptyGridPositions.off();
     }
   }
 
@@ -365,6 +363,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     var board = this.game.board,
         winLines = board.singleMarkLines(this.mark, (board.size - 1));
     if (winLines.length > 0){
+      console.log('in winningPosition')
       return board.availableOnAGivenLine(winLines[0])[0];
     }
     return false;
@@ -374,6 +373,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     var board = this.game.board,
         threatLines = board.singleMarkLines(this.opponentMark, (board.size - 1));
     if (threatLines.length > 0){
+      console.log('in threatPosition')
       return board.availableOnAGivenLine(threatLines[0])[0];
     }
     return false;
@@ -548,8 +548,6 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         console.log('in centerAsSecond case 2 (3 moves)')
         if ( opponentsLastPosition == board.oppositePosition(board.lastPositionFor(this.mark)) ){
           position = randomElement(this.game.board.corners(board.available()));
-        } else {
-          position = this.commonSenseStrategy();
         }
         break;
     }
@@ -633,8 +631,6 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     var board = this.game.board,
         position,
         opponentsLastPosition = board.lastPositionFor(this.opponentMark);
-    // beware of playing on adjacent sides (followed by adjacent corner) to his corner defence move
-    // console.log('in centerAsFirst')
     switch (movesSoFar){
       case 2:
       console.log('in centerAsFirst, case 1, 2 moves')
@@ -662,18 +658,6 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     return position;
   }
 
-  this.commonSenseStrategy = function(){
-    var position;
-    if (typeof(position = this.winningPosition()) == 'number'){
-            // position = this.winningPosition();
-    } else if (typeof(position = this.threatPosition()) == 'number'){
-      // position = this.threatPosition();
-    } else {
-      position = this.basicStrategy();
-    }
-    return position;
-  }
-
   this.basicStrategy = function(){
     // this is a fallback if there are no strategic moves to be made
     // find line where i already have 1 move
@@ -684,13 +668,12 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         line,
         available,
         board = this.game.board,
-   
         aiOnlyLines = board.singleMarkLines(this.mark, 1),
         emptyLines = this.game.winningCombinations.filter(function(combination){
           return board.availableOnAGivenLine(combination).length == board.size;
         });
-
     console.log('in basicStrategy')
+
     if (aiOnlyLines.length > 0){
       // find available position:
       line = randomElement(aiOnlyLines);
@@ -804,17 +787,6 @@ function commonValues(a, b){
 // ================================================
 // validations:
 
-  // clear event listener on cells if someone won the game?
-
-
-// possible player value
-// possible position
-
-
-// i should draw grid from JS instead of just showing it...
-
-// 2, 4, 3, 1, 7, 0, 8, 5, 6
-
 // ================================================
 // DONE
 // ================================================
@@ -826,9 +798,16 @@ function commonValues(a, b){
 // MAY BE?
 // ================================================
 
+// clear event listener on cells if someone won the game?
+// possible player value
+// possible position
+// may be i should draw grid from JS instead of just showing it...
+
+
 // declare draw when no possible wins even if empty cells remain?
 
 // hardcoded version... might be better?:
+
 // this.adjacentPositions = function(position){
 //   var positions;
 //   switch (position){
@@ -856,20 +835,4 @@ function commonValues(a, b){
 //   }
 // }
 
-// BOARD===========================================
-// isLineEmpty
-
-
-// this.addDiagonal = function(diagonal){
-//   this.diagonals.push(diagonal);
-// }
-
-// this.addRow = function(row){
-//   this.rows.push(row);
-// }
-
-// this.addColumn = function(column){
-//   this.columns.push(column);
-// }
-// BOARD===========================================
-
+// 2, 4, 3, 1, 7, 0, 8, 5, 6
