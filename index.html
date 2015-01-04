@@ -9,45 +9,62 @@
   <script src='src/board.js' type="text/javascript"></script>
 </head>
 <body>
-  <h1>TicTacToe</h1>
-  <section>
-    <form name='firstPlayerForm' id='firstPlayerForm'>
+  <main class='cf'>
+    <h1>TicTacToe</h1>
+
+    <section id='selectPlayer'>
       <h3>Who is playing first?</h3>
-      <label for='human-first'>Me</label>
-      <input type='radio' value='human' id='human-first' name='firstPlay'> 
-      <label for='ai-first'>Computer</label>
-      <input type='radio' value='ai' id='ai-first' name='firstPlay'>
-      <input type='submit' value="let's go">
-    </form>
-    <button id='newGame'>
-      <a href="index.html">new game</a>
-    </button>
-  </section>
+      <button class='firstPlayer' data-player='human'>You</button>
+      <button class='firstPlayer' data-player='ai'>Computer</button>
 
-  <h2 id='notice'><span id='winner'></span> won!</h2>
+      <!-- <form name='firstPlayerForm' id='firstPlayerForm'>
+        <fieldset>
+          <legend>Who is playing first?</legend>
+          <p>
+            <input type='radio' value='human' id='human-first' name='firstPlay'> 
+            <label for='human-first'>You</label>
+          </p>
+          <p>
+            <input type='radio' value='ai' id='ai-first' name='firstPlay'>
+            <label for='ai-first'>Computer</label>
+          </p>
+        </fieldset>
+        <input type='submit' value="let's go">
+      </form> -->
+      
+    </section>
 
+    <section id='grid'>
+      
+      <table>
+        <tbody></tbody>
+        <tr>
+          <td data-position='0'></td>
+          <td data-position='1'></td>
+          <td data-position='2'></td>
+        </tr>
+        <tr>
+          <td data-position='3'></td>
+          <td data-position='4'></td>
+          <td data-position='5'></td>
+        </tr>
+        <tr>
+          <td data-position='6'></td>
+          <td data-position='7'></td>
+          <td data-position='8'></td>
+        </tr>
+      </table> 
+    </section>
 
-  <section id='grid'>
-    <h3>game is <span id='status'></span></h3>
-    <table>
-      <tbody></tbody>
-      <tr>
-        <td data-position='0'></td>
-        <td data-position='1'></td>
-        <td data-position='2'></td>
-      </tr>
-      <tr>
-        <td data-position='3'></td>
-        <td data-position='4'></td>
-        <td data-position='5'></td>
-      </tr>
-      <tr>
-        <td data-position='6'></td>
-        <td data-position='7'></td>
-        <td data-position='8'></td>
-      </tr>
-    </table> 
-  </section>
+    <section id='sidebar'>
+      <a id='newGame' href="index.html">new game</a>
+      <h3 id='gameStatus'>Game is <span id='status'></span></h3>
+      <h2 id='notice'><span id='winner'></span> won!</h2>
+
+    </section>
+
+  </main>
+
   
 </body>
 </html>
