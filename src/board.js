@@ -2,784 +2,153 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-// ================================================
-// BOARD:
-// ================================================
-
-JSTicTacToe.Board = function(game){
-  this.game = game;
-  this.moves = [];
-  this.size = 3;
-  this.positionsAmount = Math.pow(this.size, 2);
-  this.possiblePositions = setPossiblePositions(this.positionsAmount);
-
-  this.addMove = function(position, mark){
-    var move = {};
-    move['position'] = position;
-    move['mark'] = mark;
-    this.moves.push(move);
-  }
-
-  this.getMark = function(position){
-    var playerMove = this.moves.find(function(move){
-      return move.position == position;
-    });
-    if (playerMove){
-      return playerMove.mark;
-    }
-  }
-
-  this.takenPositions = function(){
-    var taken = this.moves.map(function(move){
-      return move.position
-    });
-    return taken;
-  } //REVIEW: is not used outside of class, but relies on an interface function...
-
-  this.available = function(){
-    var available = this.possiblePositions.filter(function(position){
-      return !this.takenPositions().hasElement(position);
-    }.bind(this));
-    return available;
-  }
-
-  this.positionType = function(position){
-    var remainder = position % 2;
-    if (position == 4){
-      return "center";
-    } 
-    else if (remainder == 0){
-      return "corner";
-    } else {
-      return "edge";
-    };
-  };
-
-  this.isPositionEmpty = function(position) {
-    return this.available().hasElement(position);
-  };
-
-  this.availableOnAGivenLine = function(line){
-    var available = line.filter(function(position){
-      return this.isPositionEmpty(position);
-    }.bind(this));
-    return available;
-  }
-
-  // this.takenOnAGivenLine = function(line){
-  //   var taken = line.filter(function(position){
-  //     // return this.getMark(position) != undefined;
-  //     return !this.isPositionEmpty(position);
-  //   }.bind(this));
-  //   return taken;
-  // }  // TO REVIEW: to keep or not... whether to make it private
-
-  this.singlePlayerLine = function(line, howMany, mark){
-    var taken = line.filter(function(position){
-      return !this.isPositionEmpty(position);
-    }.bind(this));
-    if (taken.length == howMany){
-      var marks = taken.map(function(position){
-        return this.getMark(position);
-      }.bind(this));    
-      return marks.allDefinedValuesSame() && marks[0] == mark;
-    }
-    return false;
-  } //REVIEW: too big, confusing...? used once outside of class in Game
-
-  this.singleMarkLines = function(mark, howMany){ 
-    var lines = this.game.winningCombinations.filter(function(combination){
-      return this.singlePlayerLine(combination, howMany, mark);
-    }.bind(this));
-    return lines;
-  }  
-
-  this.corners = function(fromMoves){
-    return fromMoves.filter(function(position){
-      return this.positionType(position) == 'corner';
-    }.bind(this));
-  }
-
-  this.center = function(){
-    return this.possiblePositions.find(function(position){
-      return this.positionType(position) == 'center';
-    }.bind(this));
-  }
-
-  this.lastPositionFor = function(mark){
-    var position,
-        movesReverse = this.moves.slice().reverse(),
-        playerMove = movesReverse.find(function(move){
-          return move.mark == mark;
-        });
-    if (playerMove){
-      position = playerMove.position;
-    }
-    
-    return position;
-  }
-
-  this.oppositePosition = function(position){
-    var reverseOrder = this.possiblePositions.slice().reverse();
-    return reverseOrder[position];
-  }
-
-  this.adjacentPositions = function(position){
-    var positions;
-    switch ( this.positionType(position)){
-      case 'corner':
-        if ( position < this.center()){
-          positions = [this.possiblePositions[0] + 1, position + this.size];
-        } else {
-          positions = [this.possiblePositions.lastElement() - 1, position - this.size];
-        }
-        break;
-      case 'edge':
-        if ((position - 1) == this.possiblePositions[0] || (position + 1) == this.possiblePositions.lastElement()){
-          positions = [position + 1, position - 1];
-        } else {
-          positions = [position - this.size, position + this.size]
-        }
-        break;
-    }
-    return positions;
-  }
-
-  function setPossiblePositions(amount){
-    var positions = [];
-    for (var i = 0; i < amount; i++) {
-      positions.push(i);
-    };
-    return positions;
-  }
-
-};
-
-// ================================================
-// GAME:
-// ================================================
-JSTicTacToe.Game = function(firstPlayer){
-  this.board = new JSTicTacToe.Board(this);
-  this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
-  this.winningCombinations = setWinningCombinations(this.board);
-  this.winner = { player: undefined, mark: undefined };
-  this.status = 'active'; // other states: won, drawn
-
-  this.addToBoard = function(position, mark){
-    this.board.addMove(position, mark);
-  } //REVIEW is this necessary?
-
-  this.isActive = function(){
-    return ( !this.isWon() && !this.isDrawn() );
-  }
-
-  this.isWon = function(){
-    return this.winner.player != undefined;
-  }
-
-  this.isDrawn = function(){
-    return this.board.available().length < 1 && !this.isWon();
-  }
-
-  this.winnerMark = function(){
-    var singlePlayerFullLine = this.winningCombinations.find(function(combination){
-      return this.board.singlePlayerLine(combination, this.board.size, this.ai.opponentMark) || this.board.singlePlayerLine(combination, this.board.size, this.ai.mark);
-    }.bind(this));
-    if (singlePlayerFullLine!=undefined){
-      return this.board.getMark(singlePlayerFullLine[0]);
-    }   
-  } //REVIEW?
-
-  this.findWinner = function(mark){
-    var winner = mark == this.ai.mark ? 'ai' : 'human';
-    return winner;
-  } // REVIEW: is not used outside of class, but relies on an interface function...
-
-  this.setWinner = function(winner, mark){
-    this.winner['player'] = winner;
-    this.winner['mark'] = mark;
-  }
-  
-  this.checkAndUpdateGameState = function(){
-    var winnerMark = this.winnerMark();
-    if (winnerMark){
-      var winner = this.findWinner(winnerMark);
-      this.setWinner(winner, winnerMark);
-      this.status = 'won';
-    } else if ( this.isDrawn() ){
-      this.status = 'drawn';
-    }
-  }
-
-  this.isPlayerTurn = function(mark){
-    var moveCount = this.board.moves.length;
-    if ( (isOddMove(moveCount) && mark == 'x') || (!isOddMove(moveCount) && mark == 'o') ){
-      return true;
-    }
-    return false;
-  } // WHEN IS BEST TO USE...
-
-  this.humanPlay = function(position){
-    // REVIEW: check for occupancy here or prior to calling?     
-      
-    if (this.isPlayerTurn(this.ai.opponentMark)){
-      this.addToBoard(position, this.ai.opponentMark);
-      // console.log('added to human', position);
-      this.checkAndUpdateGameState();
-      this.updateBoardView(this);
-      this.updateUI();
-    } else {
-      alert('easy tiger, not your turn');
+(function(){
+  return JSTicTacToe.Board = function(game){
+    this.game = game;
+    this.moves = [];
+    this.size = 3;
+    this.positionsAmount = Math.pow(this.size, 2);
+    this.possiblePositions = setPossiblePositions(this.positionsAmount);
+    this.addMove = function(position, mark){
+      var move = {};
+      move['position'] = position;
+      move['mark'] = mark;
+      this.moves.push(move);
     }
 
-    if (this.isActive() && this.isPlayerTurn(this.ai.mark)){
-      // not sure if necessary to check the turn here or inside ai.play...
-      // console.log('game active && ai turn')
-      this.ai.play();
-    } 
-  } // REVIEW
-
-  // this.isFirstEverMove = function(){
-  //   return this.board.moves.length == 0;
-  // } REVIEW: not necessary?
-
-  this.updateBoardView = function(game){
-    game.board.moves.forEach(function(move){
-      var selector = 'td[data-position='+ move.position +']',
-          text = move.mark;
-      $(selector).text(text).addClass('occupied');
-    });
-  }
-
-  this.updateUI = function(){
-    JSTicTacToe.status.text(this.status);
-    if (this.winner.player){
-      JSTicTacToe.winner.text(uiFriendlyPlayer(this.winner.player));
-      JSTicTacToe.gameStatus.hide();
-      JSTicTacToe.notice.show();
-    }
-    if (!this.isActive()){
-      $('td').addClass('occupied');
-      // JSTicTacToe.emptyGridPositions.off();
-    }
-  }
-
-  function uiFriendlyPlayer(player){
-    var friendly = player == 'ai' ? 'computer' : 'you';
-    return friendly;
-  }
-
-  function isOddMove(movesSoFar){
-    return movesSoFar % 2 == 0;
-  }
-
-  // private
-  function setWinningCombinations(board){
-    var winningCombinations = [];
-    setDiagonals(board, winningCombinations);
-    for (var i = 0; i < board.size; i++) {
-      setColumn(i, board, winningCombinations);
-      setRow(i, board, winningCombinations);
-    };
-    return winningCombinations;
-  }
-
-  function setDiagonals(board, combinations){
-    setFirstDiagonal(board, combinations);
-    setSecondDiagonal(board, combinations);
-  }
-
-  function setFirstDiagonal(board, combinations){
-    var startIndex = 0,
-        endIndex = board.positionsAmount - 1,
-        increment = board.size + 1,
-        firstDiagonal = [];
-
-    firstDiagonal = setLine(startIndex, endIndex, increment);
-    // board.addDiagonal(firstDiagonal);
-    addWinningCombination(firstDiagonal, combinations);
-  }
-
-  function setSecondDiagonal(board, combinations){
-    var startIndex = board.size - 1,
-        endIndex = board.positionsAmount - board.size,
-        increment = board.size - 1,
-        secondDiagonal = [];
-
-    secondDiagonal = setLine(startIndex, endIndex, increment);
-    // board.addDiagonal(secondDiagonal);
-    addWinningCombination(secondDiagonal, combinations);
-  }
-
-  function setRow(rowNumber, board, combinations){
-    var startIndex = rowNumber * board.size,
-        endIndex = startIndex + (board.size - 1),
-        increment = 1,
-        row = [];
-    row = setLine(startIndex, endIndex, increment);
-    addWinningCombination(row, combinations);
-    // board.addRow(row);
-  }
-
-  function setColumn(columnNumber, board, combinations){
-    var column = [],
-        startIndex = columnNumber,
-        endIndex = startIndex + (board.size * (board.size - 1)),
-        increment = board.size;
-
-    column = setLine(startIndex, endIndex, increment);
-    addWinningCombination(column, combinations);
-    // board.addColumn(column)
-  }
-
-  function setLine(start, end, increment){
-    var line = [];
-    for (var i = start; i <= end; i+=increment) {
-      line.push(i);
-    };
-    return line;
-  }
-
-  function addWinningCombination(combination, combinations){
-    combinations.push(combination);
-  }
-
-
- 
-}
-
-
-// ================================================
-// AI-PLAYER:
-// ================================================
-
-JSTicTacToe.AIPlayer = function(game, firstPlayer){
-  this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
-  this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
-  this.game = game;
-  this.mainStrategy;
-  
-  this.winningPosition = function(){
-    var board = this.game.board,
-        winLines = board.singleMarkLines(this.mark, (board.size - 1));
-    if (winLines.length > 0){
-      console.log('in winningPosition')
-      return board.availableOnAGivenLine(winLines[0])[0];
-    }
-    return false;
-  }
-
-  this.threatPosition = function(){
-    var board = this.game.board,
-        threatLines = board.singleMarkLines(this.opponentMark, (board.size - 1));
-    if (threatLines.length > 0){
-      console.log('in threatPosition')
-      return board.availableOnAGivenLine(threatLines[0])[0];
-    }
-    return false;
-  }
-
-  this.play = function(){
-    // GAME ACTIVE CHECK? in here or prior to calling the method
-    var position,
-        board = this.game.board; // REVIEW
-    if (board.moves.length == 0){
-      // position = board.center();
-      // position = randomElement(board.corners(board.available()))
-      position = cornerOrCenter(board);
-      // console.log('in first move IF')
-    } else if (typeof(position = this.winningPosition()) == 'number'){
-      // position = this.winningPosition();
-      // console.log('in winning position IF')
-    } else if (typeof(position = this.threatPosition()) == 'number'){
-      // position = this.threatPosition();
-      // console.log('in threatPosition IF')
-    } else if (typeof(position = this.strategicPosition()) == 'number'){
-      // position = this.strategicPosition();
-      // console.log('in strategicPosition IF')
-    } else {
-      position = this.basicStrategy();
-      // console.log('in basicStrategy IF')
-    } // CRIME AGAINST JS, MUST REVIEW: this is really hacky, but otherwise I am calling functions twice, need to do something about it
-
-      // potentially redundant validation for non-occupancy if moves are only picked from available ones anyway:
-    // if ( board.isPositionEmpty(position)){
-
-      this.game.addToBoard(position, this.mark);
-      this.game.updateBoardView(this.game);
-      this.game.checkAndUpdateGameState();
-      this.game.updateUI();
-      console.log(board.takenPositions())
-    // } else {
-    //   // ?
-    //   console.log('POSITION WAS OCCUPIED');
-    //   // if ( this.game.isActive()){
-    //     this.play();
-    //   // }
-    // }  
-  }
-
-  this.strategicPosition = function(){
-    if (this.mainStrategy == undefined){
-      pickAIStrategy(this);
-    }
-    var position,
-        movesSoFar = this.game.board.moves.length;
-
-    switch (this.mainStrategy){
-      case 'cornerAsFirst':
-      // console.log('inside strategicPosition/cornerAsFirst')
-
-        position = this.cornerAsFirst(movesSoFar);
-        break;
-      case 'centerAsFirst':
-      
-        position = this.centerAsFirst(movesSoFar);
-        break;
-      case 'cornerAsSecond':
-        position = this.cornerAsSecond(movesSoFar);
-        
-        // console.log(position)
-        break;
-      case 'centerAsSecond':
-      
-        position = this.centerAsSecond(movesSoFar);
-        break;
-      case 'edgeAsSecond':
-      // console.log('inside strategicPosition/edgeAsSecond')
-        position = this.edgeAsSecond(movesSoFar);
-        break;
-    }
-    return position;
-  }
-
-  function pickAIStrategy(ai){
-    if ( ai.mark == 'x'){
-      pickAIStrategyAsFirst(ai)
-    } else {
-      pickAIStrategyAsSecond(ai);
-    }
-  } //REVIEW: not sure... need to check
-
-  function pickAIStrategyAsFirst(ai){
-    var board = ai.game.board,
-        myLastPosition = board.lastPositionFor(ai.mark),
-        myLastPositionType = board.positionType(myLastPosition);
-
-    switch (myLastPositionType){
-      case 'corner':
-        ai.mainStrategy = 'cornerAsFirst';
-        break;
-      case 'center':
-        ai.mainStrategy = 'centerAsFirst';
-        break;
-    }
-  }
-
-  function pickAIStrategyAsSecond(ai){ 
-    var board = ai.game.board,
-        opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
-        lastPositionType = board.positionType(opponentsLastPosition);
-    
-    switch (lastPositionType){
-      case 'corner':
-        ai.mainStrategy = 'cornerAsSecond';
-        break;
-      case 'center':
-        ai.mainStrategy = 'centerAsSecond';
-        break;
-      case 'edge':
-        ai.mainStrategy = 'edgeAsSecond';
-        break;
-    }
-  }
-
-  this.cornerAsSecond = function(movesSoFar){
-
-    var position,
-        board = this.game.board,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark);
-    switch (movesSoFar){
-      case 1:
-        console.log('in cornerAsSecond case 1');
-        position = this.game.board.center();
-        break;
-      case 3:
-      console.log('in cornerAsSecond case 2, 3 moves');
-        var fullLine = this.game.winningCombinations.find(function(combination){
-          return board.availableOnAGivenLine(combination).length == 0;
-        });
-        
-        // if there's a full diagonal
-        if (fullLine != undefined){
-          // play any edge
-          var edges = board.available().filter(function(position){
-            return board.positionType(position) == 'edge';
-          });
-          position = randomElement(edges);
-        } else {
-          
-          // opponent must have played opposite edge to its first move (x1)
-          // cannot play the corner opposite x1, and need to play corner cell on the same side as the opponent's last move
-          // ie corner which is adjacent to opponentsLastPosition but itself is not the opposite to his first move.
-          var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
-          var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
-          position = adjacentToLastMove.find(function(move){
-            return board.positionType(move) == 'corner' && move != oppositeToFirstMove;
-          });
-        }
-        break;
-    }
-    return position;
-  }
-
-  this.centerAsSecond = function(movesSoFar){
-    var board = this.game.board,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark),
-        position;
-
-    switch (movesSoFar){
-      case 1:
-        console.log('in centerAsSecond case 1 (1 move)');
-        position = randomElement(this.game.board.corners(board.available()));
-        break;
-
-      case 3:
-        console.log('in centerAsSecond case 2 (3 moves)')
-        if ( opponentsLastPosition == board.oppositePosition(board.lastPositionFor(this.mark)) ){
-          position = randomElement(this.game.board.corners(board.available()));
-        }
-        break;
-    }
-    return position;
-  }
-
-  this.edgeAsSecond = function(movesSoFar){
-    var position,
-        board = this.game.board,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark),
-        opponentsFirstPosition = board.moves[0].position;
-    // console.log('opponentsFirstPosition', opponentsFirstPosition)
-    switch (movesSoFar){
-      case 1:
-        console.log('in edgeAsSecond case 1, 1move');
-        position = this.game.board.center(); 
-        break;
-
-      case 3:
-      console.log('in edgeAsSecond case 2, 3 move');
-      // in the rare case that x2 is opposite to x1, play any corner
-        if( opponentsLastPosition == board.oppositePosition(opponentsFirstPosition)){
-          position = randomElement(board.corners(board.available()));
-        } else {
-          // play corner adjacent to x1 and on the same side as x2
-          var adjacentToFirstMove = board.adjacentPositions(opponentsFirstPosition);
-          var opponentsLines = board.singleMarkLines(this.opponentMark, 1);
-          var lines = opponentsLines.filter(function(line){
-            return commonValues(line, adjacentToFirstMove).length > 0;
-          });
-          position = commonValues(lines[0], lines.lastElement())[0];
-        }
-        break;
-    }
-    return position;
-  }
-
-  this.cornerAsFirst = function(movesSoFar){
-    var position,
-        board = this.game.board,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark);
-    switch (movesSoFar){
-      case 2:
-      console.log('in cornerAsFirst, case 1, 2 moves')
-        var lastPositionType = board.positionType(opponentsLastPosition);
-        var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
-        
-        if (lastPositionType == 'center'){
-          position = oppositeToFirstMove;
-        } else {
-          // console.log('in cornerAsFirst case 2, human didnt play center')
-
-          // play corner which is not opposite to the first move and is on adjacent to opponentsLastMove
-          var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
-          var corners = board.corners(board.available()).filter(function(corner){
-            return corner != oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
-          });
-          position = randomElement(corners);      
-        }
-        break;
-
-      case 4:
-        console.log('in cornerAsFirst, case 2, 4 moves')
-        // would only end up here if human didn't block with center
-          // play on an empty intersection of ai-only lines?
-        var lines = board.singleMarkLines(this.mark, 1);
-        var positions = [];
-        for (var i = 0; i < lines.length - 1; i++){
-          positions.push(commonValues(lines[i], lines[i+1])[0]);
-        }
-        positions.push(commonValues(lines[i], lines.lastElement())[0]);
-        position = randomElement(positions.filter(function(position){
-          return board.isPositionEmpty(position);
-        }));
-        break;
-    }
-    return position
-  }
-
-  this.centerAsFirst = function(movesSoFar){
-    var board = this.game.board,
-        position,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark);
-    switch (movesSoFar){
-      case 2:
-      console.log('in centerAsFirst, case 1, 2 moves')
-        var lastPositionType = board.positionType(opponentsLastPosition);
-        if (lastPositionType == 'edge'){
-          position = randomElement(board.corners(board.available()));
-        } else {
-          position = board.oppositePosition(opponentsLastPosition);
-        }
-        break;
-
-      case 4:
-      console.log('in centerAsFirst, case 2, 4 moves')
-        var lines = board.singleMarkLines(this.mark, 1).map(function(line){
-          return board.availableOnAGivenLine(line);
-        });
-        var positions = [];
-        for (var i = 0; i < lines.length - 1; i++){
-          positions.push(commonValues(lines[i], lines[i+1])[0]);
-        }
-        positions.push(commonValues(lines[i], lines.lastElement())[0]);
-        position = randomElement(positions);
-        break;
-    }
-    return position;
-  }
-
-  this.basicStrategy = function(){
-    // this is a fallback if there are no strategic moves to be made
-    // find line where i already have 1 move
-    // if none then find an empty line and play there
-    // if none of the above, just take any available position
-    // note: no need to check if occupied as only picking from empty anyway
-    var position,
-        line,
-        available,
-        board = this.game.board,
-        aiOnlyLines = board.singleMarkLines(this.mark, 1),
-        emptyLines = this.game.winningCombinations.filter(function(combination){
-          return board.availableOnAGivenLine(combination).length == board.size;
-        });
-    console.log('in basicStrategy')
-
-    if (aiOnlyLines.length > 0){
-      // find available position:
-      line = randomElement(aiOnlyLines);
-    } else if (emptyLines.length > 0){
-      // find empty line:
-      line = randomElement(emptyLines);
-    } 
-
-    if (line != undefined){
-      available = board.availableOnAGivenLine(line);
-      position = randomElement(available);
-    } else {
-      // find available pick a random
-      position = randomElement(board.available());
-    }
-    return position;
-  }
-
-  function cornerOrCenter(board){
-    var center = board.center(),
-        corner = randomElement(board.corners(board.possiblePositions));
-    return randomElement([corner, center]);
-  }
-
-
-}
-
-
-
-// ================================================
-// ARRAY EXTENSIONS:
-// ================================================
-
-Array.prototype.hasElement = function(value){
-  'use strict';
-  return (this.indexOf(value) != -1) ? true : false;
-}
-
-Array.prototype.ascending = function(){
-  return this.sort(function(a, b){
-    return a - b;
-  });
-}
-
-Array.prototype.allDefinedValuesSame = function(){
-  // if (this[0] != undefined){
-    for (var i = 1; i < this.length; i++) {
-      if ( this[0] == undefined || this[i] !== this[0] ){
-        return false;
-      }
-    };
-  // } 
-  return true;
-}
-
-Array.prototype.lastElement = function(){
-  return this[this.length - 1];
-}
-
-if (!Array.prototype.find) {
-  Array.prototype.find = function(predicate) {
-    if (this == null) {
-      throw new TypeError('Array.prototype.find called on null or undefined');
-    }
-    if (typeof predicate !== 'function') {
-      throw new TypeError('predicate must be a function');
-    }
-    var list = Object(this);
-    var length = list.length >>> 0;
-    var thisArg = arguments[1];
-    var value;
-
-    for (var i = 0; i < length; i++) {
-      value = list[i];
-      if (predicate.call(thisArg, value, i, list)) {
-        return value;
+    this.getMark = function(position){
+      var playerMove = this.moves.find(function(move){
+        return move.position === position;
+      });
+      if (playerMove){
+        return playerMove.mark;
       }
     }
-    return undefined;
+
+    this.takenPositions = function(){
+      var taken = this.moves.map(function(move){
+        return move.position
+      });
+      return taken;
+    } //REVIEW: is not used outside of class, but relies on an interface function...
+
+    this.available = function(){
+      var available = this.possiblePositions.filter(function(position){
+        return !this.takenPositions().hasElement(position);
+      }.bind(this));
+      return available;
+    }
+
+    this.positionType = function(position){
+      var remainder = position % 2;
+      if (position === 4){
+        return "center";
+      } 
+      else if (remainder === 0){
+        return "corner";
+      } else {
+        return "edge";
+      };
+    };
+
+    this.isPositionEmpty = function(position) {
+      return this.available().hasElement(position);
+    };
+
+    this.availableOnAGivenLine = function(line){
+      var available = line.filter(function(position){
+        return this.isPositionEmpty(position);
+      }.bind(this));
+      return available;
+    }
+
+    this.singlePlayerLine = function(line, howMany, mark){
+      var takenOnALine = line.filter(function(position){
+        return !this.isPositionEmpty(position);
+      }.bind(this));
+      if (takenOnALine.length === howMany){
+        var marks = takenOnALine.map(function(position){
+          return this.getMark(position);
+        }.bind(this));    
+        return marks.allDefinedValuesSame() && marks[0] === mark;
+      }
+      return false;
+    } //REVIEW: too big, confusing...? used once outside of class in Game
+
+    this.singleMarkLines = function(mark, howMany){ 
+      var lines = this.game.winningCombinations.filter(function(combination){
+        return this.singlePlayerLine(combination, howMany, mark);
+      }.bind(this));
+      return lines;
+    }  
+
+    this.corners = function(fromMoves){
+      return fromMoves.filter(function(position){
+        return this.positionType(position) === 'corner';
+      }.bind(this));
+    }
+
+    this.center = function(){
+      return this.possiblePositions.find(function(position){
+        return this.positionType(position) === 'center';
+      }.bind(this));
+    }
+
+    this.lastPositionFor = function(mark){
+      var position,
+          movesReverse = this.moves.slice().reverse(),
+          playerMove = movesReverse.find(function(move){
+            return move.mark === mark;
+          });
+      if (playerMove){
+        position = playerMove.position;
+      }
+      
+      return position;
+    }
+
+    this.oppositePosition = function(position){
+      var reverseOrder = this.possiblePositions.slice().reverse();
+      return reverseOrder[position];
+    }
+
+    this.adjacentPositions = function(position){
+      var positions;
+      switch ( this.positionType(position)){
+        case 'corner':
+          if ( position < this.center()){
+            positions = [this.possiblePositions[0] + 1, position + this.size];
+          } else {
+            positions = [this.possiblePositions.lastElement() - 1, position - this.size];
+          }
+          break;
+        case 'edge':
+          if ((position - 1) === this.possiblePositions[0] || (position + 1) === this.possiblePositions.lastElement()){
+            positions = [position + 1, position - 1];
+          } else {
+            positions = [position - this.size, position + this.size]
+          }
+          break;
+      }
+      return positions;
+    }
+
+    function setPossiblePositions(amount){
+      var positions = [];
+      for (var i = 0; i < amount; i++) {
+        positions.push(i);
+      };
+      return positions;
+    }
   };
-}
+}());
 
-// ================================================
-// HELPERS:
-// ================================================
 
-function randomize(data){
-  return data.sort(function(){
-    return 0.5 - Math.random();
-  });
-}
 
-function randomElement(data){
-  var myArray = randomize(data);
-  var index = Math.floor(Math.random() * myArray.length);
-  return myArray[index];
-}
 
-function commonValues(a, b){
-  console.log('a',a)
-  console.log('b',b)
-  var result = a.filter(function(n) {
-    return b.hasElement(n);
-  });
-  return result;
-}
+
+
+
 
 
 // ================================================
