@@ -53,8 +53,7 @@ JSTicTacToe.Board = function(game){
     } 
     else if (remainder == 0){
       return "corner";
-    } 
-    else {
+    } else {
       return "edge";
     };
   };
@@ -116,7 +115,10 @@ JSTicTacToe.Board = function(game){
         playerMove = movesReverse.find(function(move){
           return move.mark == mark;
         });
-    position = playerMove.position;
+    if (playerMove){
+      position = playerMove.position;
+    }
+    
     return position;
   }
 
@@ -163,13 +165,12 @@ JSTicTacToe.Game = function(firstPlayer){
   this.board = new JSTicTacToe.Board(this);
   this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
   this.winningCombinations = setWinningCombinations(this.board);
-  this.firstPlayer = firstPlayer;
   this.winner = { player: undefined, mark: undefined };
   this.status = 'active'; // other states: won, drawn
 
   this.addToBoard = function(position, mark){
     this.board.addMove(position, mark);
-  }
+  } //REVIEW is this necessary?
 
   this.isActive = function(){
     return ( !this.isWon() && !this.isDrawn() );
@@ -189,14 +190,13 @@ JSTicTacToe.Game = function(firstPlayer){
     }.bind(this));
     if (singlePlayerFullLine!=undefined){
       return this.board.getMark(singlePlayerFullLine[0]);
-    }
-    
-  }
+    }   
+  } //REVIEW?
 
   this.findWinner = function(mark){
     var winner = mark == this.ai.mark ? 'ai' : 'human';
     return winner;
-  } // REVIEW
+  } // REVIEW: is not used outside of class, but relies on an interface function...
 
   this.setWinner = function(winner, mark){
     this.winner['player'] = winner;
@@ -223,7 +223,7 @@ JSTicTacToe.Game = function(firstPlayer){
   } // WHEN IS BEST TO USE...
 
   this.humanPlay = function(position){
-    // if (this.board.isPositionEmpty(position)){      
+    // REVIEW: check for occupancy here or prior to calling?     
       
     if (this.isPlayerTurn(this.ai.opponentMark)){
       this.addToBoard(position, this.ai.opponentMark);
@@ -240,11 +240,11 @@ JSTicTacToe.Game = function(firstPlayer){
       // console.log('game active && ai turn')
       this.ai.play();
     } 
-  }
+  } // REVIEW
 
-  this.isFirstEverMove = function(){
-    return this.board.moves.length == 0;
-  }
+  // this.isFirstEverMove = function(){
+  //   return this.board.moves.length == 0;
+  // } REVIEW: not necessary?
 
   this.updateBoardView = function(game){
     game.board.moves.forEach(function(move){
@@ -255,19 +255,14 @@ JSTicTacToe.Game = function(firstPlayer){
   }
 
   this.updateUI = function(){
-    var status = $('#status'),
-        winner = $('#winner'),
-        notice = $('#notice');
-  
-    status.text(this.status);
-    
+    JSTicTacToe.status.text(this.status);
     if (this.winner.player){
-      winner.text(uiFriendlyPlayer(this.winner.player));
-      $('#gameStatus').hide();
-      notice.show();
+      JSTicTacToe.winner.text(uiFriendlyPlayer(this.winner.player));
+      JSTicTacToe.gameStatus.hide();
+      JSTicTacToe.notice.show();
     }
     if (!this.isActive()){
-      $('td').addClass('occupied')
+      $('td').addClass('occupied');
     }
   }
 
@@ -385,10 +380,10 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
   }
 
   this.play = function(){
-    // GAME ACTIVE CHECK? 
+    // GAME ACTIVE CHECK? in here or prior to calling the method
     var position,
-        board = this.game.board;
-    if (this.game.isFirstEverMove()){
+        board = this.game.board; // REVIEW
+    if (board.moves.length == 0){
       // position = board.center();
       // position = randomElement(board.corners(board.available()))
       position = cornerOrCenter(board);
@@ -405,14 +400,16 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     } else {
       position = this.basicStrategy();
       // console.log('in basicStrategy IF')
-    } // this is really hacky, but otherwise I am calling functions twice, need to do something about it
+    } // CRIME AGAINST JS, MUST REVIEW: this is really hacky, but otherwise I am calling functions twice, need to do something about it
 
       // potentially redundant validation for non-occupancy if moves are only picked from available ones anyway:
     // if ( board.isPositionEmpty(position)){
+
       this.game.addToBoard(position, this.mark);
       this.game.updateBoardView(this.game);
       this.game.checkAndUpdateGameState();
       this.game.updateUI();
+      console.log(board.takenPositions())
     // } else {
     //   // ?
     //   console.log('POSITION WAS OCCUPIED');
@@ -424,70 +421,75 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
 
   this.strategicPosition = function(){
     if (this.mainStrategy == undefined){
-      this.pickAIStrategy();
+      pickAIStrategy(this);
     }
     var position,
         movesSoFar = this.game.board.moves.length;
 
     switch (this.mainStrategy){
       case 'cornerAsFirst':
+      // console.log('inside strategicPosition/cornerAsFirst')
+
         position = this.cornerAsFirst(movesSoFar);
         break;
       case 'centerAsFirst':
+      
         position = this.centerAsFirst(movesSoFar);
         break;
       case 'cornerAsSecond':
         position = this.cornerAsSecond(movesSoFar);
-        // console.log('inside strategicPosition/cornerAsSecond')
+        
         // console.log(position)
         break;
       case 'centerAsSecond':
+      
         position = this.centerAsSecond(movesSoFar);
         break;
       case 'edgeAsSecond':
+      // console.log('inside strategicPosition/edgeAsSecond')
         position = this.edgeAsSecond(movesSoFar);
         break;
     }
     return position;
   }
 
-  this.pickAIStrategy = function(){
-    if ( this.mark == 'x'){
-      this.pickAIStrategyAsFirst()
+  function pickAIStrategy(ai){
+    if ( ai.mark == 'x'){
+      pickAIStrategyAsFirst(ai)
     } else {
-      this.pickAIStrategyAsSecond();
+      pickAIStrategyAsSecond(ai);
     }
-  }
+  } //REVIEW: not sure... need to check
 
-  this.pickAIStrategyAsFirst = function(){
-    var board = this.game.board,
-        myLastPosition = board.lastPositionFor(this.mark),
+  function pickAIStrategyAsFirst(ai){
+    var board = ai.game.board,
+        myLastPosition = board.lastPositionFor(ai.mark),
         myLastPositionType = board.positionType(myLastPosition);
 
     switch (myLastPositionType){
       case 'corner':
-        this.mainStrategy = 'cornerAsFirst';
+        ai.mainStrategy = 'cornerAsFirst';
         break;
       case 'center':
-        this.mainStrategy = 'centerAsFirst';
+        ai.mainStrategy = 'centerAsFirst';
         break;
     }
   }
 
-  this.pickAIStrategyAsSecond = function(){ 
-    var board = this.game.board,
-        opponentsLastPosition = board.lastPositionFor(this.opponentMark),
+  function pickAIStrategyAsSecond(ai){ 
+    var board = ai.game.board,
+        opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
         lastPositionType = board.positionType(opponentsLastPosition);
     
     switch (lastPositionType){
       case 'corner':
-        this.mainStrategy = 'cornerAsSecond';
+        ai.mainStrategy = 'cornerAsSecond';
         break;
       case 'center':
-        this.mainStrategy = 'centerAsSecond';
+        ai.mainStrategy = 'centerAsSecond';
         break;
       case 'edge':
-        this.mainStrategy = 'edgeAsSecond';
+        ai.mainStrategy = 'edgeAsSecond';
         break;
     }
   }
@@ -499,15 +501,15 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         opponentsLastPosition = board.lastPositionFor(this.opponentMark);
     switch (movesSoFar){
       case 1:
-        // console.log('in cornerAsSecond case 1');
+        console.log('in cornerAsSecond case 1');
         position = this.game.board.center();
         break;
       case 3:
-      // console.log('in cornerAsSecond case 3');
+      console.log('in cornerAsSecond case 2, 3 moves');
         var fullLine = this.game.winningCombinations.find(function(combination){
-          // return board.isLineFilledWith(board.size, combination);
           return board.availableOnAGivenLine(combination).length == 0;
         });
+        
         // if there's a full diagonal
         if (fullLine != undefined){
           // play any edge
@@ -518,19 +520,13 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         } else {
           
           // opponent must have played opposite edge to its first move (x1)
-          // cannot play the corner opposite x1, and need to play any cell on the same side as the opponent's last move
+          // cannot play the corner opposite x1, and need to play corner cell on the same side as the opponent's last move
+          // ie corner which is adjacent to opponentsLastPosition but itself is not the opposite to his first move.
           var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
-          console.log('oppositeToFirstMove', oppositeToFirstMove)
           var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
-          var lines = board.singleMarkLines(this.opponentMark, 1);
-
-          // console.log(adjacentToLastMove)
-          var line = lines.find(function(line){
-            return !line.hasElement(oppositeToFirstMove) && (commonValues(line, adjacentToLastMove).length > 0);
+          position = adjacentToLastMove.find(function(move){
+            return board.positionType(move) == 'corner' && move != oppositeToFirstMove;
           });
-          var available = board.availableOnAGivenLine(line);
-          position = randomElement(available);
-          
         }
         break;
     }
@@ -544,11 +540,12 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
 
     switch (movesSoFar){
       case 1:
-        // console.log('in centerAsSecond case 1');
+        console.log('in centerAsSecond case 1 (1 move)');
         position = randomElement(this.game.board.corners(board.available()));
         break;
 
       case 3:
+        console.log('in centerAsSecond case 2 (3 moves)')
         if ( opponentsLastPosition == board.oppositePosition(board.lastPositionFor(this.mark)) ){
           position = randomElement(this.game.board.corners(board.available()));
         } else {
@@ -564,14 +561,15 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         board = this.game.board,
         opponentsLastPosition = board.lastPositionFor(this.opponentMark),
         opponentsFirstPosition = board.moves[0].position;
-    console.log('opponentsFirstPosition', opponentsFirstPosition)
+    // console.log('opponentsFirstPosition', opponentsFirstPosition)
     switch (movesSoFar){
       case 1:
-        // console.log('in edgeAsSecond case 1');
+        console.log('in edgeAsSecond case 1, 1move');
         position = this.game.board.center(); 
         break;
 
       case 3:
+      console.log('in edgeAsSecond case 2, 3 move');
       // in the rare case that x2 is opposite to x1, play any corner
         if( opponentsLastPosition == board.oppositePosition(opponentsFirstPosition)){
           position = randomElement(board.corners(board.available()));
@@ -595,6 +593,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         opponentsLastPosition = board.lastPositionFor(this.opponentMark);
     switch (movesSoFar){
       case 2:
+      console.log('in cornerAsFirst, case 1, 2 moves')
         var lastPositionType = board.positionType(opponentsLastPosition);
         var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
         
@@ -613,7 +612,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         break;
 
       case 4:
-        // console.log('in cornerAsFirst case 4')
+        console.log('in cornerAsFirst, case 2, 4 moves')
         // would only end up here if human didn't block with center
           // play on an empty intersection of ai-only lines?
         var lines = board.singleMarkLines(this.mark, 1);
@@ -638,6 +637,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
     // console.log('in centerAsFirst')
     switch (movesSoFar){
       case 2:
+      console.log('in centerAsFirst, case 1, 2 moves')
         var lastPositionType = board.positionType(opponentsLastPosition);
         if (lastPositionType == 'edge'){
           position = randomElement(board.corners(board.available()));
@@ -647,6 +647,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
         break;
 
       case 4:
+      console.log('in centerAsFirst, case 2, 4 moves')
         var lines = board.singleMarkLines(this.mark, 1).map(function(line){
           return board.availableOnAGivenLine(line);
         });
@@ -689,7 +690,7 @@ JSTicTacToe.AIPlayer = function(game, firstPlayer){
           return board.availableOnAGivenLine(combination).length == board.size;
         });
 
-    // console.log()
+    console.log('in basicStrategy')
     if (aiOnlyLines.length > 0){
       // find available position:
       line = randomElement(aiOnlyLines);

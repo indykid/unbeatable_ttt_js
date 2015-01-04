@@ -5,29 +5,29 @@ var JSTicTacToe = JSTicTacToe || {};
 $(function(){
 
 // ================================================
-// VARIABLES:
+// DOM ELEMENTS:
 // ================================================
 
-
-  var grid = $('#grid'),
-      emptyGridPositions = $('td:not(.occupied)'),
-      newGameButton = $('#newGame'),
-      form = $('#firstPlayerForm'),
-      selectPlayer = $('#selectPlayer'),
-      firstPlayer = $('.firstPlayer'),
-      notice = $('#notice'),
-      gameStatus = $('#gameStatus'),
-      game;
+  JSTicTacToe.grid = $('#grid');
+  JSTicTacToe.emptyGridPositions = $('td:not(.occupied)');
+  JSTicTacToe.newGameButton = $('#newGame');
+  JSTicTacToe.selectPlayer = $('#selectPlayer');
+  JSTicTacToe.firstPlayer = $('.firstPlayer');
+  JSTicTacToe.notice = $('#notice');
+  JSTicTacToe.gameStatus = $('#gameStatus');
+  JSTicTacToe.status = $('#status');
+  JSTicTacToe.winner = $('#winner');
+  
 
 
 // ================================================
-// VISUALS:
+// VISUAL SETUP:
 // ================================================
 
-  grid.hide();
-  newGameButton.hide();
-  notice.hide();
-  gameStatus.hide();
+  JSTicTacToe.grid.hide();
+  JSTicTacToe.newGameButton.hide();
+  JSTicTacToe.notice.hide();
+  JSTicTacToe.gameStatus.hide();
 
 
 
@@ -35,44 +35,29 @@ $(function(){
 // EVENT LISTENERS:
 // ================================================
 
-  firstPlayer.on('click', function(){
+  JSTicTacToe.firstPlayer.on('click', function(){
     var firstPlayer = $(this).data('player');
-    console.log(firstPlayer);
-    selectPlayer.hide();
-    game = new JSTicTacToe.Game(firstPlayer);
-    game.checkAndUpdateGameState();
-    game.updateUI();
-    grid.show();
-    gameStatus.show();
-    newGameButton.show();
+    // console.log(firstPlayer)
+    JSTicTacToe.selectPlayer.hide();
+    JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
+    // JSTicTacToe.game.checkAndUpdateGameState();
+    JSTicTacToe.game.updateUI();
+    JSTicTacToe.grid.show();
+    JSTicTacToe.gameStatus.show();
+    JSTicTacToe.newGameButton.show();
+
     if (firstPlayer == 'ai'){
-      game.ai.play();
-    } // not sure this check belongs here or better on game initialization within game...
+      JSTicTacToe.game.ai.play();
+    } //REVIEW: not sure this check belongs here or better on game initialization within game...
   });
 
-  // form.on('submit', function(e){
-  //   e.preventDefault();
-  //   var firstPlayer = $('input[name=firstPlay]:checked').val();
-  //   form.hide();
-  //   game = new JSTicTacToe.Game(firstPlayer);
-  //   game.checkAndUpdateGameState();
-  //   game.updateUI();
-  //   grid.show();
-  //   gameStatus.show();
-  //   newGameButton.show();
-  //   if (firstPlayer == 'ai'){
-  //     game.ai.play();
-  //   } // not sure this check belongs here or better on game initialization within game...
-  // });
+  JSTicTacToe.emptyGridPositions.on('click', function(){
 
-  emptyGridPositions.on('click', function(){
-
-    if (game.isActive()){ 
+    if (JSTicTacToe.game.isActive()){ 
 
       var position = $(this).data('position');      
-      if (game.board.isPositionEmpty(position)){  
-        game.humanPlay(position);
-        // $(this).addClass('occupied');
+      if (JSTicTacToe.game.board.isPositionEmpty(position)){  
+        JSTicTacToe.game.humanPlay(position);
       } else {
         alert('this cell is occupied, please try another one');
       }
@@ -81,7 +66,7 @@ $(function(){
       alert('game over');
     }
     
-    // not sure game active check belongs here or better within the humanPlay itself...
+    // REVIEW: not sure game active check belongs here or better within the humanPlay itself...
     
     
   });
