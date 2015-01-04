@@ -9,23 +9,22 @@ describe('Board', function(){
   });
 
   it('is empty at the start', function(){
-    expect(board.moves).toEqual({});
+    expect(board.moves).toEqual([]);
   });
 
   describe('#addMove', function(){
     it('adds a new move to the board', function(){
       board.addMove(0, 'x');
-      expect(board.moves).toEqual({0: 'x'});
-      expect(board.movesInOrder).toEqual([{0: 'x'}]);
+      expect(board.moves).toEqual([{ position: 0, mark: 'x' }]);
     });
   });
 
-  describe('#getPlayer', function(){
-    it('returns player who played the given position', function(){
+  describe('#getMark', function(){
+    it('returns mark played with in the given position', function(){
       board.addMove(0, 'x');
       board.addMove(1, 'o');
-      expect(board.getPlayer(0)).toEqual('x');
-      expect(board.getPlayer(1)).toEqual('o');
+      expect(board.getMark(0)).toEqual('x');
+      expect(board.getMark(1)).toEqual('o');
     });
   });
 
@@ -95,12 +94,12 @@ describe('Board', function(){
 
   describe('#availableOnAGivenLine', function(){
     it('returns [0, 1, 2], for an empty line [0, 1, 2]', function(){
-      expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([0, 1, 2]);
+      expect(board.availableOnAGivenLine([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
     });
 
     it('returns [0, 8] cells for a given line [0, 4, 8], where, 4 is occupied', function(){
       board.addMove(4, 'x');
-      expect(board.availableOnAGivenLine([0, 4, 8])).toEqual([0, 8]);
+      expect(board.availableOnAGivenLine([0, 4, 8]).ascending()).toEqual([0, 8]);
     });
     it('returns empty array, for a full line [0, 1, 2]', function(){
       board.addMove(0, 'x');
@@ -110,23 +109,23 @@ describe('Board', function(){
     });
   });
 
-  describe('#takenOnAGivenLine', function(){
-    it('returns empty array, for an empty line [0, 1, 2]', function(){
-      expect(board.takenOnAGivenLine([0, 1, 2])).toEqual([]);
-    });
+  // describe('#takenOnAGivenLine', function(){
+  //   it('returns empty array, for an empty line [0, 1, 2]', function(){
+  //     expect(board.takenOnAGivenLine([0, 1, 2])).toEqual([]);
+  //   });
 
-    it('returns [4] for a given line [0, 4, 8], where, 4 is occupied', function(){
-      board.addMove(4, 'x');
-      expect(board.takenOnAGivenLine([0, 4, 8])).toEqual([4]);
-    });
+  //   it('returns [4] for a given line [0, 4, 8], where, 4 is occupied', function(){
+  //     board.addMove(4, 'x');
+  //     expect(board.takenOnAGivenLine([0, 4, 8])).toEqual([4]);
+  //   });
 
-    it('returns [3, 5] for a given line [0, 4, 8], where, 4 is occupied', function(){
-      board.addMove(3, 'x');
-      board.addMove(2, 'x');
-      board.addMove(5, 'x');
-      expect(board.takenOnAGivenLine([3, 4, 5])).toEqual([3, 5]);
-    });
-  });
+  //   it('returns [3, 5] for a given line [0, 4, 8], where, 4 is occupied', function(){
+  //     board.addMove(3, 'x');
+  //     board.addMove(2, 'o');
+  //     board.addMove(5, 'x');
+  //     expect(board.takenOnAGivenLine([3, 4, 5])).toEqual([3, 5]);
+  //   });
+  // });
 
   describe('#singlePlayerLine', function(){
     describe('context: only 2 moves on a line, both by the same player', function(){
@@ -134,7 +133,7 @@ describe('Board', function(){
         board.addMove(4, 'x');
         board.addMove(3, 'o');
         board.addMove(8, 'x');
-        expect(board.singlePlayerLine([0, 4, 8], 2)).toBe(true);
+        expect(board.singlePlayerLine([0, 4, 8], 2, 'x')).toBe(true);
       });
 
       it('returns false if asking for 1 of the same', function(){
@@ -142,19 +141,20 @@ describe('Board', function(){
         board.addMove(2, 'o');
         board.addMove(3, 'x');
         board.addMove(8, 'o');
-        expect(board.singlePlayerLine([2, 5, 8]), 1).toBe(false);
+        expect(board.singlePlayerLine([2, 5, 8]), 1, 'x').toBe(false);
       });
     });
     describe('context: only 1 move on a line', function(){
       it('returns true when asking for 1 of the same', function(){
         board.addMove(4, 'x');
         board.addMove(3, 'o');
-        expect(board.singlePlayerLine([0, 3, 6], 1)).toBe(true);
+        expect(board.singlePlayerLine([1, 4, 7], 1, 'x')).toBe(true);
+        expect(board.singlePlayerLine([0, 3, 6], 1, 'o')).toBe(true);
       });
 
       it('returns false when asking for 2 of the same', function(){
         board.addMove(5, 'x');
-        expect(board.singlePlayerLine([3, 4, 5], 2)).toBe(false);
+        expect(board.singlePlayerLine([3, 4, 5], 2, 'x')).toBe(false);
       });
     });
 
@@ -163,7 +163,7 @@ describe('Board', function(){
         board.addMove(4, 'x');
         board.addMove(8, 'o');
         board.addMove(3, 'x');
-        expect(board.singlePlayerLine([0, 4, 8], 1)).toBe(false);
+        expect(board.singlePlayerLine([0, 4, 8], 1, 'x')).toBe(false);
       });
 
       it('returns false when asking for 2 of the same', function(){
@@ -171,13 +171,13 @@ describe('Board', function(){
         board.addMove(2, 'o');
         board.addMove(3, 'x');
         board.addMove(1, 'o');
-        expect(board.singlePlayerLine([2, 5, 8], 2)).toBe(false);
+        expect(board.singlePlayerLine([2, 5, 8], 2, 'x')).toBe(false);
       });
     });
 
   });
 
-  describe('#singlePlayerLinesForPlayer', function(){
+  describe('#singleMarkLines', function(){
     var game;
     // board = undefined;
     beforeEach(function(){
@@ -189,16 +189,16 @@ describe('Board', function(){
         game.board.addMove(2, 'o');
         game.board.addMove(3, 'x');
         game.board.addMove(1, 'o');
-        expect(game.board.singlePlayerLinesForPlayer('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
-        expect(game.board.singlePlayerLinesForPlayer('x', 2)).toEqual([]);
+        expect(game.board.singleMarkLines('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
+        expect(game.board.singleMarkLines('x', 2)).toEqual([]);
       });
       it('given the moves, for player "o" it returns correct lines when asking for 2 or 1 moves in a line', function(){
         game.board.addMove(8, 'x');
         game.board.addMove(2, 'o');
         game.board.addMove(3, 'x');
         game.board.addMove(1, 'o');
-        expect(game.board.singlePlayerLinesForPlayer('o', 1)).toEqual([[2, 4, 6], [1, 4, 7]]);
-        expect(game.board.singlePlayerLinesForPlayer('o', 2)).toEqual([[0, 1, 2]]);
+        expect(game.board.singleMarkLines('o', 1)).toEqual([[2, 4, 6], [1, 4, 7]]);
+        expect(game.board.singleMarkLines('o', 2)).toEqual([[0, 1, 2]]);
       });
     });
     
@@ -227,18 +227,11 @@ describe('Board', function(){
   describe('#adjacentPositions', function(){
     it('returns array with correct positions for a given one (does not incl center)', function(){
       expect(board.adjacentPositions(0)).toEqual([1, 3]);
-      expect(board.adjacentPositions(1)).toEqual([0, 2]);
-      expect(board.adjacentPositions(2)).toEqual([1, 5]);
-      expect(board.adjacentPositions(3)).toEqual([0, 6]);
-      expect(board.adjacentPositions(6)).toEqual([3, 7]);
-      expect(board.adjacentPositions(7)).toEqual([6, 8]);
-    });
-  });
-
-  describe('#positionOfMove', function(){
-    it('returns the integer representing position', function(){
-      expect(board.positionOfMove({0: 'x'})).toEqual(0);
-      expect(board.positionOfMove({4: 'x'})).toEqual(4);
+      expect(board.adjacentPositions(1).ascending()).toEqual([0, 2]);
+      expect(board.adjacentPositions(2).ascending()).toEqual([1, 5]);
+      expect(board.adjacentPositions(3).ascending()).toEqual([0, 6]);
+      expect(board.adjacentPositions(6).ascending()).toEqual([3, 7]);
+      expect(board.adjacentPositions(7).ascending()).toEqual([6, 8]);
     });
   });
 
@@ -271,17 +264,17 @@ describe('Game', function(){
 
   it('has an empty board at the start', function(){
     expect(game.board).not.toBeUndefined();
-    expect(game.board.moves).toEqual({});
+    expect(game.board.moves).toEqual([]);
   });
 
   describe('#addToBoard', function(){
     it('adds moves to the board', function(){
       game.addToBoard(0, 'x');
-      expect(game.board.moves).toEqual({0: 'x'})
+      expect(game.board.moves).toEqual([{ position:0, mark: 'x'}])
     });
   });
 
-  describe('#winningMark', function(){
+  describe('#winnerMark', function(){
     describe('context: human won on a ...', function(){
       describe('fist diagonal', function(){
         it('returns x mark', function(){
