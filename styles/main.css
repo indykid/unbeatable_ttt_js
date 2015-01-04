@@ -64,6 +64,8 @@ section {
 #grid {
   width: 80%;
   float: left;
+  /*visibility: hidden;*/
+  display: none;
 }
 
 #sidebar {
@@ -79,13 +81,17 @@ section {
 
 #status,
 #winner {
-  /*color: #FF82AB;*/
-  
   color: #9B30FF;
 }
 
+#notice,
+#gameStatus {
+  display: none;
+}
+
 #newGame {
-  display: block;
+  display: none;
+  /*display: block;*/
   text-align: center;
   vertical-align: middle;
   max-width: 100px;

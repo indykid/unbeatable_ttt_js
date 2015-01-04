@@ -1,4 +1,3 @@
-
 define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer){
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;

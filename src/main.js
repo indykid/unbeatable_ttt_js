@@ -2,11 +2,7 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-requirejs.config({
-  "paths": {
-    "jquery": "http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min"
-  }
-});
+
 
 require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer) {
   JSTicTacToe.Board = Board;
@@ -14,7 +10,7 @@ require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer
   JSTicTacToe.AIPlayer = AIPlayer; 
 
   $(function(){
-    console.log(JSTicTacToe)
+    // console.log(JSTicTacToe)
   // ================================================
   // DOM ELEMENTS:
   // ================================================
@@ -33,10 +29,10 @@ require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer
   // VISUAL SETUP:
   // ================================================
 
-    JSTicTacToe.grid.hide();
-    JSTicTacToe.newGameButton.hide();
-    JSTicTacToe.notice.hide();
-    JSTicTacToe.gameStatus.hide();
+    // JSTicTacToe.grid.hide();
+    // JSTicTacToe.newGameButton.hide();
+    // JSTicTacToe.notice.hide();
+    // JSTicTacToe.gameStatus.hide();
 
   // ================================================
   // EVENT LISTENERS:
@@ -49,8 +45,7 @@ require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer
       JSTicTacToe.game.updateUI();
       JSTicTacToe.grid.show();
       JSTicTacToe.gameStatus.show();
-      JSTicTacToe.newGameButton.show();
-
+      JSTicTacToe.newGameButton.css('display', 'block');
       if (firstPlayer == 'ai'){
         JSTicTacToe.game.ai.play();
       } //REVIEW: not sure this check belongs here or better on game initialization within game...

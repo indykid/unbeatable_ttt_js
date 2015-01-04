@@ -1,5 +1,4 @@
 define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer) { 
-  console.log(Game)
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;
   JSTicTacToe.Game = Game;
