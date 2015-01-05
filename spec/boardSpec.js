@@ -2,11 +2,11 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer){
-
-  JSTicTacToe.Board = Board;
-  JSTicTacToe.AIPlayer = AIPlayer;
-  JSTicTacToe.Game = Game;
+define([], function(){
+  console.log(JSTicTacToe)
+  // JSTicTacToe.Board = Board;
+  // JSTicTacToe.AIPlayer = AIPlayer;
+  // JSTicTacToe.Game = Game;
   describe('Board', function(){
     var board;
     beforeEach(function(){
@@ -113,24 +113,6 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
         expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([]);
       });
     });
-
-    // describe('#takenOnAGivenLine', function(){
-    //   it('returns empty array, for an empty line [0, 1, 2]', function(){
-    //     expect(board.takenOnAGivenLine([0, 1, 2])).toEqual([]);
-    //   });
-
-    //   it('returns [4] for a given line [0, 4, 8], where, 4 is occupied', function(){
-    //     board.addMove(4, 'x');
-    //     expect(board.takenOnAGivenLine([0, 4, 8])).toEqual([4]);
-    //   });
-
-    //   it('returns [3, 5] for a given line [0, 4, 8], where, 4 is occupied', function(){
-    //     board.addMove(3, 'x');
-    //     board.addMove(2, 'o');
-    //     board.addMove(5, 'x');
-    //     expect(board.takenOnAGivenLine([3, 4, 5])).toEqual([3, 5]);
-    //   });
-    // });
 
     describe('#singlePlayerLine', function(){
       describe('context: only 2 moves on a line, both by the same player', function(){

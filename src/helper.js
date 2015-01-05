@@ -5,11 +5,9 @@ var JSTicTacToe = JSTicTacToe || {};
 define([], function(){
   
   return JSTicTacToe.Helper = function(){
-
     // ================================================
     // ARRAY EXTENSIONS:
     // ================================================
-    
     this.bootstrapArray = function(){
       Array.prototype.hasElement = function(value){
         'use strict';
@@ -70,7 +68,7 @@ define([], function(){
     }
 
     this.randomElement = function(data){
-      var myArray = randomize(data);
+      var myArray = this.randomize(data);
       var index = Math.floor(Math.random() * myArray.length);
       return myArray[index];
     }
@@ -81,31 +79,6 @@ define([], function(){
       });
       return result;
     }
-
-    
-
-    // function randomize(data){
-    //   return data.sort(function(){
-    //     return 0.5 - Math.random();
-    //   });
-    // }
-
-    // function randomElement(data){
-    //   var myArray = randomize(data);
-    //   var index = Math.floor(Math.random() * myArray.length);
-    //   return myArray[index];
-    // }
-
-    // function commonValues(a, b){
-    //   console.log('a',a)
-    //   console.log('b',b)
-    //   var result = a.filter(function(n) {
-    //     return b.hasElement(n);
-    //   });
-    //   return result;
-    // }
-
-
 
   }
 });

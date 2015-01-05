@@ -3,9 +3,11 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer) { 
+  
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;
   JSTicTacToe.Game = Game;
+
   describe('AIPlayer', function(){
     var game;
     beforeEach(function(){
@@ -70,18 +72,18 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       });
 
       describe('context: no winning move', function(){
-        it('returns false', function(){
+        it('returns undefined', function(){
           game.addToBoard(0, 'x');
           game.addToBoard(2, 'o');
           game.addToBoard(5, 'x');
-          expect(game.ai.winningPosition(game)).toBe(false);
+          expect(game.ai.winningPosition(game)).toBeUndefined();
         });
 
-        it('returns false', function(){
+        it('returns undefined', function(){
           game.addToBoard(0, 'x');
           game.addToBoard(2, 'o');
           game.addToBoard(4, 'x');
-          expect(game.ai.winningPosition(game)).toBe(false);
+          expect(game.ai.winningPosition(game)).toBeUndefined();
         });
 
       });
@@ -126,17 +128,17 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       });
 
       describe('context: no threat', function(){
-        it('returns false', function(){
+        it('returns undefined', function(){
           game.addToBoard(0, 'x');
           game.addToBoard(2, 'o');
           game.addToBoard(5, 'x');
-          expect(game.ai.threatPosition()).toBe(false);
+          expect(game.ai.threatPosition()).toBeUndefined();
         });
-        it('returns false', function(){
+        it('returns undefined', function(){
           game.addToBoard(0, 'x');
           game.addToBoard(4, 'o');
           game.addToBoard(5, 'x');
-          expect(game.ai.threatPosition()).toBe(false);
+          expect(game.ai.threatPosition()).toBeUndefined();
         });
       });
     });

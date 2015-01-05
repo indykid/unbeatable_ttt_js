@@ -2,13 +2,13 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-define(["../src/board", "../src/game", "../src/ai"], function (Board, Game, AIPlayer) { 
-  JSTicTacToe = JSTicTacToe || {};
-  // console.log(Board)
+define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (Board, Game, AIPlayer, Helper) { 
+  JSTicTacToe.Helper = new Helper();
+  JSTicTacToe.Helper.bootstrapArray();
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;
   JSTicTacToe.Game = Game;
-
+  
   describe('Game', function(){
     var game;
     beforeEach(function(){

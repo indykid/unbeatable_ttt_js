@@ -4,7 +4,6 @@ var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
   return JSTicTacToe.Board = function(game){
-
     this.game = game;
     this.moves = [];
     this.size = 3;
