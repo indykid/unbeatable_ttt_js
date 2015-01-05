@@ -87,11 +87,9 @@ define(["./board","./ai"], function(Board, AIPlayer) {
 
     this.updateUI = function(){
       JSTicTacToe.status.text(this.status);
-      console.log(this.winner)
       if (this.winner.player){
         JSTicTacToe.winner.text(uiFriendlyPlayer(this.winner.player));
         JSTicTacToe.gameStatus.hide();
-        console.log(JSTicTacToe)
         JSTicTacToe.notice.show();
       }
       if (!this.isActive()){
