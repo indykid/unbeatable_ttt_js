@@ -1,6 +1,9 @@
 'use strict';
+
 var JSTicTacToe = JSTicTacToe || {};
-define(["./board","./ai"], function(Board, AIPlayer) {
+
+define([], function() {
+
   return JSTicTacToe.Game = function(firstPlayer){
     this.board = new JSTicTacToe.Board(this);
     this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
@@ -10,7 +13,7 @@ define(["./board","./ai"], function(Board, AIPlayer) {
 
     this.addToBoard = function(position, mark){
       this.board.addMove(position, mark);
-    } //REVIEW is this necessary?
+    }
 
     this.isActive = function(){
       return ( !this.isWon() && !this.isDrawn() );
@@ -33,11 +36,6 @@ define(["./board","./ai"], function(Board, AIPlayer) {
       }   
     } //REVIEW?
 
-    this.findWinner = function(mark){
-      var winner = mark === this.ai.mark ? 'ai' : 'human';
-      return winner;
-    } // REVIEW: is not used outside of class, but relies on an interface function...
-
     this.setWinner = function(winner, mark){
       this.winner['player'] = winner;
       this.winner['mark'] = mark;
@@ -46,7 +44,7 @@ define(["./board","./ai"], function(Board, AIPlayer) {
     this.checkAndUpdateGameState = function(){
       var winnerMark = this.winnerMark();
       if (winnerMark){
-        var winner = this.findWinner(winnerMark);
+        var winner = findWinner(winnerMark, this.ai.mark);
         this.setWinner(winner, winnerMark);
         this.status = 'won';
       } else if ( this.isDrawn() ){
@@ -67,8 +65,8 @@ define(["./board","./ai"], function(Board, AIPlayer) {
         this.addToBoard(position, this.ai.opponentMark);
         // console.log('added to human', position);
         this.checkAndUpdateGameState();
-        this.updateBoardView(this);
-        this.updateUI();
+        this.board.updateBoardView();
+        this.board.updateUI();
       } else {
         alert('easy tiger, not your turn');
       }
@@ -77,31 +75,10 @@ define(["./board","./ai"], function(Board, AIPlayer) {
       } 
     }
 
-    this.updateBoardView = function(game){
-      game.board.moves.forEach(function(move){
-        var selector = 'td[data-position='+ move.position +']',
-            text = move.mark;
-        $(selector).text(text).addClass('occupied');
-      });
-    }
-
-    this.updateUI = function(){
-      JSTicTacToe.status.text(this.status);
-      if (this.winner.player){
-        JSTicTacToe.winner.text(uiFriendlyPlayer(this.winner.player));
-        JSTicTacToe.gameStatus.hide();
-        JSTicTacToe.notice.show();
-      }
-      if (!this.isActive()){
-        $('td').addClass('occupied');
-        // JSTicTacToe.emptyGridPositions.off();
-      }
-    }
-
-    function uiFriendlyPlayer(player){
-      var friendly = player === 'ai' ? 'computer' : 'you';
-      return friendly;
-    }
+    function findWinner(mark, aiMark){
+      var winner = mark === aiMark ? 'ai' : 'human';
+      return winner;
+    } 
 
     function isOddMove(movesSoFar){
       return movesSoFar % 2 === 0;

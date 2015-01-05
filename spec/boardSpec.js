@@ -1,4 +1,9 @@
+'use strict';
+
+var JSTicTacToe = JSTicTacToe || {};
+
 define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer){
+
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;
   JSTicTacToe.Game = Game;
@@ -45,20 +50,20 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       });
     });
 
-    describe('#takenPositions', function(){
+    describe('#_takenPositions', function(){
       it('returns only occupied positions', function(){
         board.addMove(5, 'x');
         board.addMove(7, 'o');
         board.addMove(0, 'x');
         board.addMove(4, 'o');
-        expect(board.takenPositions()).toEqual([5, 7, 0, 4]);
+        expect(board._takenPositions()).toEqual([5, 7, 0, 4]);
       });
       it('returns only occupied positions', function(){
         board.addMove(6, 'x');
         board.addMove(3, 'o');
         board.addMove(0, 'x');
         board.addMove(2, 'o');
-        expect(board.takenPositions()).toEqual([6, 3, 0, 2]);
+        expect(board._takenPositions()).toEqual([6, 3, 0, 2]);
       });
     });
 

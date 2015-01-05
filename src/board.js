@@ -2,14 +2,15 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-define(["./game","./ai"], function(Game, AIPlayer) {
-  // console.log(AIPlayer)
+define([], function() {
   return JSTicTacToe.Board = function(game){
+
     this.game = game;
     this.moves = [];
     this.size = 3;
     this.positionsAmount = Math.pow(this.size, 2);
     this.possiblePositions = setPossiblePositions(this.positionsAmount);
+
     this.addMove = function(position, mark){
       var move = {};
       move['position'] = position;
@@ -26,16 +27,9 @@ define(["./game","./ai"], function(Game, AIPlayer) {
       }
     }
 
-    this.takenPositions = function(){
-      var taken = this.moves.map(function(move){
-        return move.position
-      });
-      return taken;
-    } //REVIEW: is not used outside of class, but relies on an interface function...
-
     this.available = function(){
       var available = this.possiblePositions.filter(function(position){
-        return !this.takenPositions().hasElement(position);
+        return !this._takenPositions().hasElement(position);
       }.bind(this));
       return available;
     }
@@ -74,7 +68,7 @@ define(["./game","./ai"], function(Game, AIPlayer) {
         return marks.allDefinedValuesSame() && marks[0] === mark;
       }
       return false;
-    } //REVIEW: too big, confusing...? used once outside of class in Game
+    }
 
     this.singleMarkLines = function(mark, howMany){ 
       var lines = this.game.winningCombinations.filter(function(combination){
@@ -134,6 +128,39 @@ define(["./game","./ai"], function(Game, AIPlayer) {
       return positions;
     }
 
+    this._takenPositions = function(){
+      var taken = this.moves.map(function(move){
+        return move.position
+      });
+      return taken;
+    }
+
+    this.updateBoardView = function(){
+      this.moves.forEach(function(move){
+        var selector = 'td[data-position='+ move.position +']',
+            text = move.mark;
+        $(selector).text(text).addClass('occupied');
+      });
+    }
+
+    this.updateUI = function(){
+      JSTicTacToe.status.text(this.game.status);
+      if (this.game.winner.player){
+        JSTicTacToe.winner.text(uiFriendlyPlayer(this.game.winner.player));
+        JSTicTacToe.gameStatus.hide();
+        JSTicTacToe.notice.show();
+      }
+      if (!this.game.isActive()){
+        $('td').addClass('occupied');
+        // JSTicTacToe.emptyGridPositions.off();
+      }
+    }
+
+    function uiFriendlyPlayer(player){
+      var friendly = player === 'ai' ? 'computer' : 'you';
+      return friendly;
+    }
+
     function setPossiblePositions(amount){
       var positions = [];
       for (var i = 0; i < amount; i++) {
@@ -143,66 +170,3 @@ define(["./game","./ai"], function(Game, AIPlayer) {
     }
   };
 });
-
-
-
-
-
-
-
-
-
-// ================================================
-// DEFINITELY WILL NEED:
-// ================================================
-// validations:
-
-// ================================================
-// DONE
-// ================================================
-// game is still active, can't play otherwise
-// cell not occupied check
-// correct turn
-
-// ================================================
-// MAY BE?
-// ================================================
-
-// clear event listener on cells if someone won the game?
-// possible player value
-// possible position
-// may be i should draw grid from JS instead of just showing it...
-
-
-// declare draw when no possible wins even if empty cells remain?
-
-// hardcoded version... might be better?:
-
-// this.adjacentPositions = function(position){
-//   var positions;
-//   switch (position){
-//     case 0:
-//       positions = [1, 3]
-//       break;
-//     case 1:
-//       positions = [0, 2]
-//       break;
-//     case 2:
-//       positions = [1, 5]
-//       break;
-//     case 3:
-//       break;
-//     case 4:
-//       break;
-//     case 5:
-//       break;
-//     case 6:
-//       break;
-//     case 7:
-//       break;
-//     case 8:
-//       break;
-//   }
-// }
-
-// 2, 4, 3, 1, 7, 0, 8, 5, 6

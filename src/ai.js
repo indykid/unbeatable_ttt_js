@@ -2,7 +2,7 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-define(["./game","./ai"], function(Game, AIPlayer) {
+define([], function() {
 
   return JSTicTacToe.AIPlayer = function(game, firstPlayer){
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
@@ -53,21 +53,11 @@ define(["./game","./ai"], function(Game, AIPlayer) {
         // console.log('in basicStrategy IF')
       } // CRIME AGAINST JS, MUST REVIEW: this is really hacky, but otherwise I am calling functions twice, need to do something about it
 
-        // potentially redundant validation for non-occupancy if moves are only picked from available ones anyway:
-      // if ( board.isPositionEmpty(position)){
-
-        this.game.addToBoard(position, this.mark);
-        this.game.updateBoardView(this.game);
-        this.game.checkAndUpdateGameState();
-        this.game.updateUI();
-        console.log(board.takenPositions())
-      // } else {
-      //   // ?
-      //   console.log('POSITION WAS OCCUPIED');
-      //   // if ( this.game.isActive()){
-      //     this.play();
-      //   // }
-      // }  
+      this.game.addToBoard(position, this.mark);
+      this.game.checkAndUpdateGameState();
+      board.updateBoardView();
+      board.updateUI();
+      console.log(board._takenPositions())
     }
 
     this.strategicPosition = function(){
@@ -110,7 +100,7 @@ define(["./game","./ai"], function(Game, AIPlayer) {
       } else {
         pickAIStrategyAsSecond(ai);
       }
-    } //REVIEW: not sure... need to check
+    }
 
     function pickAIStrategyAsFirst(ai){
       var board = ai.game.board,
@@ -349,6 +339,3 @@ define(["./game","./ai"], function(Game, AIPlayer) {
     }
   }
 });
-
-  
-

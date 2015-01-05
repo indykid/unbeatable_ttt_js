@@ -2,8 +2,6 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-
-
 require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer) {
   JSTicTacToe.Board = Board;
   JSTicTacToe.Game = Game;
@@ -26,15 +24,6 @@ require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer
     JSTicTacToe.winner = $('#winner');
 
   // ================================================
-  // VISUAL SETUP:
-  // ================================================
-
-    // JSTicTacToe.grid.hide();
-    // JSTicTacToe.newGameButton.hide();
-    // JSTicTacToe.notice.hide();
-    // JSTicTacToe.gameStatus.hide();
-
-  // ================================================
   // EVENT LISTENERS:
   // ================================================
 
@@ -42,7 +31,7 @@ require(["jquery", "./board", "game", "./ai"], function($, Board, Game, AIPlayer
       var firstPlayer = $(this).data('player');
       JSTicTacToe.selectPlayer.hide();
       JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
-      JSTicTacToe.game.updateUI();
+      JSTicTacToe.game.board.updateUI();
       JSTicTacToe.grid.show();
       JSTicTacToe.gameStatus.show();
       JSTicTacToe.newGameButton.css('display', 'block');
