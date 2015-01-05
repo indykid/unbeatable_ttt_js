@@ -17,7 +17,7 @@ define([], function() {
         console.log('in winningPosition')
         return board.availableOnAGivenLine(winLines[0])[0];
       }
-      return false;
+      // return false;
     }
 
     this.threatPosition = function(){
@@ -27,7 +27,7 @@ define([], function() {
         console.log('in threatPosition')
         return board.availableOnAGivenLine(threatLines[0])[0];
       }
-      return false;
+      // return false;
     }
 
     this.play = function(){
@@ -39,19 +39,24 @@ define([], function() {
         // position = randomElement(board.corners(board.available()))
         position = cornerOrCenter(board);
         // console.log('in first move IF')
-      } else if (typeof(position = this.winningPosition()) === 'number'){
-        // position = this.winningPosition();
-        // console.log('in winning position IF')
-      } else if (typeof(position = this.threatPosition()) === 'number'){
-        // position = this.threatPosition();
-        // console.log('in threatPosition IF')
-      } else if (typeof(position = this.strategicPosition()) === 'number'){
-        // position = this.strategicPosition();
-        // console.log('in strategicPosition IF')
       } else {
-        position = this.basicStrategy();
-        // console.log('in basicStrategy IF')
-      } // CRIME AGAINST JS, MUST REVIEW: this is really hacky, but otherwise I am calling functions twice, need to do something about it
+        // console.log('here')
+        position = this.findPosition();
+      }
+      console.log(position)
+      // if (typeof(position = this.winningPosition()) === 'number'){
+      //   // position = this.winningPosition();
+      //   // console.log('in winning position IF')
+      // } else if (typeof(position = this.threatPosition()) === 'number'){
+      //   // position = this.threatPosition();
+      //   // console.log('in threatPosition IF')
+      // } else if (typeof(position = this.strategicPosition()) === 'number'){
+      //   // position = this.strategicPosition();
+      //   // console.log('in strategicPosition IF')
+      // } else {
+      //   position = this.basicStrategy();
+      //   // console.log('in basicStrategy IF')
+      // } // CRIME AGAINST JS, MUST REVIEW: this is really hacky, but otherwise I am calling functions twice, need to do something about it
 
       this.game.addToBoard(position, this.mark);
       this.game.checkAndUpdateGameState();
@@ -59,6 +64,23 @@ define([], function() {
       board.updateUI();
       console.log(board._takenPositions())
     }
+
+    this.findPosition = function(){
+      var positions = [this.winningPosition(), this.threatPosition(), this.strategicPosition(), this.basicStrategy()];
+      var position = positions.find(function(position){
+        console.log()
+        return position !== undefined;
+      });
+      return position;
+      // var position;
+      // var strategies = [this.winningPosition, this.threatPosition, this.strategicPosition, this.basicStrategy];
+      // strategies.find(function(strategy){
+      //   position = strategy();
+      //   return position !== undefined;
+      // }.bind(this));
+      // return position;
+    }
+
 
     this.strategicPosition = function(){
       if (this.mainStrategy === undefined){
