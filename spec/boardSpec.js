@@ -3,10 +3,7 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define([], function(){
-  console.log(JSTicTacToe)
-  // JSTicTacToe.Board = Board;
-  // JSTicTacToe.AIPlayer = AIPlayer;
-  // JSTicTacToe.Game = Game;
+  
   describe('Board', function(){
     var board;
     beforeEach(function(){

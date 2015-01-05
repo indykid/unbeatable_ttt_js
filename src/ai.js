@@ -78,45 +78,6 @@ define([], function() {
       return position;
     }
 
-    function pickAIStrategy(ai){
-      if ( ai.mark === 'x'){
-        pickAIStrategyAsFirst(ai)
-      } else {
-        pickAIStrategyAsSecond(ai);
-      }
-    }
-
-    function pickAIStrategyAsFirst(ai){
-      var board = ai.game.board,
-          myLastPosition = board.lastPositionFor(ai.mark),
-          myLastPositionType = board.positionType(myLastPosition);
-      switch (myLastPositionType){
-        case 'corner':
-          ai.mainStrategy = 'cornerAsFirst';
-          break;
-        case 'center':
-          ai.mainStrategy = 'centerAsFirst';
-          break;
-      }
-    }
-
-    function pickAIStrategyAsSecond(ai){ 
-      var board = ai.game.board,
-          opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
-          lastPositionType = board.positionType(opponentsLastPosition);
-      switch (lastPositionType){
-        case 'corner':
-          ai.mainStrategy = 'cornerAsSecond';
-          break;
-        case 'center':
-          ai.mainStrategy = 'centerAsSecond';
-          break;
-        case 'edge':
-          ai.mainStrategy = 'edgeAsSecond';
-          break;
-      }
-    }
-
     this.cornerAsSecond = function(movesSoFar){
       var position,
           board = this.game.board,
@@ -188,7 +149,7 @@ define([], function() {
                 lines = opponentsLines.filter(function(line){
                   return JSTicTacToe.Helper.commonValues(line, adjacentToFirstMove).length > 0;
                 });
-            position = JSTicTacToe.Helper.randomElement(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement()));
+            position = JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0];
           }
           break;
       }
@@ -201,8 +162,10 @@ define([], function() {
           opponentsLastPosition = board.lastPositionFor(this.opponentMark);
       switch (movesSoFar){
         case 2:
-          var lastPositionType = board.positionType(opponentsLastPosition),
-              oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
+        console.log('in cornerAsFirst, case 1, 2 moves')
+          var lastPositionType = board.positionType(opponentsLastPosition);
+          var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
+          
           if (lastPositionType === 'center'){
             position = oppositeToFirstMove;
           } else {
@@ -215,11 +178,10 @@ define([], function() {
           }
           break;
         case 4:
-          console.log('in cornerAsFirst, case 2, 4 moves')
           // would only end up here if human didn't block with center
             // play on an empty intersection of ai-only lines
-          var lines = board.singleMarkLines(this.mark, 1);
-          var positions = [];
+          var lines = board.singleMarkLines(this.mark, 1),
+              positions = [];
           for (var i = 0; i < lines.length - 1; i++){
             positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0]);
           }
@@ -246,13 +208,11 @@ define([], function() {
             position = board.oppositePosition(opponentsLastPosition);
           }
           break;
-
         case 4:
-        console.log('in centerAsFirst, case 2, 4 moves')
-          var lines = board.singleMarkLines(this.mark, 1).map(function(line){
-            return board.availableOnAGivenLine(line);
-          });
-          var positions = [];
+          var positions = [],
+              lines = board.singleMarkLines(this.mark, 1).map(function(line){
+                return board.availableOnAGivenLine(line);
+              });
           for (var i = 0; i < lines.length - 1; i++){
             positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0]);
           }
@@ -264,11 +224,10 @@ define([], function() {
     }
 
     this.basicStrategy = function(){
-      // this is a fallback if there are no strategic moves to be made
+      // fallback if there are no strategic moves to be made
       // find line where i already have 1 move
       // if none then find an empty line and play there
       // if none of the above, just take any available position
-      // note: no need to check if occupied as only picking from empty anyway
       var position,
           line,
           available,
@@ -277,24 +236,60 @@ define([], function() {
           emptyLines = this.game.winningCombinations.filter(function(combination){
             return board.availableOnAGivenLine(combination).length === board.size;
           });
-      console.log('in basicStrategy')
-
       if (aiOnlyLines.length > 0){
-        // find available position:
         line = JSTicTacToe.Helper.randomElement(aiOnlyLines);
       } else if (emptyLines.length > 0){
-        // find empty line:
         line = JSTicTacToe.Helper.randomElement(emptyLines);
       } 
 
       if (line !== undefined){
+        // find available position on the line:
         available = board.availableOnAGivenLine(line);
         position = JSTicTacToe.Helper.randomElement(available);
       } else {
-        // find available pick a random
+        // find available and pick a random
         position = JSTicTacToe.Helper.randomElement(board.available());
       }
       return position;
+    }
+    
+    function pickAIStrategy(ai){
+      if ( ai.mark === 'x'){
+        pickAIStrategyAsFirst(ai)
+      } else {
+        pickAIStrategyAsSecond(ai);
+      }
+    }
+
+    function pickAIStrategyAsFirst(ai){
+      var board = ai.game.board,
+          myLastPosition = board.lastPositionFor(ai.mark),
+          myLastPositionType = board.positionType(myLastPosition);
+      switch (myLastPositionType){
+        case 'corner':
+          ai.mainStrategy = 'cornerAsFirst';
+          break;
+        case 'center':
+          ai.mainStrategy = 'centerAsFirst';
+          break;
+      }
+    }
+
+    function pickAIStrategyAsSecond(ai){ 
+      var board = ai.game.board,
+          opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
+          lastPositionType = board.positionType(opponentsLastPosition);
+      switch (lastPositionType){
+        case 'corner':
+          ai.mainStrategy = 'cornerAsSecond';
+          break;
+        case 'center':
+          ai.mainStrategy = 'centerAsSecond';
+          break;
+        case 'edge':
+          ai.mainStrategy = 'edgeAsSecond';
+          break;
+      }
     }
 
     function cornerOrCenter(board){
