@@ -5,9 +5,10 @@ var JSTicTacToe = JSTicTacToe || {};
 define([], function(){
   
   return JSTicTacToe.Helper = function(){
-    // ================================================
-    // ARRAY EXTENSIONS:
-    // ================================================
+
+  /* ================================================
+      ARRAY EXTENSIONS:
+    ================================================*/
     this.bootstrapArray = function(){
       Array.prototype.hasElement = function(value){
         'use strict';
@@ -57,10 +58,9 @@ define([], function(){
       }
     }
 
-    // ================================================
-    // HELPERS:
-    // ================================================
-
+  /* ================================================
+     GENERAL HELPERS:
+    ================================================*/
     this.randomize = function(data){
       return data.sort(function(){
         return 0.5 - Math.random();
@@ -79,6 +79,5 @@ define([], function(){
       });
       return result;
     }
-
   }
 });

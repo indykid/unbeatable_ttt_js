@@ -9,14 +9,15 @@ require(["jquery", "board", "game", "ai", "helper"], function($, Board, Game, AI
   JSTicTacToe.Helper = new Helper();
 
   $(function(){
-  // ================================================
-  // SETTING UP ARRAY EXTENSIONS:
-  // ================================================
+    
+  /* ================================================
+      SETTING UP ARRAY EXTENSIONS:
+    ================================================*/
     JSTicTacToe.Helper.bootstrapArray();
 
-  // ================================================
-  // DOM ELEMENTS:
-  // ================================================
+  /* ================================================
+      DOM ELEMENTS:
+    ================================================*/
     JSTicTacToe.grid = $('#grid');
     JSTicTacToe.emptyGridPositions = $('td:not(.occupied)');
     JSTicTacToe.newGameButton = $('#newGame');
@@ -27,9 +28,9 @@ require(["jquery", "board", "game", "ai", "helper"], function($, Board, Game, AI
     JSTicTacToe.status = $('#status');
     JSTicTacToe.winner = $('#winner');
 
-  // ================================================
-  // EVENT LISTENERS:
-  // ================================================
+  /* ================================================
+      EVENT LISTENERS:
+    ================================================*/
     JSTicTacToe.firstPlayer.on('click', function(){
       var firstPlayer = $(this).data('player');
       JSTicTacToe.selectPlayer.hide();

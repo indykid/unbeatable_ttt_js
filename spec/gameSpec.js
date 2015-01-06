@@ -36,7 +36,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(4, 'x');
             game.addToBoard(5, 'o');
             game.addToBoard(8, 'x');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('x')
           });
         });
@@ -47,7 +46,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(4, 'x');
             game.addToBoard(5, 'o');
             game.addToBoard(6, 'x');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('x')
           });
         });
@@ -58,7 +56,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(1, 'x');
             game.addToBoard(5, 'o');
             game.addToBoard(2, 'x');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('x')
           });
         });
@@ -69,7 +66,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(3, 'x');
             game.addToBoard(5, 'o');
             game.addToBoard(6, 'x');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('x')
           });
         });
@@ -84,7 +80,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(4, 'o');
             game.addToBoard(1, 'x');
             game.addToBoard(8, 'o');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('o')
           });
         });
@@ -96,7 +91,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(4, 'o');
             game.addToBoard(7, 'x');
             game.addToBoard(6, 'o');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('o')
           });
         });
@@ -108,7 +102,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(1, 'o');
             game.addToBoard(7, 'x');
             game.addToBoard(2, 'o');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('o')
           });
         });
@@ -120,7 +113,6 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
             game.addToBoard(3, 'o');
             game.addToBoard(7, 'x');
             game.addToBoard(6, 'o');
-            // expect(game.isWon()).toBe(true);
             expect(game.winnerMark()).toEqual('o')
           });
         });
@@ -130,32 +122,28 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
         it('returns false', function(){
           game.addToBoard(2, 'x');
           game.addToBoard(3, 'o');
-          game.addToBoard(1, 'x');
-          // expect(game.isWon()).toBe(false)
+          game.addToBoard(1, 'x')
           expect(game.winnerMark()).toBeUndefined();
         });
 
         it('returns false', function(){
           game.addToBoard(3, 'x');
           game.addToBoard(0, 'o');
-          game.addToBoard(4, 'x');
-          // expect(game.isWon()).toBe(false)
+          game.addToBoard(4, 'x')
           expect(game.winnerMark()).toBeUndefined();
         });
 
         it('returns false', function(){
           game.addToBoard(6, 'x');
           game.addToBoard(0, 'o');
-          game.addToBoard(8, 'x');
-          // expect(game.isWon()).toBe(false)
+          game.addToBoard(8, 'x')
           expect(game.winnerMark()).toBeUndefined();
         });
 
         it('returns false', function(){
           game.addToBoard(0, 'x');
           game.addToBoard(1, 'o');
-          game.addToBoard(3, 'x');
-          // expect(game.isWon()).toBe(false)
+          game.addToBoard(3, 'x')
           expect(game.winnerMark()).toBeUndefined();
         });
       });

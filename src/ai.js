@@ -44,7 +44,6 @@ define([], function() {
     this.findPosition = function(){
       var positions = [this.winningPosition(), this.threatPosition(), this.strategicPosition(), this.basicStrategy()];
       var position = positions.find(function(position){
-        console.log()
         return position !== undefined;
       });
       return position;
@@ -117,11 +116,9 @@ define([], function() {
           position;
       switch (movesSoFar){
         case 1:
-          console.log('in centerAsSecond case 1 (1 move)');
           position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
           break;
         case 3:
-          console.log('in centerAsSecond case 2 (3 moves)')
           if ( opponentsLastPosition === board.oppositePosition(board.lastPositionFor(this.mark)) ){
             position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
           }
@@ -137,7 +134,6 @@ define([], function() {
           opponentsFirstPosition = board.moves[0].position;
       switch (movesSoFar){
         case 1:
-          console.log('in edgeAsSecond case 1, 1move');
           position = this.game.board.center(); 
           break;
         case 3:
@@ -162,7 +158,6 @@ define([], function() {
           opponentsLastPosition = board.lastPositionFor(this.opponentMark);
       switch (movesSoFar){
         case 2:
-        console.log('in cornerAsFirst, case 1, 2 moves')
           var lastPositionType = board.positionType(opponentsLastPosition);
           var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
           
@@ -200,7 +195,6 @@ define([], function() {
           opponentsLastPosition = board.lastPositionFor(this.opponentMark);
       switch (movesSoFar){
         case 2:
-        console.log('in centerAsFirst, case 1, 2 moves')
           var lastPositionType = board.positionType(opponentsLastPosition);
           if (lastPositionType === 'edge'){
             position = JSTicTacToe.Helper.randomElement(board.corners(board.available()));
@@ -252,7 +246,7 @@ define([], function() {
       }
       return position;
     }
-    
+
     function pickAIStrategy(ai){
       if ( ai.mark === 'x'){
         pickAIStrategyAsFirst(ai)

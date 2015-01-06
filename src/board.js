@@ -28,7 +28,7 @@ define([], function() {
 
     this.available = function(){
       var available = this.possiblePositions.filter(function(position){
-        return !this._takenPositions().hasElement(position);
+        return !this.takenPositions().hasElement(position);
       }.bind(this));
       return available;
     }
@@ -97,7 +97,6 @@ define([], function() {
       if (playerMove){
         position = playerMove.position;
       }
-      
       return position;
     }
 
@@ -127,7 +126,7 @@ define([], function() {
       return positions;
     }
 
-    this._takenPositions = function(){
+    this.takenPositions = function(){
       var taken = this.moves.map(function(move){
         return move.position
       });

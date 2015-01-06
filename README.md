@@ -12,7 +12,7 @@ It was helpful but not comprehensive enough I felt.
 - This was also handy at the beginning:
 http://www.chessandpoker.com/tic_tac_toe_strategy.html
 
-- THE defining resource for me was this book, that I stumbled upon while trying to learn how not to loose at Tic Tac Toe:
+- THE defining resource for me was this little book, that I stumbled upon while trying to learn how not to loose at Tic Tac Toe:
 http://www.cs.jhu.edu/~jorgev/cs106/ttt.pdf
 
 
@@ -29,7 +29,7 @@ http://www.cs.jhu.edu/~jorgev/cs106/ttt.pdf
 
   Once I had narrowed down the possibilities, a weight was lifted off my shoulders. I finally felt I could start writing something.
 
-  I have a hand drawn very messy looking diagram, once I get a chance I will create an image of it using some wireframing/mindmapping tool and will add it to the project.
+  I have a hand-drawn, very messy-looking diagram, once I get a chance I will create an image of it using some wireframing/mindmapping tool and will add it to the project.
 
 ####During:
   

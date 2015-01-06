@@ -3,7 +3,7 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define([], function(){
-  
+
   describe('Board', function(){
     var board;
     beforeEach(function(){
@@ -47,20 +47,20 @@ define([], function(){
       });
     });
 
-    describe('#_takenPositions', function(){
+    describe('#takenPositions', function(){
       it('returns only occupied positions', function(){
         board.addMove(5, 'x');
         board.addMove(7, 'o');
         board.addMove(0, 'x');
         board.addMove(4, 'o');
-        expect(board._takenPositions()).toEqual([5, 7, 0, 4]);
+        expect(board.takenPositions()).toEqual([5, 7, 0, 4]);
       });
       it('returns only occupied positions', function(){
         board.addMove(6, 'x');
         board.addMove(3, 'o');
         board.addMove(0, 'x');
         board.addMove(2, 'o');
-        expect(board._takenPositions()).toEqual([6, 3, 0, 2]);
+        expect(board.takenPositions()).toEqual([6, 3, 0, 2]);
       });
     });
 
@@ -158,15 +158,15 @@ define([], function(){
           expect(board.singlePlayerLine([2, 5, 8], 2, 'x')).toBe(false);
         });
       });
-
     });
 
     describe('#singleMarkLines', function(){
       var game;
-      // board = undefined;
+
       beforeEach(function(){
         game = new JSTicTacToe.Game('human');
       });
+
       describe('context: no two positions in a row belong to player x', function(){
         it('given the moves, for player "x" it returns correct lines when asking for 1 in a line, and no lines when asking for 2', function(){
           game.board.addMove(8, 'x');
@@ -185,7 +185,6 @@ define([], function(){
           expect(game.board.singleMarkLines('o', 2)).toEqual([[0, 1, 2]]);
         });
       });
-      
     });
 
     describe('#lastPositionFor', function(){
@@ -232,9 +231,5 @@ define([], function(){
         expect(board.center()).toEqual(4);
       });
     });
-
   });
 });
-
-
-

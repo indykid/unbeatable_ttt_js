@@ -3,7 +3,7 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer) { 
-  
+
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;
   JSTicTacToe.Game = Game;
@@ -142,11 +142,5 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
         });
       });
     });
-
-    describe('#firstPlayerStrategy', function(){
-
-    });
-
   });
-
 });
