@@ -148,7 +148,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
         describe('context: first move for ai', function(){
           it('returns corner or center position', function(){
             var position = ai.strategicPosition();
-            expect(['corner', 'center']).toContain(ai.game.board.positionType(position));
+            expect(['corner', 'center']).toContain(ai.board.positionType(position));
           });
         });
 
@@ -311,7 +311,24 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       
     });
 
-    
+    // describe('#findPosition', function(){
+
+    //   it('returns a winning position, if there is one', function(){
+        
+    //   });
+
+    //   it('returns a threat position, if there is no winning position', function(){
+        
+    //   });
+
+    //   it('returns strategic position, if no win or threat', function(){
+
+    //   });
+
+    //   it('falls back to basic strategy if no win, no threat and no strategic position available', function(){
+
+    //   });
+    // });
 
     // describe('#_pickAIStrategy', function(){
     //   describe('context: ai plays first', function(){

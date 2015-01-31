@@ -7,7 +7,7 @@ define([], function() {
   return JSTicTacToe.Game = function(firstPlayer){
 
     this.board = new JSTicTacToe.Board(this);
-    this.ai = new JSTicTacToe.AIPlayer(this, firstPlayer);
+    this.ai = new JSTicTacToe.AIPlayer(this.board, firstPlayer);
     this.winningCombinations = setWinningCombinations(this.board);
     this.winner = { player: undefined, mark: undefined };
     this.status = 'active'; // other states: won, drawn

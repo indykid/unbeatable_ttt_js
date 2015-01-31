@@ -4,15 +4,15 @@ var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
 
-  JSTicTacToe.AIPlayer = function(game, firstPlayer){
+  JSTicTacToe.AIPlayer = function(board, firstPlayer){
 
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
-    this.game = game;
+    this.board = board;
     this.mainStrategy;
     
     this.winningPosition = function(){
-      var board = this.game.board,
+      var board = this.board,
           winLines = board.singleMarkLines(this.mark, (board.size - 1));
       if (winLines.length > 0){
         return board.availableOnAGivenLine(winLines[0])[0];
@@ -20,7 +20,7 @@ define([], function() {
     };
 
     this.threatPosition = function(){
-      var board = this.game.board,
+      var board = this.board,
           threatLines = board.singleMarkLines(this.opponentMark, (board.size - 1));
       if (threatLines.length > 0){
         return board.availableOnAGivenLine(threatLines[0])[0];
@@ -28,7 +28,7 @@ define([], function() {
     };
 
     this.play = function(){
-      var board = this.game.board,
+      var board = this.board,
           position = this.findPosition();
       // console.log(position)
       this.game.addToBoard(position, this.mark);//board
@@ -37,22 +37,29 @@ define([], function() {
       board.updateUI();//UI
     };
 
+    // this.findPosition = function(){
+    //   var positions = [this.winningPosition(), this.threatPosition(), this.strategicPosition(), this.basicStrategy()];
+    //   var position = positions.find(function(position){
+    //     return position !== undefined;
+    //   });
+    //   return position;
+    // };
+
+    // this is super hacky but shortcircuits the unnecessary calls (vs commented function above)
     this.findPosition = function(){
-      var positions = [this.winningPosition(), this.threatPosition(), this.strategicPosition(), this.basicStrategy()];
-      var position = positions.find(function(position){
-        return position !== undefined;
-      });
+      var position;
+      (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined || (position = this.strategicPosition()) !== undefined || (position = this.basicStrategy()); 
       return position;
     };
 
     this.strategicPosition = function(){
       var position,
-          movesSoFar = this.game.board.moves.length;
+          movesSoFar = this.board.moves.length;
       if (this.mainStrategy === undefined){
         this._pickAIStrategy();
       }
       if (movesSoFar === 0){
-        position = cornerOrCenter(this.game.board);
+        position = cornerOrCenter(this.board);
       } else {
         // console.log(this.mainStrategy)
 
@@ -81,14 +88,14 @@ define([], function() {
 
     this.cornerAsSecond = function(movesSoFar){
       var position,
-          board = this.game.board,
+          board = this.board,
           opponentsLastPosition = board.lastPositionFor(this.opponentMark);
       switch (movesSoFar){
         case 1:
-          position = this.game.board.center();
+          position = this.board.center();
           break;
         case 3:
-          var fullLine = this.game.winningCombinations.find(function(combination){
+          var fullLine = this.board.game.winningCombinations.find(function(combination){
             return board.availableOnAGivenLine(combination).length === 0;
           });
           
@@ -114,17 +121,17 @@ define([], function() {
     };
 
     this.centerAsSecond = function(movesSoFar){
-      var board = this.game.board,
+      var board = this.board,
           opponentsLastPosition = board.lastPositionFor(this.opponentMark),
           position;
       switch (movesSoFar){
         case 1:
-          position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
+          position = JSTicTacToe.Helper.randomElement(this.board.corners(board.available()));
           break;
         case 3:
         // human must have played opposite to its first move, otherwise this move would have been preempted by threatPosition:
           // if ( opponentsLastPosition === board.oppositePosition(board.lastPositionFor(this.mark)) ){
-          position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
+          position = JSTicTacToe.Helper.randomElement(this.board.corners(board.available()));
           // }
           break;
       }
@@ -133,10 +140,10 @@ define([], function() {
 
     this.edgeAsSecond = function(movesSoFar){
       var position,
-          board = this.game.board;       
+          board = this.board;       
       switch (movesSoFar){
         case 1:
-          position = this.game.board.center();
+          position = this.board.center();
           break;
         case 3:
           var opponentsLastPosition = board.lastPositionFor(this.opponentMark),
@@ -161,7 +168,7 @@ define([], function() {
 
     this.cornerAsFirst = function(movesSoFar){
       var position,
-          board = this.game.board;
+          board = this.board;
       switch (movesSoFar){
         case 2:
           var opponentsLastPosition = board.lastPositionFor(this.opponentMark),
@@ -197,7 +204,7 @@ define([], function() {
     };
 
     this.centerAsFirst = function(movesSoFar){
-      var board = this.game.board,
+      var board = this.board,
           position;
       switch (movesSoFar){
         case 2:
@@ -234,7 +241,7 @@ define([], function() {
       var position,
           line,
           available,
-          board = this.game.board,
+          board = this.board,
           aiOnlyLines = board.singleMarkLines(this.mark, 1),
           emptyLines = this.game.winningCombinations.filter(function(combination){
             return board.availableOnAGivenLine(combination).length === board.size;
@@ -266,7 +273,7 @@ define([], function() {
 
     function pickAIStrategyAsFirst(ai){
       // console.log(ai)
-      var board = ai.game.board,
+      var board = ai.board,
           myLastPosition = board.lastPositionFor(ai.mark),
           myLastPositionType = board.positionType(myLastPosition);
       switch (myLastPositionType){
@@ -280,7 +287,7 @@ define([], function() {
     }
 
     function pickAIStrategyAsSecond(ai){
-      var board = ai.game.board,
+      var board = ai.board,
           opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
           lastPositionType = board.positionType(opponentsLastPosition);
       switch (lastPositionType){
