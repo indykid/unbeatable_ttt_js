@@ -9,7 +9,7 @@ define([], function() {
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
     this.game = game;
-    // this.mainStrategy;
+    this.mainStrategy;
     
     this.winningPosition = function(){
       var board = this.game.board,
@@ -28,17 +28,13 @@ define([], function() {
     };
 
     this.play = function(){
-      var position,
-          board = this.game.board;
-      if (board.moves.length === 0){
-        position = cornerOrCenter(board);
-      } else {
-        position = this.findPosition();
-      }
-      this.game.addToBoard(position, this.mark);
-      this.game.checkAndUpdateGameState();
-      board.updateBoardView();
-      board.updateUI();
+      var board = this.game.board,
+          position = this.findPosition();
+      console.log(position)
+      this.game.addToBoard(position, this.mark);//board
+      this.game.checkAndUpdateGameState();//???
+      board.updateBoardView();//UI
+      board.updateUI();//UI
     };
 
     this.findPosition = function(){
@@ -52,28 +48,34 @@ define([], function() {
     this.strategicPosition = function(){
       var position,
           movesSoFar = this.game.board.moves.length;
-
       if (this.mainStrategy === undefined){
-        pickAIStrategy(this);
+        this._pickAIStrategy();
       }
+      if (movesSoFar === 0){
+        position = cornerOrCenter(this.game.board);
+      } else {
+        // console.log(this.mainStrategy)
 
-      switch (this.mainStrategy){
-        case 'cornerAsFirst':
-          position = this.cornerAsFirst(movesSoFar);
-          break;
-        case 'centerAsFirst':
-          position = this.centerAsFirst(movesSoFar);
-          break;
-        case 'cornerAsSecond':
-          position = this.cornerAsSecond(movesSoFar);
-          break;
-        case 'centerAsSecond':
-          position = this.centerAsSecond(movesSoFar);
-          break;
-        case 'edgeAsSecond':
-          position = this.edgeAsSecond(movesSoFar);
-          break;
+        switch (this.mainStrategy){
+          case 'cornerAsFirst':
+            position = this.cornerAsFirst(movesSoFar);
+            break;
+          case 'centerAsFirst':
+            position = this.centerAsFirst(movesSoFar);
+            break;
+          case 'cornerAsSecond':
+            position = this.cornerAsSecond(movesSoFar);
+            break;
+          case 'centerAsSecond':
+            position = this.centerAsSecond(movesSoFar);
+            break;
+          case 'edgeAsSecond':
+          // console.log('case: edgeAsSecond')
+            position = this.edgeAsSecond(movesSoFar);
+            break;
+        }
       }
+      // console.log('strategicPosition: ', position);
       return position;
     };
 
@@ -89,18 +91,20 @@ define([], function() {
           var fullLine = this.game.winningCombinations.find(function(combination){
             return board.availableOnAGivenLine(combination).length === 0;
           });
-          // if there's a full diagonal play any edge
+          
           if (fullLine !== undefined){
+            // if there's a full diagonal play any edge
             var edges = board.available().filter(function(position){
               return board.positionType(position) === 'edge';
             });
             position = JSTicTacToe.Helper.randomElement(edges);
           } else {
-            // opponent must have played opposite edge to its first move (x1)
+            // opponent must have played opposite edge to its first move (x1), otherwise threat block would preempt this condition 
             // cannot play the corner opposite x1, and need to play corner cell on the same side as the opponent's last move
             // ie corner which is adjacent to opponentsLastPosition but itself is not the opposite to his first move.
             var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
             var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
+            console.log(adjacentToLastMove);
             position = adjacentToLastMove.find(function(move){
               return board.positionType(move) === 'corner' && move !== oppositeToFirstMove;
             });
@@ -154,17 +158,17 @@ define([], function() {
 
     this.cornerAsFirst = function(movesSoFar){
       var position,
-          board = this.game.board,
-          opponentsLastPosition = board.lastPositionFor(this.opponentMark);
+          board = this.game.board;
       switch (movesSoFar){
         case 2:
-          var lastPositionType = board.positionType(opponentsLastPosition);
-          var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
+          var opponentsLastPosition = board.lastPositionFor(this.opponentMark),
+              lastPositionType = board.positionType(opponentsLastPosition),
+              oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
           
           if (lastPositionType === 'center'){
             position = oppositeToFirstMove;
           } else {
-            // play corner which is not opposite to the first move and is on adjacent to opponentsLastMove
+            // play corner which is not opposite to the first move and is not adjacent to opponentsLastMove
             var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
             var corners = board.corners(board.available()).filter(function(corner){
               return corner !== oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
@@ -173,14 +177,14 @@ define([], function() {
           }
           break;
         case 4:
-          // would only end up here if human didn't block with center
-            // play on an empty intersection of ai-only lines
+          // would only end up here if human didn't block with center at any point
+            // play on an empty intersection of ai-only lines (makes a fork)
           var lines = board.singleMarkLines(this.mark, 1),
               positions = [];
           for (var i = 0; i < lines.length - 1; i++){
             positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0]);
           }
-          positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines.lastElement())[0]);
+          positions.push(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0]);
           position = JSTicTacToe.Helper.randomElement(positions.filter(function(position){
             return board.isPositionEmpty(position);
           }));
@@ -191,10 +195,10 @@ define([], function() {
 
     this.centerAsFirst = function(movesSoFar){
       var board = this.game.board,
-          position,
-          opponentsLastPosition = board.lastPositionFor(this.opponentMark);
+          position;
       switch (movesSoFar){
         case 2:
+          var opponentsLastPosition = board.lastPositionFor(this.opponentMark);
           var lastPositionType = board.positionType(opponentsLastPosition);
           if (lastPositionType === 'edge'){
             position = JSTicTacToe.Helper.randomElement(board.corners(board.available()));
@@ -204,14 +208,16 @@ define([], function() {
           break;
         case 4:
           var positions = [],
-              lines = board.singleMarkLines(this.mark, 1).map(function(line){
-                return board.availableOnAGivenLine(line);
-              });
+              lines = board.singleMarkLines(this.mark, 1);
+          console.log('lines',lines)
           for (var i = 0; i < lines.length - 1; i++){
             positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0]);
           }
-          positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines.lastElement())[0]);
-          position = JSTicTacToe.Helper.randomElement(positions);
+          positions.push(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0]);
+          console.log('positions', positions)
+          position = JSTicTacToe.Helper.randomElement(positions.filter(function(position){
+            return board.isPositionEmpty(position);
+          }));
           break;
       }
       return position;
@@ -247,15 +253,16 @@ define([], function() {
       return position;
     };
 
-    function pickAIStrategy(ai){
-      if ( ai.mark === 'x'){
-        pickAIStrategyAsFirst(ai);
+    this._pickAIStrategy = function(){
+      if ( this.mark === 'x'){
+        pickAIStrategyAsFirst(this);
       } else {
-        pickAIStrategyAsSecond(ai);
+        pickAIStrategyAsSecond(this);
       }
-    }
+    };
 
     function pickAIStrategyAsFirst(ai){
+      // console.log(ai)
       var board = ai.game.board,
           myLastPosition = board.lastPositionFor(ai.mark),
           myLastPositionType = board.positionType(myLastPosition);
@@ -270,17 +277,21 @@ define([], function() {
     }
 
     function pickAIStrategyAsSecond(ai){
+      console.log(ai)
       var board = ai.game.board,
           opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
           lastPositionType = board.positionType(opponentsLastPosition);
       switch (lastPositionType){
         case 'corner':
+        console.log('corner')
           ai.mainStrategy = 'cornerAsSecond';
           break;
         case 'center':
+        console.log('center')
           ai.mainStrategy = 'centerAsSecond';
           break;
         case 'edge':
+        console.log('edge')
           ai.mainStrategy = 'edgeAsSecond';
           break;
       }
