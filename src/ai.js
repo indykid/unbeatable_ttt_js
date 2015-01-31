@@ -4,12 +4,12 @@ var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
 
-  return JSTicTacToe.AIPlayer = function(game, firstPlayer){
+  JSTicTacToe.AIPlayer = function(game, firstPlayer){
 
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.opponentMark = (this.mark == 'x') ? 'o' : 'x';
     this.game = game;
-    this.mainStrategy;
+    // this.mainStrategy;
     
     this.winningPosition = function(){
       var board = this.game.board,
@@ -17,7 +17,7 @@ define([], function() {
       if (winLines.length > 0){
         return board.availableOnAGivenLine(winLines[0])[0];
       }
-    }
+    };
 
     this.threatPosition = function(){
       var board = this.game.board,
@@ -25,7 +25,7 @@ define([], function() {
       if (threatLines.length > 0){
         return board.availableOnAGivenLine(threatLines[0])[0];
       }
-    }
+    };
 
     this.play = function(){
       var position,
@@ -39,7 +39,7 @@ define([], function() {
       this.game.checkAndUpdateGameState();
       board.updateBoardView();
       board.updateUI();
-    }
+    };
 
     this.findPosition = function(){
       var positions = [this.winningPosition(), this.threatPosition(), this.strategicPosition(), this.basicStrategy()];
@@ -47,7 +47,7 @@ define([], function() {
         return position !== undefined;
       });
       return position;
-    }
+    };
 
     this.strategicPosition = function(){
       var position,
@@ -65,7 +65,7 @@ define([], function() {
           position = this.centerAsFirst(movesSoFar);
           break;
         case 'cornerAsSecond':
-          position = this.cornerAsSecond(movesSoFar);         
+          position = this.cornerAsSecond(movesSoFar);
           break;
         case 'centerAsSecond':
           position = this.centerAsSecond(movesSoFar);
@@ -75,7 +75,7 @@ define([], function() {
           break;
       }
       return position;
-    }
+    };
 
     this.cornerAsSecond = function(movesSoFar){
       var position,
@@ -108,7 +108,7 @@ define([], function() {
           break;
       }
       return position;
-    }
+    };
 
     this.centerAsSecond = function(movesSoFar){
       var board = this.game.board,
@@ -125,7 +125,7 @@ define([], function() {
           break;
       }
       return position;
-    }
+    };
 
     this.edgeAsSecond = function(movesSoFar){
       var position,
@@ -134,7 +134,7 @@ define([], function() {
           opponentsFirstPosition = board.moves[0].position;
       switch (movesSoFar){
         case 1:
-          position = this.game.board.center(); 
+          position = this.game.board.center();
           break;
         case 3:
           if( opponentsLastPosition === board.oppositePosition(opponentsFirstPosition)){
@@ -150,7 +150,7 @@ define([], function() {
           break;
       }
       return position;
-    }
+    };
 
     this.cornerAsFirst = function(movesSoFar){
       var position,
@@ -169,7 +169,7 @@ define([], function() {
             var corners = board.corners(board.available()).filter(function(corner){
               return corner !== oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
             });
-            position = JSTicTacToe.Helper.randomElement(corners);      
+            position = JSTicTacToe.Helper.randomElement(corners);
           }
           break;
         case 4:
@@ -186,8 +186,8 @@ define([], function() {
           }));
           break;
       }
-      return position
-    }
+      return position;
+    };
 
     this.centerAsFirst = function(movesSoFar){
       var board = this.game.board,
@@ -215,7 +215,7 @@ define([], function() {
           break;
       }
       return position;
-    }
+    };
 
     this.basicStrategy = function(){
       // fallback if there are no strategic moves to be made
@@ -234,7 +234,7 @@ define([], function() {
         line = JSTicTacToe.Helper.randomElement(aiOnlyLines);
       } else if (emptyLines.length > 0){
         line = JSTicTacToe.Helper.randomElement(emptyLines);
-      } 
+      }
 
       if (line !== undefined){
         // find available position on the line:
@@ -245,11 +245,11 @@ define([], function() {
         position = JSTicTacToe.Helper.randomElement(board.available());
       }
       return position;
-    }
+    };
 
     function pickAIStrategy(ai){
       if ( ai.mark === 'x'){
-        pickAIStrategyAsFirst(ai)
+        pickAIStrategyAsFirst(ai);
       } else {
         pickAIStrategyAsSecond(ai);
       }
@@ -269,7 +269,7 @@ define([], function() {
       }
     }
 
-    function pickAIStrategyAsSecond(ai){ 
+    function pickAIStrategyAsSecond(ai){
       var board = ai.game.board,
           opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
           lastPositionType = board.positionType(opponentsLastPosition);
@@ -291,5 +291,7 @@ define([], function() {
           corner = JSTicTacToe.Helper.randomElement(board.corners(board.possiblePositions));
       return JSTicTacToe.Helper.randomElement([corner, center]);
     }
-  }
+  };
+
+  return JSTicTacToe.AIPlayer;
 });
