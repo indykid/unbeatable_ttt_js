@@ -30,7 +30,7 @@ define([], function() {
     this.play = function(){
       var board = this.game.board,
           position = this.findPosition();
-      console.log(position)
+      // console.log(position)
       this.game.addToBoard(position, this.mark);//board
       this.game.checkAndUpdateGameState();//???
       board.updateBoardView();//UI
@@ -104,7 +104,6 @@ define([], function() {
             // ie corner which is adjacent to opponentsLastPosition but itself is not the opposite to his first move.
             var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
             var adjacentToLastMove = board.adjacentPositions(opponentsLastPosition);
-            console.log(adjacentToLastMove);
             position = adjacentToLastMove.find(function(move){
               return board.positionType(move) === 'corner' && move !== oppositeToFirstMove;
             });
@@ -123,9 +122,10 @@ define([], function() {
           position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
           break;
         case 3:
-          if ( opponentsLastPosition === board.oppositePosition(board.lastPositionFor(this.mark)) ){
-            position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
-          }
+        // human must have played opposite to its first move, otherwise this move would have been preempted by threatPosition:
+          // if ( opponentsLastPosition === board.oppositePosition(board.lastPositionFor(this.mark)) ){
+          position = JSTicTacToe.Helper.randomElement(this.game.board.corners(board.available()));
+          // }
           break;
       }
       return position;
@@ -133,17 +133,20 @@ define([], function() {
 
     this.edgeAsSecond = function(movesSoFar){
       var position,
-          board = this.game.board,
-          opponentsLastPosition = board.lastPositionFor(this.opponentMark),
-          opponentsFirstPosition = board.moves[0].position;
+          board = this.game.board;       
       switch (movesSoFar){
         case 1:
           position = this.game.board.center();
           break;
         case 3:
+          var opponentsLastPosition = board.lastPositionFor(this.opponentMark),
+              opponentsFirstPosition = board.moves[0].position;
+          // if human played opposite to their first move:
           if( opponentsLastPosition === board.oppositePosition(opponentsFirstPosition)){
             position = JSTicTacToe.Helper.randomElement(board.corners(board.available()));
           } else {
+            // this will suffice only if they played non-opposite edge, or non-adjacent corner to x1
+            // need to play an adjacent corner to x1 on the same side as their last move (x2)
             var adjacentToFirstMove = board.adjacentPositions(opponentsFirstPosition),
                 opponentsLines = board.singleMarkLines(this.opponentMark, 1),
                 lines = opponentsLines.filter(function(line){
@@ -277,21 +280,17 @@ define([], function() {
     }
 
     function pickAIStrategyAsSecond(ai){
-      console.log(ai)
       var board = ai.game.board,
           opponentsLastPosition = board.lastPositionFor(ai.opponentMark),
           lastPositionType = board.positionType(opponentsLastPosition);
       switch (lastPositionType){
         case 'corner':
-        console.log('corner')
           ai.mainStrategy = 'cornerAsSecond';
           break;
         case 'center':
-        console.log('center')
           ai.mainStrategy = 'centerAsSecond';
           break;
         case 'edge':
-        console.log('edge')
           ai.mainStrategy = 'edgeAsSecond';
           break;
       }
