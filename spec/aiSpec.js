@@ -22,7 +22,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
     });
 
     it("knows opponent's mark", function(){
-      expect(ai.opponentMark).toBeDefined();
+      expect(ai.humansMark).toBeDefined();
     });
 
     describe('#winningPosition', function(){

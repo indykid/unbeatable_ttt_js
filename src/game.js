@@ -41,12 +41,12 @@ define([], function() {
 
     this.winnerMark = function(){
       var singlePlayerFullLine = this.winningCombinations.find(function(combination){
-        return this.board.singlePlayerLine(combination, this.board.size, this.ai.opponentMark) || this.board.singlePlayerLine(combination, this.board.size, this.ai.mark);
+        return this.board.singlePlayerLine(combination, this.board.size, this.ai.humansMark) || this.board.singlePlayerLine(combination, this.board.size, this.ai.mark);
       }.bind(this));
       if (singlePlayerFullLine!==undefined){
         return this.board.getMark(singlePlayerFullLine[0]);
       }   
-    }
+    };
 
     this.isPlayerTurn = function(mark){
       var movesSoFar = this.board.moves.length;
@@ -57,8 +57,8 @@ define([], function() {
     }
 
     this.humanPlay = function(position){
-      if (this.isPlayerTurn(this.ai.opponentMark)){
-        this.addToBoard(position, this.ai.opponentMark);
+      if (this.isPlayerTurn(this.ai.humansMark)){
+        this.addToBoard(position, this.ai.humansMark);
         this.checkAndUpdateGameState();
         this.board.updateBoardView();
         this.board.updateUI();

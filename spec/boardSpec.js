@@ -7,7 +7,8 @@ define([], function(){
   describe('Board', function(){
     var board;
     beforeEach(function(){
-      board = new JSTicTacToe.Board();
+      var game = new JSTicTacToe.Game('human');//because of winning combinations
+      board = game.board;
     });
 
     it('is empty at the start', function(){
@@ -118,6 +119,23 @@ define([], function(){
       });
     });
 
+    describe('#availableOfType', function(){
+      it('only returns available positions of a given type', function(){
+        // board.addMove(4, 'x');
+        board.addMove(2, 'o');
+        board.addMove(5, 'x');
+        expect(board.availableOfType('corner').ascending()).toEqual([0, 6, 8]);
+        expect(board.availableOfType('edge').ascending()).toEqual([1, 3, 7]);
+        expect(board.availableOfType('center')).toEqual([4]);
+      });
+      it('return empty array if no available positions of a given type', function(){
+        board.addMove(4, 'x');
+        board.addMove(2, 'o');
+        board.addMove(5, 'x');
+        expect(board.availableOfType('center')).toEqual([]);
+      });
+    });
+
     describe('#singlePlayerLine', function(){
       describe('context: only 2 moves on a line, both by the same player', function(){
         it('returns true if asking for 2 of the same', function(){
@@ -163,6 +181,36 @@ define([], function(){
           board.addMove(3, 'x');
           board.addMove(1, 'o');
           expect(board.singlePlayerLine([2, 5, 8], 2, 'x')).toBe(false);
+        });
+      });
+    });
+
+    describe('#singleFullLine', function(){
+      describe('context: only one full line', function(){
+        it('returns true', function(){
+          board.addMove(1, 'x');
+          board.addMove(4, 'o');
+          board.addMove(7, 'x');
+          expect(board.singleFullLine()).toBe(true);
+        });
+      });
+      describe('context: one full line and one more half full', function(){
+        it('returns false', function(){
+          board.addMove(1, 'x');
+          board.addMove(4, 'o');
+          board.addMove(7, 'x');
+          board.addMove(3, 'o');
+          expect(board.singleFullLine()).toBe(false);
+        });
+      });
+      describe('context: more than one full line', function(){
+        it('returns false', function(){
+          board.addMove(1, 'x');
+          board.addMove(4, 'o');
+          board.addMove(7, 'x');
+          board.addMove(3, 'o');
+          board.addMove(5, 'x');
+          expect(board.singleFullLine()).toBe(false);
         });
       });
     });
@@ -225,14 +273,14 @@ define([], function(){
       });
     });
 
-    describe('#corners', function(){
-      it('out of all possible positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
-        expect(board.corners(board.possiblePositions).ascending()).toEqual([0, 2, 6, 8]);
-      });
-      it('out of given positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
-        expect(board.corners([0, 4, 5, 6]).ascending()).toEqual([0, 6]);
-      });
-    });
+    // describe('#corners', function(){
+    //   it('out of all possible positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
+    //     expect(board.corners(board.possiblePositions).ascending()).toEqual([0, 2, 6, 8]);
+    //   });
+    //   it('out of given positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
+    //     expect(board.corners([0, 4, 5, 6]).ascending()).toEqual([0, 6]);
+    //   });
+    // });
     describe('#center', function(){
       it('always returns 4 for 3x3 grid', function(){
         expect(board.center()).toEqual(4);

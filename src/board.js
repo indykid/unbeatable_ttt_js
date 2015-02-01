@@ -31,18 +31,25 @@ define([], function() {
         return !this.takenPositions().hasElement(position);
       }.bind(this));
       return available;
-    }
+    };
 
     this.positionType = function(position){
       var remainder = position % 2;
       if (position === 4){
         return "center";
-      } 
-      else if (remainder === 0){
+      } else if (remainder === 0){
         return "corner";
       } else {
         return "edge";
       };
+    };
+
+    this.availableOfType = function(positionType){
+      var available = this.available(),
+          availableOfType = available.filter(function(position){
+            return this.positionType(position) === positionType;
+          }.bind(this));
+      return availableOfType;
     };
 
     this.isPositionEmpty = function(position) {
@@ -69,18 +76,19 @@ define([], function() {
       return false;
     }
 
+    this.singleFullLine = function(){
+      var fullLines = this.game.winningCombinations.filter(function(combination){
+        return this.availableOnAGivenLine(combination).length === 0;
+      }.bind(this));
+      return fullLines.length === 1 && this.takenPositions().length === this.size;
+    }
+
     this.singleMarkLines = function(mark, howMany){ 
       var lines = this.game.winningCombinations.filter(function(combination){
         return this.singlePlayerLine(combination, howMany, mark);
       }.bind(this));
       return lines;
     }  
-
-    this.corners = function(fromMoves){
-      return fromMoves.filter(function(position){
-        return this.positionType(position) === 'corner';
-      }.bind(this));
-    }
 
     this.center = function(){
       return this.possiblePositions.find(function(position){
@@ -128,10 +136,12 @@ define([], function() {
 
     this.takenPositions = function(){
       var taken = this.moves.map(function(move){
-        return move.position
+        return move.position;
       });
       return taken;
-    }
+    };
+
+    
 
     this.updateBoardView = function(){
       this.moves.forEach(function(move){
