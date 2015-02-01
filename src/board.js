@@ -132,7 +132,7 @@ define([], function() {
           break;
       }
       return positions;
-    }
+    };
 
     this.takenPositions = function(){
       var taken = this.moves.map(function(move){
@@ -162,7 +162,21 @@ define([], function() {
         $('td').addClass('occupied');
         // JSTicTacToe.emptyGridPositions.off();
       }
-    }
+    };
+
+    this.findIntersections = function(lines){
+      var intersections = [];
+      for ( var i = 0; i < lines.length - 1; i++ ){
+        var intersection = JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0];
+        if (intersection !== undefined){
+          intersections.push(intersection);
+        }
+      }
+      if (lines.length === this.size){
+        intersections.push(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0]);
+      };
+      return intersections;
+    }; // TODO: refactor?
 
     function uiFriendlyPlayer(player){
       var friendly = player === 'ai' ? 'computer' : 'you';

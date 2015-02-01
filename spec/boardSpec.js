@@ -273,14 +273,18 @@ define([], function(){
       });
     });
 
-    // describe('#corners', function(){
-    //   it('out of all possible positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
-    //     expect(board.corners(board.possiblePositions).ascending()).toEqual([0, 2, 6, 8]);
-    //   });
-    //   it('out of given positions always returns [0, 2, 6, 8] for 3x3 grid', function(){
-    //     expect(board.corners([0, 4, 5, 6]).ascending()).toEqual([0, 6]);
-    //   });
-    // });
+    describe('#findIntersections', function(){
+      it('returns intersections for 2 or 3 lines', function(){
+        // board.addMove(1, 'x');
+        // board.addMove(4, 'o');
+        var line1 = [0, 1, 2];
+        var line2 = [1, 4, 7];
+        var line3 = [2, 5, 8];
+        expect(board.findIntersections([line1, line2])).toEqual([1]);
+        expect(board.findIntersections([line1, line2, line3])).toEqual([1, 2]);
+      });
+    });
+
     describe('#center', function(){
       it('always returns 4 for 3x3 grid', function(){
         expect(board.center()).toEqual(4);

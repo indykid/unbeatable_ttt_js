@@ -10,6 +10,7 @@ define([], function() {
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
     this.board = board;
     this.mainStrategy;
+    var Helper = JSTicTacToe.Helper;
     
     this.winningPosition = function(){
       var board = this.board,
@@ -52,17 +53,25 @@ define([], function() {
       return position;
     };
 
+    // play function:
+
+    //  do i have a strategy
+    //  how may moves have been made
+    //  first move: corner or center
+    // 
+    // 
+
     this.strategicPosition = function(){
       var position,
           movesSoFar = this.board.moves.length;
+      
       if (this.mainStrategy === undefined){
         this._pickAIStrategy();
       }
+
       if (movesSoFar === 0){
         position = cornerOrCenter(this.board);
       } else {
-        // console.log(this.mainStrategy)
-
         switch (this.mainStrategy){
           case 'cornerAsFirst':
             position = this.cornerAsFirst(movesSoFar);
@@ -77,7 +86,6 @@ define([], function() {
             position = this.centerAsSecond(movesSoFar);
             break;
           case 'edgeAsSecond':
-          // console.log('case: edgeAsSecond')
             position = this.edgeAsSecond(movesSoFar);
             break;
         }
@@ -130,6 +138,8 @@ define([], function() {
 
     this.centerAsSecond = function(movesSoFar){
       var position;
+      // first move is corner
+      // next move after that will always be threatblock due to symmetry of the board, unless human played on the same diagonal as thier first move, in which case we still play a corner
       if (movesSoFar < 4){
         position = JSTicTacToe.Helper.randomElement(this.board.availableOfType('corner'));
       }
@@ -145,17 +155,17 @@ define([], function() {
           break;
         case 3:
           if ( board.singleFullLine() ){
-            position = JSTicTacToe.Helper.randomElement(board.availableOfType('corner'));
+            position = Helper.randomElement(board.availableOfType('corner'));
           } else {
             // this will suffice only if they played non-opposite edge, or non-adjacent corner to x1
             // need to play an adjacent corner to x1 on the same side as their last move (x2)
-            var opponentsFirstPosition = board.moves[0].position,
-                adjacentToFirstMove = board.adjacentPositions(opponentsFirstPosition),
-                opponentsLines = board.singleMarkLines(this.humansMark, 1),
-                lines = opponentsLines.filter(function(line){
-                  return JSTicTacToe.Helper.commonValues(line, adjacentToFirstMove).length > 0;
+            var humansFirstPosition = board.moves[0].position,
+                adjacentToFirstMove = board.adjacentPositions(humansFirstPosition),
+                humansLines = board.singleMarkLines(this.humansMark, 1),
+                lines = humansLines.filter(function(line){
+                  return Helper.commonValues(line, adjacentToFirstMove).length > 0;
                 });
-            position = JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0];
+                position = board.findIntersections(lines)[0]
           }
           break;
       }
@@ -179,21 +189,22 @@ define([], function() {
             var corners = board.availableOfType('corner').filter(function(corner){
               return corner !== oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
             });
-            position = JSTicTacToe.Helper.randomElement(corners);
+            position = Helper.randomElement(corners);
           }
           break;
         case 4:
           // would only end up here if human didn't block with center at any point
             // play on an empty intersection of ai-only lines (makes a fork)
           var lines = board.singleMarkLines(this.mark, 1),
-              positions = [];
-          for (var i = 0; i < lines.length - 1; i++){
-            positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0]);
-          }
-          positions.push(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0]);
-          position = JSTicTacToe.Helper.randomElement(positions.filter(function(position){
-            return board.isPositionEmpty(position);
-          }));
+              intersections = board.findIntersections(lines),
+              potentialPositions = intersections.filter(function(position){
+                return board.isPositionEmpty(position);
+              });
+          // for (var i = 0; i < lines.length - 1; i++){
+          //   positions.push(Helper.commonValues(lines[i], lines[i+1])[0]);
+          // }
+          // positions.push(Helper.commonValues(lines[0], lines.lastElement())[0]);
+          position = Helper.randomElement(potentialPositions);
           break;
       }
       return position;
@@ -207,23 +218,23 @@ define([], function() {
           var humansLastPosition = board.lastPositionFor(this.humansMark);
           var lastPositionType = board.positionType(humansLastPosition);
           if (lastPositionType === 'edge'){
-            position = JSTicTacToe.Helper.randomElement(board.availableOfType('corner'));
+            position = Helper.randomElement(board.availableOfType('corner'));
           } else {
             position = board.oppositePosition(humansLastPosition);
           }
           break;
         case 4:
-          var positions = [],
-              lines = board.singleMarkLines(this.mark, 1);
-          console.log('lines',lines)
-          for (var i = 0; i < lines.length - 1; i++){
-            positions.push(JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0]);
-          }
-          positions.push(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0]);
-          console.log('positions', positions)
-          position = JSTicTacToe.Helper.randomElement(positions.filter(function(position){
-            return board.isPositionEmpty(position);
-          }));
+          var lines = board.singleMarkLines(this.mark, 1),
+              intersections = board.findIntersections(lines),
+              potentialPositions = intersections.filter(function(position){
+                return board.isPositionEmpty(position);
+              });
+          // for (var i = 0; i < lines.length - 1; i++){
+          //   positions.push(Helper.commonValues(lines[i], lines[i+1])[0]);
+          // }
+          // positions.push(Helper.commonValues(lines[0], lines.lastElement())[0]);
+          // console.log('positions', positions)
+          position = Helper.randomElement(potentialPositions);
           break;
       }
       return position;
@@ -243,18 +254,18 @@ define([], function() {
             return board.availableOnAGivenLine(combination).length === board.size;
           });
       if (aiOnlyLines.length > 0){
-        line = JSTicTacToe.Helper.randomElement(aiOnlyLines);
+        line = Helper.randomElement(aiOnlyLines);
       } else if (emptyLines.length > 0){
-        line = JSTicTacToe.Helper.randomElement(emptyLines);
+        line = Helper.randomElement(emptyLines);
       }
 
       if (line !== undefined){
         // find available position on the line:
         available = board.availableOnAGivenLine(line);
-        position = JSTicTacToe.Helper.randomElement(available);
+        position = Helper.randomElement(available);
       } else {
         // find available and pick a random
-        position = JSTicTacToe.Helper.randomElement(board.available());
+        position = Helper.randomElement(board.available());
       }
       return position;
     };
@@ -301,8 +312,8 @@ define([], function() {
 
     function cornerOrCenter(board){
       var center = board.center(),
-          corner = JSTicTacToe.Helper.randomElement(board.availableOfType('corner'));
-      return JSTicTacToe.Helper.randomElement([corner, center]);
+          corner = Helper.randomElement(board.availableOfType('corner'));
+      return Helper.randomElement([corner, center]);
     }
   };
 
