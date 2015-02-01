@@ -31,8 +31,8 @@ define([], function() {
       var board = this.board,
           position = this.findPosition();
       // console.log(position)
-      this.game.addToBoard(position, this.mark);//board
-      this.game.checkAndUpdateGameState();//???
+      board.addMove(position, this.mark);//board
+      board.game.checkAndUpdateGameState();//???
       board.updateBoardView();//UI
       board.updateUI();//UI
     };
@@ -243,7 +243,7 @@ define([], function() {
           available,
           board = this.board,
           aiOnlyLines = board.singleMarkLines(this.mark, 1),
-          emptyLines = this.game.winningCombinations.filter(function(combination){
+          emptyLines = board.game.winningCombinations.filter(function(combination){
             return board.availableOnAGivenLine(combination).length === board.size;
           });
       if (aiOnlyLines.length > 0){
