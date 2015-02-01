@@ -38,13 +38,13 @@ define([], function(){
         board.addMove(4, 'o');
         expect(board.available().ascending()).toEqual([1, 2, 3, 6, 8]);
       });
-      it('returns only unoccupied positions', function(){
-        board.addMove(6, 'x');
-        board.addMove(3, 'o');
-        board.addMove(0, 'x');
-        board.addMove(2, 'o');
-        expect(board.available().ascending()).toEqual([1, 4, 5, 7, 8]);
-      });
+      // it('returns only unoccupied positions', function(){
+      //   board.addMove(6, 'x');
+      //   board.addMove(3, 'o');
+      //   board.addMove(0, 'x');
+      //   board.addMove(2, 'o');
+      //   expect(board.available().ascending()).toEqual([1, 4, 5, 7, 8]);
+      // });
     });
 
     describe('#takenPositions', function(){
@@ -55,13 +55,13 @@ define([], function(){
         board.addMove(4, 'o');
         expect(board.takenPositions()).toEqual([5, 7, 0, 4]);
       });
-      it('returns only occupied positions', function(){
-        board.addMove(6, 'x');
-        board.addMove(3, 'o');
-        board.addMove(0, 'x');
-        board.addMove(2, 'o');
-        expect(board.takenPositions()).toEqual([6, 3, 0, 2]);
-      });
+      // it('returns only occupied positions', function(){
+      //   board.addMove(6, 'x');
+      //   board.addMove(3, 'o');
+      //   board.addMove(0, 'x');
+      //   board.addMove(2, 'o');
+      //   expect(board.takenPositions()).toEqual([6, 3, 0, 2]);
+      // });
     });
 
     describe('#positionType', function(){
@@ -95,19 +95,26 @@ define([], function(){
     });
 
     describe('#availableOnAGivenLine', function(){
-      it('returns [0, 1, 2], for an empty line [0, 1, 2]', function(){
-        expect(board.availableOnAGivenLine([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
+      describe('context: line is empty', function(){
+        it('returns all positions of a line', function(){
+          expect(board.availableOnAGivenLine([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
+        });
       });
 
-      it('returns [0, 8] cells for a given line [0, 4, 8], where, 4 is occupied', function(){
-        board.addMove(4, 'x');
-        expect(board.availableOnAGivenLine([0, 4, 8]).ascending()).toEqual([0, 8]);
+      describe('context: line has one position occupied', function(){
+        it('returns all positions except occupied one', function(){
+          board.addMove(4, 'x');
+          expect(board.availableOnAGivenLine([0, 4, 8]).ascending()).toEqual([0, 8]);
+        });
       });
-      it('returns empty array, for a full line [0, 1, 2]', function(){
-        board.addMove(0, 'x');
-        board.addMove(1, 'o');
-        board.addMove(2, 'x');
-        expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([]);
+
+      describe('context: line is full', function(){
+        it('returns an empty array', function(){
+          board.addMove(0, 'x');
+          board.addMove(1, 'o');
+          board.addMove(2, 'x');
+          expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([]);
+        });
       });
     });
 
