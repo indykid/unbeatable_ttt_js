@@ -7,7 +7,7 @@ define([], function(){
   describe('Board', function(){
     var board;
     beforeEach(function(){
-      var game = new JSTicTacToe.Game('human');//because of winning combinations
+      var game = new JSTicTacToe.Game('human');//still need this, because of winning combinations??
       board = game.board;
     });
 
@@ -285,10 +285,65 @@ define([], function(){
       });
     });
 
+    describe('#findFork', function(){
+      describe('context: fork is available for a given mark', function(){
+        it('returns a position that creates a fork', function(){
+          board.addMove(2, 'x');
+          board.addMove(0, 'o');
+          board.addMove(8, 'x');
+          board.addMove(5, 'o');
+          expect(board.findFork('x')).toEqual(6);
+        });
+      });
+      describe('context: fork is not available for a given mark', function(){
+        it('returns undefined', function(){
+          board.addMove(0, 'x');
+          board.addMove(4, 'o');
+          board.addMove(8, 'x');
+          board.addMove(5, 'o');
+          board.addMove(3, 'x');
+          board.addMove(6, 'o');
+          expect(board.findFork('x')).toBeUndefined();
+        });
+      });
+    });
+
     describe('#center', function(){
       it('always returns 4 for 3x3 grid', function(){
         expect(board.center()).toEqual(4);
       });
     });
+
+    describe('#isPristine', function(){
+      describe('context: no moves have been made', function(){
+        it('returns true', function(){
+          expect(board.isPristine()).toBe(true);
+        });
+      });
+      describe('context: moves have been made', function(){
+        it('returns false', function(){
+          board.addMove(0, 'x');
+          expect(board.isPristine()).toBe(false);
+        });
+      });
+    });
+
+    describe('_updateLastMoves', function(){
+      it('updates humanLastMove and aiLastMove', function(){
+        board.addMove(0, 'x');
+        board.addMove(1, 'o')
+        expect(board.humanLastMove).toEqual({position: 0, mark: 'x'});
+        expect(board.aiLastMove).toEqual({position: 1, mark: 'o'});
+      });
+    });
+
+    describe('#randomOpenCorner', function(){
+      it('returns a random open corner', function(){
+        board.addMove(0, 'x');
+        board.addMove(1, 'o');
+        expect([2, 6, 8]).toContain(board.randomOpenCorner())
+      });
+    });
+
   });
 });

@@ -10,11 +10,13 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
 
   describe('AIPlayer', function(){
     var game,
+        board,
         ai;
 
     beforeEach(function(){
       game = new Game('human');
       ai = game.ai;
+      board = ai.board;
     });
 
     it('has been assigned a mark', function(){
@@ -193,7 +195,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
         });
 
         describe('context: first move was center', function(){
-          describe('context: looking for a second move', function(){
+          describe('context: second move', function(){
             describe('context: human played corner', function(){
               it("returns position opposite to human's last", function(){
                 game.addToBoard(4, 'x');
@@ -210,7 +212,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
             });
           });
 
-          describe('context: looking for a third move', function(){
+          describe('context: third move', function(){
             describe('context: human never created a threat', function(){
               it('returns a position that creates a fork', function(){
                 game.addToBoard(4, 'x');
@@ -310,6 +312,153 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       });
       
     });
+
+    // describe('#_findStrategy', function(){
+    //   describe('context: human plays first', function(){
+    //     it('assigns correct strategy', function(){
+    //       ai._findStrategy();
+    //       expect(ai.strategy).toEqual('secondPlayer');
+    //     });
+    //   });
+    //   describe('context: ai plays first', function(){
+    //     it('assigns correct strategy', function(){
+    //       game = new JSTicTacToe.Game('ai');
+    //       ai = game.ai;
+    //       ai._findStrategy();
+    //       expect(ai.strategy).toEqual('firstPlayer');
+    //     });
+    //   });
+      
+    // });// not sure about usefullness of this text
+
+    describe('_firstPlayerStrategy', function(){
+      beforeEach(function(){
+        game = new Game('ai');
+        ai = game.ai;
+        board = ai.board;
+      });
+
+      describe('context: first move', function(){
+        it('returns corner or center position', function(){
+          var position = ai._firstPlayerStrategy();
+          expect(['corner', 'center']).toContain(ai.board.positionType(position));
+        });
+      });
+
+      describe('context: second move', function(){
+       
+        describe('context: ai played corner, human played center', function(){
+          it('returns corner on the same diagonal as existing moves', function(){
+            game.addToBoard(2, 'x');
+            game.addToBoard(4, 'o');
+            expect(ai._firstPlayerStrategy()).toEqual(6);
+          });
+        });
+
+        describe('context: ai played center, human played corner', function(){
+          it('returns corner on the same diagonal as existing moves', function(){
+            game.addToBoard(4, 'x');
+            game.addToBoard(6, 'o');
+            expect(ai._firstPlayerStrategy()).toEqual(2);
+          });
+        });
+
+        describe('context: human played edge', function(){
+          describe('context: first move was center', function(){
+            it('returns any available corner position', function(){
+              board.addMove(4, 'x');
+              board.addMove(1, 'o');
+              expect([0, 2, 6, 8]).toContain(ai._firstPlayerStrategy());
+            });
+          });
+          describe('context: first move was corner', function(){
+            it("returns play corner away from human's last move", function(){
+              board.addMove(2, 'x');
+              board.addMove(1, 'o');
+              expect(ai._firstPlayerStrategy()).toEqual(8);
+            });
+          });
+        });
+
+        // 
+      });
+
+      describe('context: third move', function(){
+        describe('context: human never played center', function(){
+          it('returns a position that creates a fork', function(){
+            game.addToBoard(0, 'x');
+            game.addToBoard(1, 'o');
+            game.addToBoard(6, 'x');
+            game.addToBoard(3, 'o');
+            expect([4, 8]).toContain(ai._firstPlayerStrategy());
+          });
+        });
+      });
+    });
+
+    describe('_secondPlayerStrategy', function(){
+      describe('context: first move', function(){
+        describe('context: center is available', function(){
+          describe('human played edge', function(){
+            it('returns center', function(){
+              board.addMove(1,'x');
+              expect(ai._secondPlayerStrategy()).toEqual(4);
+            });
+          });
+          
+        });
+        describe('context: center is unavailable', function(){
+          it('returns random corner', function(){
+            board.addMove(4, 'x');
+            expect([0, 2, 6, 8]).toContain(ai._secondPlayerStrategy());
+          });
+        });
+      });
+
+      describe('context: second move', function(){
+
+        describe("context: human's first move was center", function(){
+          it('returns random open corner', function(){
+            board.addMove(4, 'x');
+            board.addMove(2, 'o');
+            board.addMove(6, 'o');
+            expect([0, 8]).toContain(ai._secondPlayerStrategy());
+          });
+        });
+
+        describe('context: taken moves form a line', function(){
+          describe("context: human's first move was edge", function(){
+            it('returns random open corner', function(){
+              board.addMove(1, 'x');
+              board.addMove(4, 'o');
+              board.addMove(7, 'x');
+              expect([0, 2, 6, 8]).toContain(ai._secondPlayerStrategy());
+            });
+          });
+          describe("context: human's first move was corner", function(){
+            it('returns random open corner', function(){
+              board.addMove(2, 'x');
+              board.addMove(4, 'o');
+              board.addMove(6, 'x');
+              expect([0, 8]).toContain(ai._secondPlayerStrategy());
+            });
+          }); 
+        });
+
+        
+      });
+
+      // describe('context: third move', function(){
+      //   describe("context: human's first move was edge", function(){
+      //     describe("context: human's second move")
+      //   });        
+      // });
+    });
+
+
+
+
+
 
     // describe('#findPosition', function(){
 

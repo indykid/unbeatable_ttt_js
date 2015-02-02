@@ -9,13 +9,29 @@ define([], function() {
     this.size = 3;
     this.positionsAmount = Math.pow(this.size, 2);
     this.possiblePositions = setPossiblePositions(this.positionsAmount);
+    this.firstPosition;
+    this.humanLastMove;
+    this.aiLastMove;
+
 
     this.addMove = function(position, mark){
       var move = {};
       move['position'] = position;
       move['mark'] = mark;
+
+      if (this.isPristine()) this.firstPosition = position;
+
       this.moves.push(move);
-    }
+      this._updateLastMoves(move);
+    };
+
+    this._updateLastMoves = function(move){
+      if ( this.game.ai.mark === move.mark ){
+        this.aiLastMove = move;
+      } else {
+        this.humanLastMove = move;
+      }
+    };
 
     this.getMark = function(position){
       var playerMove = this.moves.find(function(move){
@@ -24,7 +40,7 @@ define([], function() {
       if (playerMove){
         return playerMove.mark;
       }
-    }
+    };
 
     this.available = function(){
       var available = this.possiblePositions.filter(function(position){
@@ -61,7 +77,7 @@ define([], function() {
         return this.isPositionEmpty(position);
       }.bind(this));
       return available;
-    }
+    };
 
     this.singlePlayerLine = function(line, howMany, mark){
       var takenOnALine = line.filter(function(position){
@@ -106,12 +122,12 @@ define([], function() {
         position = playerMove.position;
       }
       return position;
-    }
+    };
 
     this.oppositePosition = function(position){
       var reverseOrder = this.possiblePositions.slice().reverse();
       return reverseOrder[position];
-    }
+    };
 
     this.adjacentPositions = function(position){
       var positions;
@@ -141,15 +157,13 @@ define([], function() {
       return taken;
     };
 
-    
-
     this.updateBoardView = function(){
       this.moves.forEach(function(move){
         var selector = 'td[data-position='+ move.position +']',
             text = move.mark;
         $(selector).text(text).addClass('occupied');
       });
-    }
+    };
 
     this.updateUI = function(){
       JSTicTacToe.status.text(this.game.status);
@@ -177,6 +191,38 @@ define([], function() {
       };
       return intersections;
     }; // TODO: refactor?
+
+    this.findFork = function(mark){
+      var position,
+          lines = this.singleMarkLines(mark, 1);
+      if (lines.length > 0){
+        var intersections = this.findIntersections(lines),
+            potentialPositions = intersections.filter(function(position){
+              return this.isPositionEmpty(position);
+            }.bind(this)),
+            position = JSTicTacToe.Helper.randomElement(potentialPositions);
+      }   
+      return position;
+    }; // find an empty intersection of singleMarkedLines for given mark
+
+    this.isPristine = function(){
+      return this.moves.length === 0;
+    };
+
+    this.movesSoFar = function(){
+      return this.moves.length;
+    };
+
+    this.cornerOrCenter = function(){
+      var center = this.center(),
+          corner = JSTicTacToe.Helper.randomElement(this.availableOfType('corner'));
+      return JSTicTacToe.Helper.randomElement([corner, center]);
+    }
+
+    this.randomOpenCorner = function(){
+      var corners = this.availableOfType('corner');
+      return JSTicTacToe.Helper.randomElement(corners);
+    }
 
     function uiFriendlyPlayer(player){
       var friendly = player === 'ai' ? 'computer' : 'you';
