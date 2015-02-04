@@ -30,111 +30,111 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
     describe('#winningPosition', function(){
       describe('context: there is a potential win on a:', function(){
         it('row, returns a winning position', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(4, 'o');
-          game.addToBoard(8, 'x');
-          game.addToBoard(5, 'o');
-          game.addToBoard(7, 'x');
-          expect(ai.winningPosition(game)).toEqual(3);
+          board.addMove(0, 'x');
+          board.addMove(4, 'o');
+          board.addMove(8, 'x');
+          board.addMove(5, 'o');
+          board.addMove(7, 'x');
+          expect(ai.winningCell(game)).toEqual(3);
         });
 
         it('first diagonal, returns a winning position', function(){
-          game.addToBoard(6, 'x');
-          game.addToBoard(4, 'o');
-          game.addToBoard(3, 'x');
-          game.addToBoard(8, 'o');
-          game.addToBoard(2, 'x');
-          expect(ai.winningPosition(game)).toEqual(0);
+          board.addMove(6, 'x');
+          board.addMove(4, 'o');
+          board.addMove(3, 'x');
+          board.addMove(8, 'o');
+          board.addMove(2, 'x');
+          expect(ai.winningCell(game)).toEqual(0);
         });
 
         it('second diagonal, returns a winning position', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(4, 'o');
-          game.addToBoard(1, 'x');
-          game.addToBoard(6, 'o');
-          game.addToBoard(8, 'x');
-          expect(ai.winningPosition(game)).toEqual(2);
+          board.addMove(0, 'x');
+          board.addMove(4, 'o');
+          board.addMove(1, 'x');
+          board.addMove(6, 'o');
+          board.addMove(8, 'x');
+          expect(ai.winningCell(game)).toEqual(2);
         });
 
         it('column, returns a winning position', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(2, 'o');
-          game.addToBoard(4, 'x');
-          game.addToBoard(8, 'o');
-          game.addToBoard(6, 'x');
-          expect(ai.winningPosition(game)).toEqual(5);
+          board.addMove(0, 'x');
+          board.addMove(2, 'o');
+          board.addMove(4, 'x');
+          board.addMove(8, 'o');
+          board.addMove(6, 'x');
+          expect(ai.winningCell(game)).toEqual(5);
         });
         
       });
 
       describe('context: no winning move', function(){
         it('returns undefined', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(2, 'o');
-          game.addToBoard(5, 'x');
-          expect(ai.winningPosition(game)).toBeUndefined();
+          board.addMove(0, 'x');
+          board.addMove(2, 'o');
+          board.addMove(5, 'x');
+          expect(ai.winningCell(game)).toBeUndefined();
         });
 
         it('returns undefined', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(2, 'o');
-          game.addToBoard(4, 'x');
-          expect(ai.winningPosition(game)).toBeUndefined();
+          board.addMove(0, 'x');
+          board.addMove(2, 'o');
+          board.addMove(4, 'x');
+          expect(ai.winningCell(game)).toBeUndefined();
         });
 
       });
     });
 
-    describe('#threatPosition', function(){
+    describe('#threatCell', function(){
       describe('context: there is a threat on a:', function(){
         it('first diagonal, returns threat position', function(){
-          game.addToBoard(4, 'x');
-          game.addToBoard(6, 'o');
-          game.addToBoard(8, 'x');
-          expect(ai.threatPosition(game)).toEqual(0);
+          board.addMove(4, 'x');
+          board.addMove(6, 'o');
+          board.addMove(8, 'x');
+          expect(ai.threatCell(game)).toEqual(0);
         });
 
         it('second diagonal, returns threat position', function(){
-          game.addToBoard(2, 'x');
-          game.addToBoard(4, 'o');
-          game.addToBoard(8, 'x');
-          expect(ai.threatPosition(game)).toEqual(5);
+          board.addMove(2, 'x');
+          board.addMove(4, 'o');
+          board.addMove(8, 'x');
+          expect(ai.threatCell(game)).toEqual(5);
         });
 
         it('row, returns threat position', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(4, 'o');
-          game.addToBoard(1, 'x');
-          expect(ai.threatPosition(game)).toEqual(2);
+          board.addMove(0, 'x');
+          board.addMove(4, 'o');
+          board.addMove(1, 'x');
+          expect(ai.threatCell(game)).toEqual(2);
         });
 
         it('column, returns threat position', function(){
-          game.addToBoard(4, 'x');
-          game.addToBoard(5, 'o');
-          game.addToBoard(7, 'x');
-          expect(ai.threatPosition(game)).toEqual(1);
+          board.addMove(4, 'x');
+          board.addMove(5, 'o');
+          board.addMove(7, 'x');
+          expect(ai.threatCell(game)).toEqual(1);
         });
 
         // it('column, returns threat position 2', function(){
-        //   game.addToBoard(5, 'x');
-        //   game.addToBoard(4, 'o');
-        //   game.addToBoard(8, 'x');
-        //   expect(ai.threatPosition(game)).toEqual(2);
+        //   board.addMove(5, 'x');
+        //   board.addMove(4, 'o');
+        //   board.addMove(8, 'x');
+        //   expect(ai.threatCell(game)).toEqual(2);
         // });
       });
 
       describe('context: no threat', function(){
         it('returns undefined', function(){
-          game.addToBoard(0, 'x');
-          game.addToBoard(2, 'o');
-          game.addToBoard(5, 'x');
-          expect(ai.threatPosition()).toBeUndefined();
+          board.addMove(0, 'x');
+          board.addMove(2, 'o');
+          board.addMove(5, 'x');
+          expect(ai.threatCell()).toBeUndefined();
         });
         // it('returns undefined', function(){
-        //   game.addToBoard(0, 'x');
-        //   game.addToBoard(4, 'o');
-        //   game.addToBoard(5, 'x');
-        //   expect(ai.threatPosition()).toBeUndefined();
+        //   board.addMove(0, 'x');
+        //   board.addMove(4, 'o');
+        //   board.addMove(5, 'x');
+        //   expect(ai.threatCell()).toBeUndefined();
         // });
       });
     });
@@ -166,7 +166,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       describe('context: first move', function(){
         it('returns corner or center position', function(){
           var position = ai._firstPlayerStrategy();
-          expect(['corner', 'center']).toContain(ai.board.positionType(position));
+          expect(['corner', 'center']).toContain(ai.board.cellType(position));
         });
       });
 
@@ -174,16 +174,16 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
        
         describe('context: ai played corner, human played center', function(){
           it('returns corner on the same diagonal as existing moves', function(){
-            game.addToBoard(2, 'x');
-            game.addToBoard(4, 'o');
+            board.addMove(2, 'x');
+            board.addMove(4, 'o');
             expect(ai._firstPlayerStrategy()).toEqual(6);
           });
         });
 
         describe('context: ai played center, human played corner', function(){
           it('returns corner on the same diagonal as existing moves', function(){
-            game.addToBoard(4, 'x');
-            game.addToBoard(6, 'o');
+            board.addMove(4, 'x');
+            board.addMove(6, 'o');
             expect(ai._firstPlayerStrategy()).toEqual(2);
           });
         });
@@ -211,10 +211,10 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       describe('context: third move', function(){
         describe('context: human never played center', function(){
           it('returns a position that creates a fork', function(){
-            game.addToBoard(0, 'x');
-            game.addToBoard(1, 'o');
-            game.addToBoard(6, 'x');
-            game.addToBoard(3, 'o');
+            board.addMove(0, 'x');
+            board.addMove(1, 'o');
+            board.addMove(6, 'x');
+            board.addMove(3, 'o');
             expect([4, 8]).toContain(ai._firstPlayerStrategy());
           });
         });
@@ -223,7 +223,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
 
     describe('_secondPlayerStrategy', function(){
 
-      describe('context: first move', function(){
+      describe('context: ai first move', function(){
         describe('context: center is available', function(){
           describe('human played edge', function(){
             it('returns center', function(){
@@ -335,7 +335,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
     // describe('#_pickAIStrategy', function(){
     //   describe('context: ai plays first', function(){
     //     it('assigns strategy correctly', function(){
-    //       game.addToBoard(0, 'x');
+    //       board.addMove(0, 'x');
     //     });
     //   });
     // });

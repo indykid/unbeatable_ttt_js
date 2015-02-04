@@ -47,7 +47,7 @@ require(["jquery", "board", "game", "ai", "helper"], function($, Board, Game, AI
     JSTicTacToe.emptyGridPositions.on('click', function(){
       if (JSTicTacToe.game.isActive()){ 
         var position = $(this).data('position');      
-        if (JSTicTacToe.game.board.isPositionEmpty(position)){  
+        if (JSTicTacToe.game.board.isCellEmpty(position)){  
           JSTicTacToe.game.humanPlay(position);
         } else {
           alert('this cell is occupied, please try another one');

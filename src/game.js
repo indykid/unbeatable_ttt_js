@@ -8,13 +8,12 @@ define([], function() {
 
     this.board = new JSTicTacToe.Board(this);
     this.ai = new JSTicTacToe.AIPlayer(this.board, firstPlayer);
-    this.winningCombinations = setWinningCombinations(this.board);
     this.winner = { player: undefined, mark: undefined };
     this.status = 'active'; // other states: won, drawn
 
-    this.addToBoard = function(position, mark){
-      this.board.addMove(position, mark);
-    }
+    // this.addToBoard = function(position, mark){
+    //   this.board.addMove(position, mark);
+    // }
 
     this.isActive = function(){
       return ( !this.isWon() && !this.isDrawn() );
@@ -40,7 +39,7 @@ define([], function() {
     }
 
     this.winnerMark = function(){
-      var singlePlayerFullLine = this.winningCombinations.find(function(combination){
+      var singlePlayerFullLine = this.board.winningCombos.find(function(combination){
         return this.board.singlePlayerLine(combination, this.board.size, this.ai.humansMark) || this.board.singlePlayerLine(combination, this.board.size, this.ai.mark);
       }.bind(this));
       if (singlePlayerFullLine!==undefined){
@@ -56,9 +55,9 @@ define([], function() {
       return false;
     }
 
-    this.humanPlay = function(position){
+    this.humanPlay = function(cell){
       if (this.isPlayerTurn(this.ai.humansMark)){
-        this.addToBoard(position, this.ai.humansMark);
+        this.board.addMove(cell, this.ai.humansMark);
         this.checkAndUpdateGameState();
         this.board.updateBoardView();
         this.board.updateUI();
@@ -84,65 +83,5 @@ define([], function() {
       return movesSoFar % 2 === 0;
     }
 
-    function setWinningCombinations(board){
-      var winningCombinations = [];
-      setDiagonals(board, winningCombinations);
-      for (var i = 0; i < board.size; i++) {
-        setColumn(i, board, winningCombinations);
-        setRow(i, board, winningCombinations);
-      };
-      return winningCombinations;
-    }
-
-    function setDiagonals(board, combinations){
-      setFirstDiagonal(board, combinations);
-      setSecondDiagonal(board, combinations);
-    }
-
-    function setFirstDiagonal(board, combinations){
-      var startIndex = 0,
-          endIndex = board.positionsAmount - 1,
-          increment = board.size + 1,
-          firstDiagonal = [];
-
-      firstDiagonal = setLine(startIndex, endIndex, increment);
-      addWinningCombination(firstDiagonal, combinations);
-    }
-
-    function setSecondDiagonal(board, combinations){
-      var startIndex = board.size - 1,
-          endIndex = board.positionsAmount - board.size,
-          increment = board.size - 1,
-          secondDiagonal = setLine(startIndex, endIndex, increment);
-      addWinningCombination(secondDiagonal, combinations);
-    }
-
-    function setRow(rowNumber, board, combinations){
-      var startIndex = rowNumber * board.size,
-          endIndex = startIndex + (board.size - 1),
-          increment = 1,
-          row = setLine(startIndex, endIndex, increment);
-      addWinningCombination(row, combinations);
-    }
-
-    function setColumn(columnNumber, board, combinations){
-      var startIndex = columnNumber,
-          endIndex = startIndex + (board.size * (board.size - 1)),
-          increment = board.size,
-          column = setLine(startIndex, endIndex, increment);
-      addWinningCombination(column, combinations);
-    }
-
-    function setLine(start, end, increment){
-      var line = [];
-      for (var i = start; i <= end; i+=increment) {
-        line.push(i);
-      };
-      return line;
-    }
-
-    function addWinningCombination(combination, combinations){
-      combinations.push(combination);
-    }
   }
 });

@@ -5,14 +5,13 @@ var JSTicTacToe = JSTicTacToe || {};
 define([], function() {
 
   JSTicTacToe.AIPlayer = function(board, firstPlayer){
-
+    var Helper = JSTicTacToe.Helper;
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
     this.board = board;
     this.strategy;
-    var Helper = JSTicTacToe.Helper;
     
-    this.winningPosition = function(){
+    this.winningCell = function(){
       var board = this.board,
           winLines = board.singleMarkLines(this.mark, (board.size - 1));
       if (winLines.length > 0){
@@ -20,7 +19,7 @@ define([], function() {
       }
     };
 
-    this.threatPosition = function(){
+    this.threatCell = function(){
       var board = this.board,
           threatLines = board.singleMarkLines(this.humansMark, (board.size - 1));
       if (threatLines.length > 0){
@@ -30,43 +29,29 @@ define([], function() {
 
     this.play = function(){
       var board = this.board,
-          position = this._findPosition();
-      // console.log(position)
-      board.addMove(position, this.mark);
+          cell = this._findCell();
+      board.addMove(cell, this.mark);
       board.game.checkAndUpdateGameState();//???
       board.updateBoardView();//UI
       board.updateUI();//UI
     };// unsure how to test this or if necessary
 
 
-    // this is super hacky but shortcircuits the unnecessary calls (vs commented function above)
-
-    // **********************
-    // this.findPosition = function(){
-    //   var position;
-    //   (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined || (position = this.strategicPosition()) !== undefined || (position = this.basicStrategy()); 
-    //   return position;
-    // };
-
-    this._findPosition = function(){
-      var position;
-      // console.log(this.board.moves.length)
-      // if first move findStrategy
+    this._findCell = function(){
+      var cell;
+      // assign strategy if not set
       if (this.strategyPlay === undefined){
-        console.log('no strategy')
         this._findStrategy();
       }
-      // console.log(this.strategyPlay())
-      // console.log(this._commonSenseStrategy())
-      // console.log(this.basicStrategy())
-      // (position = this._commonSenseStrategy()) !== undefined || (position = this.strategyPlay()) !== undefined || (position = this.basicStrategy());
+      // var cells = [this._commonSenseStrategy(), this.strategyPlay(), this.basicStrategy()];
+      // cell = cells.find(function(p){
+      //   return p !== undefined;
+      // });
 
-      var positions = [this._commonSenseStrategy(), this.strategyPlay(), this.basicStrategy()];
-      position = positions.find(function(p){
-        return p !== undefined;
-      });
-      return position;
-      
+      // this is super hacky but shortcircuits the unnecessary calls (vs commented function above)
+      (cell = this._commonSenseStrategy()) !== undefined || (cell = this.strategyPlay()) !== undefined || (cell = this.basicStrategy()); 
+
+      return cell;
     };//not sure how to test such thing
 
     this._findStrategy = function(){
@@ -85,132 +70,130 @@ define([], function() {
     this._firstPlayerStrategy = function(){
       var board = this.board,
           movesSoFar = board.movesSoFar(),
-          position;
+          cell;
       switch (movesSoFar) {
         case 0:
-          position = board.cornerOrCenter();
+          cell = board.cornerOrCenter();
           break;
         case 2:
-          position = this._workoutSecondMoveAsFirstPlayer();
+          cell = this._workoutSecondMoveAsFirstPlayer();
           break;
         case 4:
-          position = board.findFork(this.mark);
+          cell = board.findFork(this.mark);
           break;
       }
-      return position;
+      return cell;
     };
 
     this._workoutSecondMoveAsFirstPlayer = function(){
-      var position,
+      var cell,
           board = this.board,
       // if both moves on the board are a corner and center
       // play the empty corner on that line
-          humansLastPosition = board.lastPositionFor(this.humansMark),
-          aiLastPosition = board.lastPositionFor(this.mark),
-          humansPositionType = board.positionType(humansLastPosition),
-          aiPositionType = board.positionType(aiLastPosition),
-          playedTypes = [humansPositionType, aiPositionType],
+          humansCellType = board.cellType(board.humanLast),
+          aiCellType = board.cellType(board.aiLast),
+          playedTypes = [humansCellType, aiCellType],
           onlyCornerAndCenterSoFar = (playedTypes.hasElement('center') && playedTypes.hasElement('corner'));
 
       if ( onlyCornerAndCenterSoFar ) {
-        var diagonal = board.game.winningCombinations.find(function(combination){
+        var diagonal = board.winningCombos.find(function(combination){
           return board.availableOnAGivenLine(combination).length === 1;
         });
-        position = board.availableOnAGivenLine(diagonal)[0];
+        cell = board.availableOnAGivenLine(diagonal)[0];
       } else {
-        // otherwise: human must have played an edge position
+        // otherwise: human must have played an edge cell
         // if played center first :
           // play any corner
         // if corner was first 
           // play corner on the other side from human's last move
-        switch ( aiPositionType ) {
+        switch ( aiCellType ) {
           case 'center':
             var corners = board.availableOfType('corner');
-            position = Helper.randomElement(corners);
+            cell = Helper.randomElement(corners);
             break;
           case 'corner':
             // play corner which is not opposite to the first move and is not adjacent to humansLastMove
-            var adjacentToLastMove = board.adjacentPositions(humansLastPosition),
-                oppositeToFirstMove = board.oppositePosition(aiLastPosition),
+            var adjacentToLastMove = board.adjacentCells(board.humanLast),
+                oppositeToFirstMove = board.oppositeCell(board.aiLast),
                 suitableCorners = board.availableOfType('corner').filter(function(corner){
               return corner !== oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
             });
-            position = Helper.randomElement(suitableCorners);
+            cell = Helper.randomElement(suitableCorners);
             break;
         }
       }
-      return position;
+      return cell;
     };// REFACTORRRRRRRR!
 
     this._secondPlayerStrategy = function(){
-      var position,
+      var cell,
           board = this.board,
           movesSoFar = board.movesSoFar(),
-          firstPositionType = board.positionType(board.firstPosition);
+          firstCellType = board.cellType(board.firstCell);
 
-      if ( firstPositionType === 'center' && movesSoFar <= 3 || board.singleFullLine() && firstPositionType === 'edge') {
-        position = board.randomOpenCorner();
+      if ( firstCellType === 'center' && movesSoFar <= 3 || board.singleFullLine() && firstCellType === 'edge') {
+        cell = board.randomOpenCorner();
       } else {
 
         switch (movesSoFar) {
           case 1:
-            position = board.center();
+            cell = board.center();
             break;
           case 3:
-            position = this._workoutSecondMoveAsSecondPlayer(firstPositionType);
+            cell = this._workoutSecondMoveAsSecondPlayer(firstCellType);
             break;
         }
       }
-      return position;
+      return cell;
     };
 
-    this._workoutSecondMoveAsSecondPlayer = function(firstPositionType){
-      var position,
+    this._workoutSecondMoveAsSecondPlayer = function(firstCellType){
+      var cell,
           board = this.board;
 
-      switch ( firstPositionType ) {
+      switch ( firstCellType ) {
         case 'edge':
-          var adjacentToFirstMove = board.adjacentPositions(board.firstPosition),
+          var adjacentToFirstMove = board.adjacentCells(board.firstCell),
             humansLines = board.singleMarkLines(this.humansMark, 1),
             lines = humansLines.filter(function(line){
               return Helper.commonValues(line, adjacentToFirstMove).length > 0;
             });
-            position = board.findIntersections(lines)[0];
+            cell = board.findIntersections(lines)[0];
           break;
 
         case 'corner':
           if ( board.singleFullLine() ) {
             var edges = board.availableOfType('edge');
-            position = Helper.randomElement(edges);
+            cell = Helper.randomElement(edges);
           } else {
-            var oppositeToFirstMove = board.oppositePosition(board.firstPosition);
-            var adjacentToLastMove = board.adjacentPositions(board.humanLastMove.position);
-            position = adjacentToLastMove.find(function(move){
-              return board.positionType(move) === 'corner' && move !== oppositeToFirstMove;
+            var oppositeToFirstMove = board.oppositeCell(board.firstcell);
+            var adjacentToLastMove = board.adjacentCells(board.humanLastMove.cell);
+            cell = adjacentToLastMove.find(function(move){
+              return board.cellType(move) === 'corner' && move !== oppositeToFirstMove;
             });
           }
           break;
       }
-      return position;
+      return cell;
     };
 
     this._commonSenseStrategy = function(){
-      var position;
-      (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined;
-      return position;
+      var cell;
+      (cell = this.winningCell()) !== undefined || (cell = this.threatCell()) !== undefined;
+      return cell;
     };
 
     this.basicStrategy = function(){
       // fallback if there are no strategic moves to be made
       // find line where i already have 1 move
       // if none then find an empty line and play there
-      // if none of the above, just take any available position
-      var position,
+      // if none of the above, just take any available cell
+      var cell,
           line,
           available,
           board = this.board,
           aiOnlyLines = board.singleMarkLines(this.mark, 1),
-          emptyLines = board.game.winningCombinations.filter(function(combination){
+          emptyLines = board.winningCombos.filter(function(combination){
             return board.availableOnAGivenLine(combination).length === board.size;
           });
       if (aiOnlyLines.length > 0){
@@ -220,14 +203,14 @@ define([], function() {
       }
 
       if (line !== undefined){
-        // find available position on the line:
+        // find available cell on the line:
         available = board.availableOnAGivenLine(line);
-        position = Helper.randomElement(available);
+        cell = Helper.randomElement(available);
       } else {
         // find available and pick a random
-        position = Helper.randomElement(board.available());
+        cell = Helper.randomElement(board.available());
       }
-      return position;
+      return cell;
     };
   };
 

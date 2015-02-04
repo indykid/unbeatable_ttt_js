@@ -7,19 +7,22 @@ define([], function() {
     this.game = game;
     this.moves = [];
     this.size = 3;
-    this.positionsAmount = Math.pow(this.size, 2);
-    this.possiblePositions = setPossiblePositions(this.positionsAmount);
-    this.firstPosition;
+    this.cellsAmount = Math.pow(this.size, 2);
+    this.possibleCells = setPossibleCells(this.cellsAmount);
+    this.winningCombos = setWinningCombos(this);
+    this.firstCell;
     this.humanLastMove;
     this.aiLastMove;
+    this.humanLast; //position
+    this.aiLast;
 
 
-    this.addMove = function(position, mark){
+    this.addMove = function(cell, mark){
       var move = {};
-      move['position'] = position;
+      move['cell'] = cell;
       move['mark'] = mark;
 
-      if (this.isPristine()) this.firstPosition = position;
+      if (this.isPristine()) this.firstCell = cell;
 
       this.moves.push(move);
       this._updateLastMoves(move);
@@ -28,14 +31,16 @@ define([], function() {
     this._updateLastMoves = function(move){
       if ( this.game.ai.mark === move.mark ){
         this.aiLastMove = move;
+        this.aiLast = move.cell;
       } else {
         this.humanLastMove = move;
+        this.humanLast = move.cell;
       }
     };
 
-    this.getMark = function(position){
+    this.getMark = function(cell){
       var playerMove = this.moves.find(function(move){
-        return move.position === position;
+        return move.cell === cell;
       });
       if (playerMove){
         return playerMove.mark;
@@ -43,15 +48,15 @@ define([], function() {
     };
 
     this.available = function(){
-      var available = this.possiblePositions.filter(function(position){
-        return !this.takenPositions().hasElement(position);
+      var available = this.possibleCells.filter(function(cell){
+        return !this.takenCells().hasElement(cell);
       }.bind(this));
       return available;
     };
 
-    this.positionType = function(position){
-      var remainder = position % 2;
-      if (position === 4){
+    this.cellType = function(cell){
+      var remainder = cell % 2;
+      if (cell === 4){
         return "center";
       } else if (remainder === 0){
         return "corner";
@@ -60,32 +65,32 @@ define([], function() {
       };
     };
 
-    this.availableOfType = function(positionType){
+    this.availableOfType = function(cellType){
       var available = this.available(),
-          availableOfType = available.filter(function(position){
-            return this.positionType(position) === positionType;
+          availableOfType = available.filter(function(cell){
+            return this.cellType(cell) === cellType;
           }.bind(this));
       return availableOfType;
     };
 
-    this.isPositionEmpty = function(position) {
-      return this.available().hasElement(position);
+    this.isCellEmpty = function(cell) {
+      return this.available().hasElement(cell);
     };
 
     this.availableOnAGivenLine = function(line){
-      var available = line.filter(function(position){
-        return this.isPositionEmpty(position);
+      var available = line.filter(function(cell){
+        return this.isCellEmpty(cell);
       }.bind(this));
       return available;
     };
 
     this.singlePlayerLine = function(line, howMany, mark){
-      var takenOnALine = line.filter(function(position){
-        return !this.isPositionEmpty(position);
+      var takenOnALine = line.filter(function(cell){
+        return !this.isCellEmpty(cell);
       }.bind(this));
       if (takenOnALine.length === howMany){
-        var marks = takenOnALine.map(function(position){
-          return this.getMark(position);
+        var marks = takenOnALine.map(function(cell){
+          return this.getMark(cell);
         }.bind(this));    
         return marks.allDefinedValuesSame() && marks[0] === mark;
       }
@@ -93,73 +98,68 @@ define([], function() {
     }
 
     this.singleFullLine = function(){
-      var fullLines = this.game.winningCombinations.filter(function(combination){
+      var fullLines = this.winningCombos.filter(function(combination){
         return this.availableOnAGivenLine(combination).length === 0;
       }.bind(this));
-      return fullLines.length === 1 && this.takenPositions().length === this.size;
-    }
+      return fullLines.length === 1 && this.takenCells().length === this.size;
+    };
 
     this.singleMarkLines = function(mark, howMany){ 
-      var lines = this.game.winningCombinations.filter(function(combination){
+      var lines = this.winningCombos.filter(function(combination){
         return this.singlePlayerLine(combination, howMany, mark);
       }.bind(this));
       return lines;
     }  
 
     this.center = function(){
-      return this.possiblePositions.find(function(position){
-        return this.positionType(position) === 'center';
+      return this.possibleCells.find(function(cell){
+        return this.cellType(cell) === 'center';
       }.bind(this));
     }
 
-    this.lastPositionFor = function(mark){
-      var position,
-          movesReverse = this.moves.slice().reverse(),
-          playerMove = movesReverse.find(function(move){
-            return move.mark === mark;
-          });
-      if (playerMove){
-        position = playerMove.position;
-      }
-      return position;
+    this.oppositeCell = function(cell){
+      var reverseOrder = this.possibleCells.slice().reverse();
+      return reverseOrder[cell];
     };
 
-    this.oppositePosition = function(position){
-      var reverseOrder = this.possiblePositions.slice().reverse();
-      return reverseOrder[position];
-    };
-
-    this.adjacentPositions = function(position){
-      var positions;
-      switch ( this.positionType(position)){
+    this.adjacentCells = function(cell){
+      var cells;
+      switch ( this.cellType(cell)){
         case 'corner':
-          if ( position < this.center()){
-            positions = [this.possiblePositions[0] + 1, position + this.size];
+          if ( cell < this.center()){
+            cells = [this.possibleCells[0] + 1, cell + this.size];
           } else {
-            positions = [this.possiblePositions.lastElement() - 1, position - this.size];
+            cells = [this.possibleCells.lastElement() - 1, cell - this.size];
           }
           break;
         case 'edge':
-          if ((position - 1) === this.possiblePositions[0] || (position + 1) === this.possiblePositions.lastElement()){
-            positions = [position + 1, position - 1];
+          if ((cell - 1) === this.possibleCells[0] || (cell + 1) === this.possibleCells.lastElement()){
+            cells = [cell + 1, cell - 1];
           } else {
-            positions = [position - this.size, position + this.size]
+            cells = [cell - this.size, cell + this.size]
           }
           break;
       }
-      return positions;
+      return cells;
     };
 
-    this.takenPositions = function(){
+    this.takenCells = function(){
       var taken = this.moves.map(function(move){
-        return move.position;
+        return move.cell;
       });
       return taken;
     };
 
+    this.seed = function(cells){
+      cells.forEach(function(cell, i){
+        var mark = i % 2 === 0 ? 'x' : 'o';
+        this.addMove(cell, mark);
+      }.bind(this));
+    };
+
     this.updateBoardView = function(){
       this.moves.forEach(function(move){
-        var selector = 'td[data-position='+ move.position +']',
+        var selector = 'td[data-position='+ move.cell +']',
             text = move.mark;
         $(selector).text(text).addClass('occupied');
       });
@@ -193,16 +193,16 @@ define([], function() {
     }; // TODO: refactor?
 
     this.findFork = function(mark){
-      var position,
+      var cell,
           lines = this.singleMarkLines(mark, 1);
       if (lines.length > 0){
         var intersections = this.findIntersections(lines),
-            potentialPositions = intersections.filter(function(position){
-              return this.isPositionEmpty(position);
+            potentialPositions = intersections.filter(function(cell){
+              return this.isCellEmpty(cell);
             }.bind(this)),
-            position = JSTicTacToe.Helper.randomElement(potentialPositions);
+            cell = JSTicTacToe.Helper.randomElement(potentialPositions);
       }   
-      return position;
+      return cell;
     }; // find an empty intersection of singleMarkedLines for given mark
 
     this.isPristine = function(){
@@ -229,12 +229,79 @@ define([], function() {
       return friendly;
     }
 
-    function setPossiblePositions(amount){
-      var positions = [];
+    function setPossibleCells(amount){
+      var cells = [];
       for (var i = 0; i < amount; i++) {
-        positions.push(i);
+        cells.push(i);
       };
-      return positions;
+      return cells;
+    }
+
+
+
+
+
+
+
+    function setWinningCombos(board){
+      var winningCombos = [];
+      setDiagonals(board, winningCombos);
+      for (var i = 0; i < board.size; i++) {
+        setColumn(i, board, winningCombos);
+        setRow(i, board, winningCombos);
+      };
+      return winningCombos;
+    }
+
+    function setDiagonals(board, combos){
+      setFirstDiagonal(board, combos);
+      setSecondDiagonal(board, combos);
+    }
+
+    function setFirstDiagonal(board, combos){
+      var startIndex = 0,
+          endIndex = board.cellsAmount - 1,
+          increment = board.size + 1,
+          firstDiagonal = [];
+
+      firstDiagonal = setLine(startIndex, endIndex, increment);
+      addWinningCombination(firstDiagonal, combos);
+    }
+
+    function setSecondDiagonal(board, combos){
+      var startIndex = board.size - 1,
+          endIndex = board.cellsAmount - board.size,
+          increment = board.size - 1,
+          secondDiagonal = setLine(startIndex, endIndex, increment);
+      addWinningCombination(secondDiagonal, combos);
+    }
+
+    function setRow(rowNumber, board, combos){
+      var startIndex = rowNumber * board.size,
+          endIndex = startIndex + (board.size - 1),
+          increment = 1,
+          row = setLine(startIndex, endIndex, increment);
+      addWinningCombination(row, combos);
+    }
+
+    function setColumn(columnNumber, board, combos){
+      var startIndex = columnNumber,
+          endIndex = startIndex + (board.size * (board.size - 1)),
+          increment = board.size,
+          column = setLine(startIndex, endIndex, increment);
+      addWinningCombination(column, combos);
+    }
+
+    function setLine(start, end, increment){
+      var line = [];
+      for (var i = start; i <= end; i+=increment) {
+        line.push(i);
+      };
+      return line;
+    }
+
+    function addWinningCombination(combination, combos){
+      combos.push(combination);
     }
   };
 });
