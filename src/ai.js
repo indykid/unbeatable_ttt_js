@@ -9,7 +9,7 @@ define([], function() {
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
     this.board = board;
-    this.mainStrategy;
+    this.strategy;
     var Helper = JSTicTacToe.Helper;
     
     this.winningPosition = function(){
@@ -30,53 +30,53 @@ define([], function() {
 
     this.play = function(){
       var board = this.board,
-          position = this.findPosition();
+          position = this._findPosition();
       // console.log(position)
       board.addMove(position, this.mark);
       board.game.checkAndUpdateGameState();//???
       board.updateBoardView();//UI
       board.updateUI();//UI
-    };// unsure how to test this
+    };// unsure how to test this or if necessary
 
 
+    // this is super hacky but shortcircuits the unnecessary calls (vs commented function above)
 
+    // **********************
     // this.findPosition = function(){
-    //   var positions = [this.winningPosition(), this.threatPosition(), this.strategicPosition(), this.basicStrategy()];
-    //   var position = positions.find(function(position){
-    //     return position !== undefined;
-    //   });
+    //   var position;
+    //   (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined || (position = this.strategicPosition()) !== undefined || (position = this.basicStrategy()); 
     //   return position;
     // };
 
-    // this is super hacky but shortcircuits the unnecessary calls (vs commented function above)
-    this.findPosition = function(){
+    this._findPosition = function(){
       var position;
-      (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined || (position = this.strategicPosition()) !== undefined || (position = this.basicStrategy()); 
-      return position;
-    };
-
-    this._findPositionAlt = function(){
-      var position;
-
-      if (this.board.isPristine()){
+      // console.log(this.board.moves.length)
+      // if first move findStrategy
+      if (this.strategyPlay === undefined){
+        console.log('no strategy')
         this._findStrategy();
       }
+      // console.log(this.strategyPlay())
+      // console.log(this._commonSenseStrategy())
+      // console.log(this.basicStrategy())
+      // (position = this._commonSenseStrategy()) !== undefined || (position = this.strategyPlay()) !== undefined || (position = this.basicStrategy());
 
-      ((position = this._commonSenseStrategy()) !== undefined) || (position = this.strategyPlay() !== undefined ) || (position = this.basicStrategy());
+      var positions = [this._commonSenseStrategy(), this.strategyPlay(), this.basicStrategy()];
+      position = positions.find(function(p){
+        return p !== undefined;
+      });
       return position;
-      // if first move findStrategy
+      
     };//not sure how to test such thing
-
-
 
     this._findStrategy = function(){
       switch (this.mark) {
         case 'x':
-          // this.strategy = 'firstPlayer';
+          this.strategy = 'firstPlayer';
           this.strategyPlay = this._firstPlayerStrategy;
           break;
         case 'o':
-          // this.strategy = 'secondPlayer';
+          this.strategy = 'secondPlayer';
           this.strategyPlay = this._secondPlayerStrategy;
           break;
       }
@@ -142,16 +142,15 @@ define([], function() {
       return position;
     };// REFACTORRRRRRRR!
 
-
-
     this._secondPlayerStrategy = function(){
       var position,
           board = this.board,
           movesSoFar = board.movesSoFar(),
-          firstPositionType = board.positionType(board.firsPosition);
+          firstPositionType = board.positionType(board.firstPosition);
 
-      if ( firstPositionType === 'center' && movesSoFar <= 3 || board.singleFullLine() ) { position = board.randomOpenCorner() }
-      else {
+      if ( firstPositionType === 'center' && movesSoFar <= 3 || board.singleFullLine() && firstPositionType === 'edge') {
+        position = board.randomOpenCorner();
+      } else {
 
         switch (movesSoFar) {
           case 1:
@@ -166,117 +165,26 @@ define([], function() {
     };
 
     this._workoutSecondMoveAsSecondPlayer = function(firstPositionType){
-      // second move:
-
-        // if humanFirst is edge and second is non opposite edge or non-adjacent corner
-        // play between x1 and x2
-
-        // if humanFirst is corner 
-          // and humanSecond on a diagonal of their first
-          // play any edge
-
-          // humanSecond is edge on the side away from humanFirst
-          // play corner on the same side as human's move
-
       var position,
           board = this.board;
 
       switch ( firstPositionType ) {
         case 'edge':
-          var humansFirstPosition = board.humanFirst.position,
-            adjacentToFirstMove = board.adjacentPositions(humansFirstPosition),
+          var adjacentToFirstMove = board.adjacentPositions(board.firstPosition),
             humansLines = board.singleMarkLines(this.humansMark, 1),
             lines = humansLines.filter(function(line){
               return Helper.commonValues(line, adjacentToFirstMove).length > 0;
             });
-            position = board.findIntersections(lines)[0]
-        break;
-        case 'corner':
-
-        break;
-      }
-      return position;
-    };
-
-
-    this._commonSenseStrategy = function(){
-      var position;
-      (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined;
-      return position;
-    };
-
-    // play function:
-
-    //  do i have a strategy
-    //  how may moves have been made
-    //  first move: corner or center
-    // 
-    // 
-
-    this.strategicPosition = function(){
-      var position,
-          movesSoFar = this.board.moves.length;
-      
-      if (this.mainStrategy === undefined){
-        this._pickAIStrategy();
-      }
-
-      if (movesSoFar === 0){
-        position = this.board.cornerOrCenter();
-      } else {
-        switch (this.mainStrategy){
-          case 'cornerAsFirst':
-            position = this.cornerAsFirst(movesSoFar);
-            break;
-          case 'centerAsFirst':
-            position = this.centerAsFirst(movesSoFar);
-            break;
-          case 'cornerAsSecond':
-            position = this.cornerAsSecond(movesSoFar);
-            break;
-          case 'centerAsSecond':
-            position = this.centerAsSecond(movesSoFar);
-            break;
-          case 'edgeAsSecond':
-            position = this.edgeAsSecond(movesSoFar);
-            break;
-        }
-      }
-      // console.log('strategicPosition: ', position);
-      return position;
-    };
-
-  // playing first strategy
-    // play center or corner
-
-
-  // playing second strategy:
-
-    // play center if free
-    // otherwise play corner
-
-
-    // full-line?
-
-    this.cornerAsSecond = function(movesSoFar){
-      var position,
-          board = this.board,
-          humansLastPosition = board.lastPositionFor(this.humansMark);
-      switch (movesSoFar){
-        case 1:
-          position = this.board.center();
+            position = board.findIntersections(lines)[0];
           break;
-        case 3:
-          if (board.singleFullLine()){
-            // if there's a full diagonal play any edge
+
+        case 'corner':
+          if ( board.singleFullLine() ) {
             var edges = board.availableOfType('edge');
-            position = JSTicTacToe.Helper.randomElement(edges);
+            position = Helper.randomElement(edges);
           } else {
-            // human must have played opposite edge to its first move (x1), otherwise threat block would preempt this condition 
-            // cannot play the corner opposite x1, and need to play corner cell on the same side as the human's last move
-            // ie corner which is adjacent to humansLastPosition but itself is not the opposite to his first move.
-            var oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
-            var adjacentToLastMove = board.adjacentPositions(humansLastPosition);
+            var oppositeToFirstMove = board.oppositePosition(board.firstPosition);
+            var adjacentToLastMove = board.adjacentPositions(board.humanLastMove.position);
             position = adjacentToLastMove.find(function(move){
               return board.positionType(move) === 'corner' && move !== oppositeToFirstMove;
             });
@@ -286,87 +194,9 @@ define([], function() {
       return position;
     };
 
-    this.centerAsSecond = function(movesSoFar){
+    this._commonSenseStrategy = function(){
       var position;
-      // first move is corner
-      // next move after that will always be threatblock due to symmetry of the board, unless human played on the same diagonal as thier first move, in which case we still play a corner
-      if (movesSoFar < 4){
-        position = JSTicTacToe.Helper.randomElement(this.board.availableOfType('corner'));
-      }
-      return position;
-    };
-
-    this.edgeAsSecond = function(movesSoFar){
-      var position,
-          board = this.board;       
-      switch (movesSoFar){
-        case 1:
-          position = this.board.center();
-          break;
-        case 3:
-          if ( board.singleFullLine() ){
-            position = Helper.randomElement(board.availableOfType('corner'));
-          } else {
-            // this will suffice only if they played non-opposite edge, or non-adjacent corner to x1
-            // need to play an adjacent corner to x1 on the same side as their last move (x2)
-            var humansFirstPosition = board.moves[0].position,
-                adjacentToFirstMove = board.adjacentPositions(humansFirstPosition),
-                humansLines = board.singleMarkLines(this.humansMark, 1),
-                lines = humansLines.filter(function(line){
-                  return Helper.commonValues(line, adjacentToFirstMove).length > 0;
-                });
-                position = board.findIntersections(lines)[0]
-          }
-          break;
-      }
-      return position;
-    };
-
-    this.cornerAsFirst = function(movesSoFar){
-      var position,
-          board = this.board;
-      switch (movesSoFar){
-        case 2:
-          var humansLastPosition = board.lastPositionFor(this.humansMark),
-              lastPositionType = board.positionType(humansLastPosition),
-              oppositeToFirstMove = board.oppositePosition(board.moves[0].position);
-          
-          if (lastPositionType === 'center'){
-            position = oppositeToFirstMove;
-          } else {
-            // play corner which is not opposite to the first move and is not adjacent to opponentsLastMove
-            var adjacentToLastMove = board.adjacentPositions(humansLastPosition);
-            var corners = board.availableOfType('corner').filter(function(corner){
-              return corner !== oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
-            });
-            position = Helper.randomElement(corners);
-          }
-          break;
-        case 4:
-          // would only end up here if human didn't block with center at any point
-          position = board.findFork(this.mark);
-          break;
-      }
-      return position;
-    };
-
-    this.centerAsFirst = function(movesSoFar){
-      var board = this.board,
-          position;
-      switch (movesSoFar){
-        case 2:
-          var humansLastPosition = board.lastPositionFor(this.humansMark);
-          var lastPositionType = board.positionType(humansLastPosition);
-          if (lastPositionType === 'edge'){
-            position = Helper.randomElement(board.availableOfType('corner'));
-          } else {
-            position = board.oppositePosition(humansLastPosition);
-          }
-          break;
-        case 4:
-          position = board.findFork(this.mark);
-          break;
-      }
+      (position = this.winningPosition()) !== undefined || (position = this.threatPosition()) !== undefined;
       return position;
     };
 
@@ -399,46 +229,6 @@ define([], function() {
       }
       return position;
     };
-
-    this._pickAIStrategy = function(){
-      if ( this.mark === 'x'){
-        pickAIStrategyAsFirst(this);
-      } else {
-        pickAIStrategyAsSecond(this);
-      }
-    };
-
-    function pickAIStrategyAsFirst(ai){
-      // console.log(ai)
-      var board = ai.board,
-          myLastPosition = board.lastPositionFor(ai.mark),
-          myLastPositionType = board.positionType(myLastPosition);
-      switch (myLastPositionType){
-        case 'corner':
-          ai.mainStrategy = 'cornerAsFirst';
-          break;
-        case 'center':
-          ai.mainStrategy = 'centerAsFirst';
-          break;
-      }
-    }
-
-    function pickAIStrategyAsSecond(ai){
-      var board = ai.board,
-          humansLastPosition = board.lastPositionFor(ai.humansMark),
-          lastPositionType = board.positionType(humansLastPosition);
-      switch (lastPositionType){
-        case 'corner':
-          ai.mainStrategy = 'cornerAsSecond';
-          break;
-        case 'center':
-          ai.mainStrategy = 'centerAsSecond';
-          break;
-        case 'edge':
-          ai.mainStrategy = 'edgeAsSecond';
-          break;
-      }
-    }
   };
 
   return JSTicTacToe.AIPlayer;

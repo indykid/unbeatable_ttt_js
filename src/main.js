@@ -41,7 +41,7 @@ require(["jquery", "board", "game", "ai", "helper"], function($, Board, Game, AI
       JSTicTacToe.newGameButton.css('display', 'block');
       if (firstPlayer == 'ai'){
         JSTicTacToe.game.ai.play();
-      } 
+      }
     });
 
     JSTicTacToe.emptyGridPositions.on('click', function(){
