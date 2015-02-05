@@ -258,8 +258,8 @@ define([], function(){
     describe('_updateLastMoves', function(){
       it('updates humanLastMove and aiLastMove', function(){
         board.seed([0, 1])
-        expect(board.humanLastMove).toEqual({cell: 0, mark: 'x'});
-        expect(board.aiLastMove).toEqual({cell: 1, mark: 'o'});
+        expect(board.humanLast).toEqual(0);
+        expect(board.aiLast).toEqual(1);
       });
     });
 

@@ -27,7 +27,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       expect(ai.humansMark).toBeDefined();
     });
 
-    describe('#winningPosition', function(){
+    describe('#winningCell', function(){
       describe('context: there is a potential win on a:', function(){
         it('row, returns a winning position', function(){
           board.addMove(0, 'x');
@@ -156,7 +156,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       });
     });// not entirely sure about usefullness of this test
 
-    describe('_firstPlayerStrategy', function(){
+    describe('_strategyAsFirst', function(){
       beforeEach(function(){
         game = new Game('ai');
         ai = game.ai;
@@ -165,7 +165,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
 
       describe('context: first move', function(){
         it('returns corner or center position', function(){
-          var position = ai._firstPlayerStrategy();
+          var position = ai._strategyAsFirst();
           expect(['corner', 'center']).toContain(ai.board.cellType(position));
         });
       });
@@ -176,7 +176,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
           it('returns corner on the same diagonal as existing moves', function(){
             board.addMove(2, 'x');
             board.addMove(4, 'o');
-            expect(ai._firstPlayerStrategy()).toEqual(6);
+            expect(ai._strategyAsFirst()).toEqual(6);
           });
         });
 
@@ -184,7 +184,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
           it('returns corner on the same diagonal as existing moves', function(){
             board.addMove(4, 'x');
             board.addMove(6, 'o');
-            expect(ai._firstPlayerStrategy()).toEqual(2);
+            expect(ai._strategyAsFirst()).toEqual(2);
           });
         });
 
@@ -193,14 +193,14 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
             it('returns any available corner position', function(){
               board.addMove(4, 'x');
               board.addMove(1, 'o');
-              expect([0, 2, 6, 8]).toContain(ai._firstPlayerStrategy());
+              expect([0, 2, 6, 8]).toContain(ai._strategyAsFirst());
             });
           });
           describe('context: first move was corner', function(){
             it("returns play corner away from human's last move", function(){
               board.addMove(2, 'x');
               board.addMove(1, 'o');
-              expect(ai._firstPlayerStrategy()).toEqual(8);
+              expect(ai._strategyAsFirst()).toEqual(8);
             });
           });
         });
@@ -215,26 +215,26 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
             board.addMove(1, 'o');
             board.addMove(6, 'x');
             board.addMove(3, 'o');
-            expect([4, 8]).toContain(ai._firstPlayerStrategy());
+            expect([4, 8]).toContain(ai._strategyAsFirst());
           });
         });
       });
     });
 
-    describe('_secondPlayerStrategy', function(){
+    describe('_strategyAsSecond', function(){
 
       describe('context: ai first move', function(){
         describe('context: center is available', function(){
           describe('human played edge', function(){
             it('returns center', function(){
               board.addMove(1,'x');
-              expect(ai._secondPlayerStrategy()).toEqual(4);
+              expect(ai._strategyAsSecond()).toEqual(4);
             });
           });
           describe('human played corner', function(){
             it('returns center', function(){
               board.addMove(2,'x');
-              expect(ai._secondPlayerStrategy()).toEqual(4);
+              expect(ai._strategyAsSecond()).toEqual(4);
             });
           });
           
@@ -242,7 +242,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
         describe('context: center is unavailable', function(){
           it('returns random corner', function(){
             board.addMove(4, 'x');
-            expect([0, 2, 6, 8]).toContain(ai._secondPlayerStrategy());
+            expect([0, 2, 6, 8]).toContain(ai._strategyAsSecond());
           });
         });
       });
@@ -254,7 +254,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
             board.addMove(4, 'x');
             board.addMove(2, 'o');
             board.addMove(6, 'o');
-            expect([0, 8]).toContain(ai._secondPlayerStrategy());
+            expect([0, 8]).toContain(ai._strategyAsSecond());
           });
         });
 
@@ -264,7 +264,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
               board.addMove(2, 'x');
               board.addMove(4, 'o');
               board.addMove(6, 'x');
-              expect([1, 3, 5, 7]).toContain(ai._secondPlayerStrategy());
+              expect([1, 3, 5, 7]).toContain(ai._strategyAsSecond());
             });
           });
           describe("human's second move is an edge, on the side away from human's first", function(){
@@ -272,7 +272,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
               board.addMove(2, 'x');
               board.addMove(4, 'o');
               board.addMove(7, 'x');
-              expect(ai._secondPlayerStrategy()).toEqual(8);
+              expect(ai._strategyAsSecond()).toEqual(8);
             });
           });
         });
@@ -283,7 +283,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
               board.addMove(1, 'x');
               board.addMove(4, 'o');
               board.addMove(7, 'x');
-              expect([0, 2, 6, 8]).toContain(ai._secondPlayerStrategy());
+              expect([0, 2, 6, 8]).toContain(ai._strategyAsSecond());
             });
           });
 
@@ -292,7 +292,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
               board.addMove(5, 'x');
               board.addMove(4, 'o');
               board.addMove(7, 'x');
-              expect(ai._secondPlayerStrategy()).toEqual(8);
+              expect(ai._strategyAsSecond()).toEqual(8);
             });
           });
 
@@ -301,7 +301,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
               board.addMove(5, 'x');
               board.addMove(4, 'o');
               board.addMove(6, 'x');
-              expect(ai._secondPlayerStrategy()).toEqual(8);
+              expect(ai._strategyAsSecond()).toEqual(8);
             });
           });
         });

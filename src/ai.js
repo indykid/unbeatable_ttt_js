@@ -10,6 +10,15 @@ define([], function() {
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
     this.board = board;
     this.strategy;
+
+    this.play = function(){
+      var board = this.board,
+          cell = this._findCell();
+      board.addMove(cell, this.mark);
+      board.game.checkAndUpdateGameState();//???
+      board.updateBoardView();//UI
+      board.updateUI();//UI
+    };// unsure how to test this or if necessary
     
     this.winningCell = function(){
       var board = this.board,
@@ -27,155 +36,111 @@ define([], function() {
       }
     };
 
-    this.play = function(){
-      var board = this.board,
-          cell = this._findCell();
-      board.addMove(cell, this.mark);
-      board.game.checkAndUpdateGameState();//???
-      board.updateBoardView();//UI
-      board.updateUI();//UI
-    };// unsure how to test this or if necessary
-
-
     this._findCell = function(){
+      if ( this.strategyPlay === undefined ) this._findStrategy();
+      return this._bestCell();      
+    };
+
+    this._bestCell = function(){
       var cell;
-      // assign strategy if not set
-      if (this.strategyPlay === undefined){
-        this._findStrategy();
-      }
-      // var cells = [this._commonSenseStrategy(), this.strategyPlay(), this.basicStrategy()];
-      // cell = cells.find(function(p){
-      //   return p !== undefined;
-      // });
-
-      // this is super hacky but shortcircuits the unnecessary calls (vs commented function above)
-      (cell = this._commonSenseStrategy()) !== undefined || (cell = this.strategyPlay()) !== undefined || (cell = this.basicStrategy()); 
-
+      // this is quite hacky but shortcircuits the unnecessary calls to all methods
+      (cell = this._commonSenseStrategy()) !== undefined || (cell = this.strategyPlay()) !== undefined || (cell = this.basicStrategy());
       return cell;
-    };//not sure how to test such thing
+    };
+    // alternative to above:
+    // var cells = [this._commonSenseStrategy(), this.strategyPlay(), this.basicStrategy()];
+    // cell = cells.find(function(p){
+    //   return p !== undefined;
+    // });
 
     this._findStrategy = function(){
       switch (this.mark) {
         case 'x':
           this.strategy = 'firstPlayer';
-          this.strategyPlay = this._firstPlayerStrategy;
+          this.strategyPlay = this._strategyAsFirst;
           break;
         case 'o':
           this.strategy = 'secondPlayer';
-          this.strategyPlay = this._secondPlayerStrategy;
+          this.strategyPlay = this._strategyAsSecond;
           break;
       }
     };
 
-    this._firstPlayerStrategy = function(){
+    this._strategyAsFirst = function(){
       var board = this.board,
-          movesSoFar = board.movesSoFar(),
-          cell;
+          movesSoFar = board.movesSoFar();
       switch (movesSoFar) {
         case 0:
-          cell = board.cornerOrCenter();
-          break;
+          return board.cornerOrCenter();
         case 2:
-          cell = this._workoutSecondMoveAsFirstPlayer();
-          break;
+          return this._secondMoveAsFirstPlayer();
         case 4:
-          cell = board.findFork(this.mark);
-          break;
+          return board.findFork(this.mark);
       }
-      return cell;
     };
 
-    this._workoutSecondMoveAsFirstPlayer = function(){
-      var cell,
-          board = this.board,
-      // if both moves on the board are a corner and center
-      // play the empty corner on that line
-          humansCellType = board.cellType(board.humanLast),
-          aiCellType = board.cellType(board.aiLast),
-          playedTypes = [humansCellType, aiCellType],
-          onlyCornerAndCenterSoFar = (playedTypes.hasElement('center') && playedTypes.hasElement('corner'));
+    this._secondMoveAsFirstPlayer = function(){
+      var board = this.board;
+      if ( onlyCornerAndCenterSoFar(board) ) { return fillInDiagonal(board) }
+      else { return this._dependsOnAiFirstMove() }
+    };
 
-      if ( onlyCornerAndCenterSoFar ) {
-        var diagonal = board.winningCombos.find(function(combination){
-          return board.availableOnAGivenLine(combination).length === 1;
-        });
-        cell = board.availableOnAGivenLine(diagonal)[0];
-      } else {
-        // otherwise: human must have played an edge cell
-        // if played center first :
-          // play any corner
-        // if corner was first 
-          // play corner on the other side from human's last move
-        switch ( aiCellType ) {
-          case 'center':
-            var corners = board.availableOfType('corner');
-            cell = Helper.randomElement(corners);
-            break;
-          case 'corner':
-            // play corner which is not opposite to the first move and is not adjacent to humansLastMove
-            var adjacentToLastMove = board.adjacentCells(board.humanLast),
-                oppositeToFirstMove = board.oppositeCell(board.aiLast),
-                suitableCorners = board.availableOfType('corner').filter(function(corner){
-              return corner !== oppositeToFirstMove && !adjacentToLastMove.hasElement(corner);
-            });
-            cell = Helper.randomElement(suitableCorners);
-            break;
-        }
+    this._dependsOnAiFirstMove = function(){
+      var board         = this.board,
+          firstCellType = board.cellType(board.firstCell);
+      switch ( firstCellType ) {
+        case 'center':
+          return board.randomOpenCorner();
+        case 'corner':
+          return nonOppositeNonAdjacentCorner(board);
       }
-      return cell;
-    };// REFACTORRRRRRRR!
+    };// to end up here: human must have played an edge cell
 
-    this._secondPlayerStrategy = function(){
-      var cell,
-          board = this.board,
-          movesSoFar = board.movesSoFar(),
+    this._strategyAsSecond = function(){
+      var board         = this.board,
           firstCellType = board.cellType(board.firstCell);
 
-      if ( firstCellType === 'center' && movesSoFar <= 3 || board.singleFullLine() && firstCellType === 'edge') {
-        cell = board.randomOpenCorner();
-      } else {
-
-        switch (movesSoFar) {
+      if ( firstCellCenterOrColumnFull(board) ) { return board.randomOpenCorner(); } 
+      else {
+        switch ( board.movesSoFar() ) {
           case 1:
-            cell = board.center();
-            break;
+            return board.center();
           case 3:
-            cell = this._workoutSecondMoveAsSecondPlayer(firstCellType);
-            break;
+            return this._secondMoveAsSecondPlayer(firstCellType);
         }
       }
-      return cell;
     };
 
-    this._workoutSecondMoveAsSecondPlayer = function(firstCellType){
-      var cell,
-          board = this.board;
+    this._secondMoveAsSecondPlayer = function(firstCellType){
+      var board = this.board;
 
       switch ( firstCellType ) {
         case 'edge':
           var adjacentToFirstMove = board.adjacentCells(board.firstCell),
-            humansLines = board.singleMarkLines(this.humansMark, 1),
-            lines = humansLines.filter(function(line){
-              return Helper.commonValues(line, adjacentToFirstMove).length > 0;
-            });
-            cell = board.findIntersections(lines)[0];
-          break;
+              humansLines = board.singleMarkLines(this.humansMark, 1),
+              lines = humansLines.filter(function(line){
+                return Helper.commonValues(line, adjacentToFirstMove).length > 0;
+              });
+          return board.findIntersections(lines)[0];
 
         case 'corner':
           if ( board.singleFullLine() ) {
             var edges = board.availableOfType('edge');
-            cell = Helper.randomElement(edges);
+            return Helper.randomElement(edges);
           } else {
-            var oppositeToFirstMove = board.oppositeCell(board.firstcell);
-            var adjacentToLastMove = board.adjacentCells(board.humanLastMove.cell);
-            cell = adjacentToLastMove.find(function(move){
-              return board.cellType(move) === 'corner' && move !== oppositeToFirstMove;
+            var oppositeToFirstMove = board.oppositeCell(board.firstCell);
+            var adjacentToLastMove = board.adjacentCells(board.humanLast);
+            return adjacentToLastMove.find(function(cell){
+              return board.cellType(cell) === 'corner' && cell !== oppositeToFirstMove;
             });
           }
-          break;
       }
-      return cell;
+      // return cell;
     };
+
+    // function (){
+
+    // }
 
     this._commonSenseStrategy = function(){
       var cell;
@@ -212,6 +177,37 @@ define([], function() {
       }
       return cell;
     };
+
+    function onlyCornerAndCenterSoFar(board){
+      var humansCellType  = board.cellType(board.humanLast),
+          aiCellType      = board.cellType(board.aiLast),
+          playedTypes     = [humansCellType, aiCellType];
+      return playedTypes.includes('center') && playedTypes.includes('corner');
+    }
+
+    function fillInDiagonal(board){
+      var diagonal = board.winningCombos.find(function(combination){
+        return board.availableOnAGivenLine(combination).length === 1;
+      });
+      return board.availableOnAGivenLine(diagonal)[0];
+    }
+
+    function nonOppositeNonAdjacentCorner(board){
+      var adjacents   = board.adjacentCells(board.humanLast),
+          opposite    = board.oppositeCell(board.aiLast),
+          aptCorners  = board.availableOfType('corner').filter(function(corner){
+            return corner !== opposite && !adjacents.includes(corner);
+          });
+      return Helper.randomElement(aptCorners);
+    }
+
+    function firstCellCenterOrColumnFull(board){
+      var firstCellType   = board.cellType(board.firstCell),
+          movesSoFar      = board.movesSoFar();
+      return firstCellType === 'center' && movesSoFar <= 3 || board.singleFullLine() && firstCellType === 'edge';
+    }
+
+    // function 
   };
 
   return JSTicTacToe.AIPlayer;

@@ -3,7 +3,8 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
-  return JSTicTacToe.Board = function(game){
+  JSTicTacToe.Board = function(game){
+    var Helper = JSTicTacToe.Helper;
     this.game = game;
     this.moves = [];
     this.size = 3;
@@ -11,11 +12,8 @@ define([], function() {
     this.possibleCells = setPossibleCells(this.cellsAmount);
     this.winningCombos = setWinningCombos(this);
     this.firstCell;
-    this.humanLastMove;
-    this.aiLastMove;
     this.humanLast; //position
     this.aiLast;
-
 
     this.addMove = function(cell, mark){
       var move = {};
@@ -30,10 +28,8 @@ define([], function() {
 
     this._updateLastMoves = function(move){
       if ( this.game.ai.mark === move.mark ){
-        this.aiLastMove = move;
         this.aiLast = move.cell;
       } else {
-        this.humanLastMove = move;
         this.humanLast = move.cell;
       }
     };
@@ -49,7 +45,7 @@ define([], function() {
 
     this.available = function(){
       var available = this.possibleCells.filter(function(cell){
-        return !this.takenCells().hasElement(cell);
+        return !this.takenCells().includes(cell);
       }.bind(this));
       return available;
     };
@@ -74,7 +70,7 @@ define([], function() {
     };
 
     this.isCellEmpty = function(cell) {
-      return this.available().hasElement(cell);
+      return this.available().includes(cell);
     };
 
     this.availableOnAGivenLine = function(line){
@@ -181,28 +177,26 @@ define([], function() {
     this.findIntersections = function(lines){
       var intersections = [];
       for ( var i = 0; i < lines.length - 1; i++ ){
-        var intersection = JSTicTacToe.Helper.commonValues(lines[i], lines[i+1])[0];
+        var intersection = Helper.commonValues(lines[i], lines[i+1])[0];
         if (intersection !== undefined){
           intersections.push(intersection);
         }
       }
       if (lines.length === this.size){
-        intersections.push(JSTicTacToe.Helper.commonValues(lines[0], lines.lastElement())[0]);
+        intersections.push(Helper.commonValues(lines[0], lines.lastElement())[0]);
       };
       return intersections;
     }; // TODO: refactor?
 
     this.findFork = function(mark){
-      var cell,
-          lines = this.singleMarkLines(mark, 1);
+      var lines = this.singleMarkLines(mark, 1);
       if (lines.length > 0){
-        var intersections = this.findIntersections(lines),
-            potentialPositions = intersections.filter(function(cell){
+        var intersections   = this.findIntersections(lines),
+            potentialCells  = intersections.filter(function(cell){
               return this.isCellEmpty(cell);
-            }.bind(this)),
-            cell = JSTicTacToe.Helper.randomElement(potentialPositions);
-      }   
-      return cell;
+            }.bind(this));  
+        return Helper.randomElement(potentialCells);
+      }
     }; // find an empty intersection of singleMarkedLines for given mark
 
     this.isPristine = function(){
@@ -215,15 +209,18 @@ define([], function() {
 
     this.cornerOrCenter = function(){
       var center = this.center(),
-          corner = JSTicTacToe.Helper.randomElement(this.availableOfType('corner'));
-      return JSTicTacToe.Helper.randomElement([corner, center]);
+          corner = Helper.randomElement(this.availableOfType('corner'));
+      return Helper.randomElement([corner, center]);
     }
 
     this.randomOpenCorner = function(){
       var corners = this.availableOfType('corner');
-      return JSTicTacToe.Helper.randomElement(corners);
-    }
+      return Helper.randomElement(corners);
+    };
 
+    /***********************
+    private functions
+    ************************/ 
     function uiFriendlyPlayer(player){
       var friendly = player === 'ai' ? 'computer' : 'you';
       return friendly;
@@ -236,12 +233,6 @@ define([], function() {
       };
       return cells;
     }
-
-
-
-
-
-
 
     function setWinningCombos(board){
       var winningCombos = [];
@@ -304,4 +295,5 @@ define([], function() {
       combos.push(combination);
     }
   };
+  return JSTicTacToe.Board;
 });

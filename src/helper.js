@@ -10,7 +10,7 @@ define([], function(){
       ARRAY EXTENSIONS:
     ================================================*/
     this.bootstrapArray = function(){
-      Array.prototype.hasElement = function(value){
+      Array.prototype.includes = function(value){
         'use strict';
         return (this.indexOf(value) !== -1) ? true : false;
       }
@@ -75,7 +75,7 @@ define([], function(){
     
     this.commonValues = function(a, b){
       var result = a.filter(function(n) {
-        return b.hasElement(n);
+        return b.includes(n);
       });
       return result;
     }
