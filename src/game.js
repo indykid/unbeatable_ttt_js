@@ -17,15 +17,15 @@ define([], function() {
 
     this.isActive = function(){
       return ( !this.isWon() && !this.isDrawn() );
-    }
+    };
 
     this.isWon = function(){
       return this.winner.player !== undefined;
-    }
+    };
 
     this.isDrawn = function(){
       return this.board.available().length < 1 && !this.isWon();
-    }
+    };
     
     this.checkAndUpdateGameState = function(){
       var winnerMark = this.winnerMark();
@@ -39,12 +39,12 @@ define([], function() {
     }
 
     this.winnerMark = function(){
-      var singlePlayerFullLine = this.board.winningCombos.find(function(combination){
-        return this.board.singlePlayerLine(combination, this.board.size, this.ai.humansMark) || this.board.singlePlayerLine(combination, this.board.size, this.ai.mark);
+      var singlePlayerFullLine = this.board.winningCombos.find(function(combo){
+        return this.board.singlePlayerLine(combo, this.board.size, this.ai.humansMark) || this.board.singlePlayerLine(combo, this.board.size, this.ai.mark);
       }.bind(this));
-      if (singlePlayerFullLine!==undefined){
+      if (singlePlayerFullLine !== undefined){
         return this.board.getMark(singlePlayerFullLine[0]);
-      }   
+      }
     };
 
     this.isPlayerTurn = function(mark){

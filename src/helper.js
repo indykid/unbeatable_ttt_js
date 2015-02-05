@@ -67,7 +67,7 @@ define([], function(){
       });
     }
 
-    this.randomElement = function(data){
+    this.anyFrom = function(data){
       var myArray = this.randomize(data);
       var index = Math.floor(Math.random() * myArray.length);
       return myArray[index];

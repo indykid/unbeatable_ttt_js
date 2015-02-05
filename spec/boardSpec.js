@@ -77,21 +77,21 @@ define([], function(){
     describe('#availableOnAGivenLine', function(){
       describe('context: line is empty', function(){
         it('returns all positions of a line', function(){
-          expect(board.availableOnAGivenLine([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
+          expect(board.availableOnALine([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
         });
       });
 
       describe('context: line has one position occupied', function(){
         it('returns all positions except occupied one', function(){
           board.addMove(4, 'x');
-          expect(board.availableOnAGivenLine([0, 4, 8]).ascending()).toEqual([0, 8]);
+          expect(board.availableOnALine([0, 4, 8]).ascending()).toEqual([0, 8]);
         });
       });
 
       describe('context: line is full', function(){
         it('returns an empty array', function(){
           board.seed([0, 1, 2]);
-          expect(board.availableOnAGivenLine([0, 1, 2])).toEqual([]);
+          expect(board.availableOnALine([0, 1, 2])).toEqual([]);
         });
       });
     });
@@ -177,7 +177,7 @@ define([], function(){
 
       describe('context: no two positions in a row belong to player x', function(){
         it('given the moves, for player "x" it returns correct lines when asking for 1 in a line, and no lines when asking for 2', function(){
-          // 
+          //
           board.seed([8, 2, 3, 1]);
           expect(board.singleMarkLines('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
           expect(board.singleMarkLines('x', 2)).toEqual([]);
@@ -257,16 +257,16 @@ define([], function(){
 
     describe('_updateLastMoves', function(){
       it('updates humanLastMove and aiLastMove', function(){
-        board.seed([0, 1])
-        expect(board.humanLast).toEqual(0);
-        expect(board.aiLast).toEqual(1);
+        board.seed([0, 1]);
+        expect(board.humansLastCell).toEqual(0);
+        expect(board.aiLastCell).toEqual(1);
       });
     });
 
-    describe('#randomOpenCorner', function(){
+    describe('#anyOpenCorner', function(){
       it('returns a random open corner', function(){
         board.seed([0, 1]);
-        expect([2, 6, 8]).toContain(board.randomOpenCorner())
+        expect([2, 6, 8]).toContain(board.anyFreeCorner())
       });
     });
 

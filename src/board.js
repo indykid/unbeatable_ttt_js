@@ -12,8 +12,8 @@ define([], function() {
     this.possibleCells = setPossibleCells(this.cellsAmount);
     this.winningCombos = setWinningCombos(this);
     this.firstCell;
-    this.humanLast; //position
-    this.aiLast;
+    this.humansLastCell;
+    this.aiLastCell;
 
     this.addMove = function(cell, mark){
       var move = {};
@@ -28,9 +28,9 @@ define([], function() {
 
     this._updateLastMoves = function(move){
       if ( this.game.ai.mark === move.mark ){
-        this.aiLast = move.cell;
+        this.aiLastCell = move.cell;
       } else {
-        this.humanLast = move.cell;
+        this.humansLastCell = move.cell;
       }
     };
 
@@ -73,7 +73,7 @@ define([], function() {
       return this.available().includes(cell);
     };
 
-    this.availableOnAGivenLine = function(line){
+    this.availableOnALine = function(line){
       var available = line.filter(function(cell){
         return this.isCellEmpty(cell);
       }.bind(this));
@@ -87,7 +87,7 @@ define([], function() {
       if (takenOnALine.length === howMany){
         var marks = takenOnALine.map(function(cell){
           return this.getMark(cell);
-        }.bind(this));    
+        }.bind(this));
         return marks.allDefinedValuesSame() && marks[0] === mark;
       }
       return false;
@@ -95,22 +95,28 @@ define([], function() {
 
     this.singleFullLine = function(){
       var fullLines = this.winningCombos.filter(function(combination){
-        return this.availableOnAGivenLine(combination).length === 0;
+        return this.availableOnALine(combination).length === 0;
       }.bind(this));
       return fullLines.length === 1 && this.takenCells().length === this.size;
     };
 
-    this.singleMarkLines = function(mark, howMany){ 
+    this.singleMarkLines = function(mark, howMany){
       var lines = this.winningCombos.filter(function(combination){
         return this.singlePlayerLine(combination, howMany, mark);
       }.bind(this));
       return lines;
-    }  
+    };
+
+    this.emptyLines = function(){
+      return  this.winningCombos.filter(function(combination){
+                return this.availableOnALine(combination).length === this.size;
+              }.bind(this));
+    };
 
     this.center = function(){
-      return this.possibleCells.find(function(cell){
-        return this.cellType(cell) === 'center';
-      }.bind(this));
+      return  this.possibleCells.find(function(cell){
+                return this.cellType(cell) === 'center';
+              }.bind(this));
     }
 
     this.oppositeCell = function(cell){
@@ -144,6 +150,12 @@ define([], function() {
         return move.cell;
       });
       return taken;
+    };
+
+    this.lineWithOneFreeCell = function(){
+      return  this.winningCombos.find(function(combo){
+                return this.availableOnALine(combo).length === 1;
+              }.bind(this));
     };
 
     this.seed = function(cells){
@@ -194,8 +206,8 @@ define([], function() {
         var intersections   = this.findIntersections(lines),
             potentialCells  = intersections.filter(function(cell){
               return this.isCellEmpty(cell);
-            }.bind(this));  
-        return Helper.randomElement(potentialCells);
+            }.bind(this));
+        return Helper.anyFrom(potentialCells);
       }
     }; // find an empty intersection of singleMarkedLines for given mark
 
@@ -209,22 +221,81 @@ define([], function() {
 
     this.cornerOrCenter = function(){
       var center = this.center(),
-          corner = Helper.randomElement(this.availableOfType('corner'));
-      return Helper.randomElement([corner, center]);
-    }
+          corner = Helper.anyFrom(this.availableOfType('corner'));
+      return Helper.anyFrom([corner, center]);
+    };
 
-    this.randomOpenCorner = function(){
+    this.anyFreeCorner = function(){
       var corners = this.availableOfType('corner');
-      return Helper.randomElement(corners);
+      return Helper.anyFrom(corners);
     };
 
     this.firstCellType = function(){
       return this.cellType(this.firstCell);
     };
 
-    /***********************
+/***********************
+  one-off use functions
+*************************/
+    this.findNonOppositeCorner = function(cells){
+      var opposite = this.oppositeCell(this.firstCell),
+          cell     = cells.find(function(cell){
+            return this.cellType(cell) === 'corner' && cell !== opposite;
+          }.bind(this));
+      return cell;
+    };
+
+    this.onlyCornerAndCenterSoFar = function(){
+      var humansCellType  = this.cellType(this.humansLastCell),
+          aiCellType      = this.cellType(this.aiLastCell),
+          playedTypes     = [humansCellType, aiCellType];
+      return playedTypes.includes('center') && playedTypes.includes('corner');
+    };
+
+    this.fillInLine = function(){
+      var line = this.lineWithOneFreeCell();
+      return this.availableOnALine(line)[0];
+    };
+
+    this.cornerOppositeToHumansMove = function(){
+      var adjacents   = this.adjacentCells(this.humansLastCell),
+          opposite    = this.oppositeCell(this.aiLastCell),
+          aptCorners  = this.availableOfType('corner').filter(function(corner){
+            return corner !== opposite && !adjacents.includes(corner);
+          });
+      return Helper.anyFrom(aptCorners);
+    };
+
+    this.firstCellCenterOrColumnFull = function(){
+      return this.singleFullColumn() || this.firstCellCenterFirstOrSecondMove();
+    };
+
+    this.firstCellCenterFirstOrSecondMove = function(){
+      return this.firstCellType() === 'center' && this.movesSoFar() <= 3;
+    };
+
+    this.singleFullColumn = function(){
+      return this.singleFullLine() && this.firstCellType() === 'edge';
+    };
+
+    this.cornerBetweenHumansMoves = function(humansMark){
+      var adjacents   = this.adjacentCells(this.firstCell),
+          humansLines = this.singleMarkLines(humansMark, 1),
+          lines       = humansLines.filter(function(line){
+            return Helper.commonValues(line, adjacents).length > 0;
+          });
+      return this.findIntersections(lines)[0];
+    };
+
+    this.cornerOnTheSameSideAsHumansMove = function(){
+      var adjacents = this.adjacentCells(this.humansLastCell);
+      return this.findNonOppositeCorner(adjacents);
+    };
+
+    /****************
     private functions
-    ************************/ 
+    *****************/
+
     function uiFriendlyPlayer(player){
       var friendly = player === 'ai' ? 'computer' : 'you';
       return friendly;
@@ -234,7 +305,7 @@ define([], function() {
       var cells = [];
       for (var i = 0; i < amount; i++) {
         cells.push(i);
-      };
+      }
       return cells;
     }
 
@@ -244,7 +315,7 @@ define([], function() {
       for (var i = 0; i < board.size; i++) {
         setColumn(i, board, winningCombos);
         setRow(i, board, winningCombos);
-      };
+      }
       return winningCombos;
     }
 
@@ -291,7 +362,7 @@ define([], function() {
       var line = [];
       for (var i = start; i <= end; i+=increment) {
         line.push(i);
-      };
+      }
       return line;
     }
 
