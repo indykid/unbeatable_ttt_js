@@ -218,6 +218,10 @@ define([], function() {
       return Helper.randomElement(corners);
     };
 
+    this.firstCellType = function(){
+      return this.cellType(this.firstCell);
+    };
+
     /***********************
     private functions
     ************************/ 

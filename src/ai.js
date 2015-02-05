@@ -5,15 +5,16 @@ var JSTicTacToe = JSTicTacToe || {};
 define([], function() {
 
   JSTicTacToe.AIPlayer = function(board, firstPlayer){
-    var Helper = JSTicTacToe.Helper;
+    var Helper = JSTicTacToe.Helper,
+        board  = board;
+
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
     this.board = board;
     this.strategy;
 
     this.play = function(){
-      var board = this.board,
-          cell = this._findCell();
+      var cell = this._findCell();
       board.addMove(cell, this.mark);
       board.game.checkAndUpdateGameState();//???
       board.updateBoardView();//UI
@@ -21,16 +22,15 @@ define([], function() {
     };// unsure how to test this or if necessary
     
     this.winningCell = function(){
-      var board = this.board,
-          winLines = board.singleMarkLines(this.mark, (board.size - 1));
+      var winLines = board.singleMarkLines(this.mark, (board.size - 1));
+
       if (winLines.length > 0){
         return board.availableOnAGivenLine(winLines[0])[0];
       }
     };
 
     this.threatCell = function(){
-      var board = this.board,
-          threatLines = board.singleMarkLines(this.humansMark, (board.size - 1));
+      var threatLines = board.singleMarkLines(this.humansMark, (board.size - 1));
       if (threatLines.length > 0){
         return board.availableOnAGivenLine(threatLines[0])[0];
       }
@@ -66,10 +66,8 @@ define([], function() {
       }
     };
 
-    this._strategyAsFirst = function(){
-      var board = this.board,
-          movesSoFar = board.movesSoFar();
-      switch (movesSoFar) {
+    this._strategyAsFirst = function(){      
+      switch (board.movesSoFar()) {
         case 0:
           return board.cornerOrCenter();
         case 2:
@@ -79,74 +77,82 @@ define([], function() {
       }
     };
 
+    this._strategyAsSecond = function(){
+      if ( firstCellCenterOrColumnFull() ) {
+        return board.randomOpenCorner();
+      } else {
+        return this._dependsOnMovesSoFar();
+      }
+    };
+
     this._secondMoveAsFirstPlayer = function(){
-      var board = this.board;
-      if ( onlyCornerAndCenterSoFar(board) ) { return fillInDiagonal(board) }
-      else { return this._dependsOnAiFirstMove() }
+      if ( onlyCornerAndCenterSoFar() ) {
+        return fillInDiagonal();
+      } else {
+        return this._dependsOnAiFirstMove();
+      }
     };
 
     this._dependsOnAiFirstMove = function(){
-      var board         = this.board,
-          firstCellType = board.cellType(board.firstCell);
-      switch ( firstCellType ) {
+      switch ( board.firstCellType() ) {
         case 'center':
-          return board.randomOpenCorner();
+          return this.board.randomOpenCorner();
         case 'corner':
-          return nonOppositeNonAdjacentCorner(board);
+          return cornerOppositeToHumansMove();
       }
     };// to end up here: human must have played an edge cell
 
-    this._strategyAsSecond = function(){
-      var board         = this.board,
-          firstCellType = board.cellType(board.firstCell);
-
-      if ( firstCellCenterOrColumnFull(board) ) { return board.randomOpenCorner(); } 
-      else {
-        switch ( board.movesSoFar() ) {
-          case 1:
-            return board.center();
-          case 3:
-            return this._secondMoveAsSecondPlayer(firstCellType);
-        }
+    this._dependsOnMovesSoFar = function(){
+      switch ( board.movesSoFar() ) {
+        case 1:
+          return board.center();
+        case 3:
+          // return this._secondMoveAsSecondPlayer();
+          return this._dependsOnHumansFirstMove();
       }
     };
 
-    this._secondMoveAsSecondPlayer = function(firstCellType){
-      var board = this.board;
-
-      switch ( firstCellType ) {
+    this._dependsOnHumansFirstMove = function(){
+      switch ( board.firstCellType() ) {
         case 'edge':
-          var adjacentToFirstMove = board.adjacentCells(board.firstCell),
-              humansLines = board.singleMarkLines(this.humansMark, 1),
-              lines = humansLines.filter(function(line){
-                return Helper.commonValues(line, adjacentToFirstMove).length > 0;
-              });
-          return board.findIntersections(lines)[0];
+          return this._cornerBetweenHumansMoves();
 
         case 'corner':
-          if ( board.singleFullLine() ) {
-            var edges = board.availableOfType('edge');
-            return Helper.randomElement(edges);
-          } else {
-            var oppositeToFirstMove = board.oppositeCell(board.firstCell);
-            var adjacentToLastMove = board.adjacentCells(board.humanLast);
-            return adjacentToLastMove.find(function(cell){
-              return board.cellType(cell) === 'corner' && cell !== oppositeToFirstMove;
-            });
-          }
+          return this._dependsOnHumansLastMove();
       }
-      // return cell;
     };
 
-    // function (){
+    this._dependsOnHumansLastMove = function(){
+      if ( board.singleFullLine() ) {
+        var edges = board.availableOfType('edge');
+        return Helper.randomElement(edges);
+      } else {
+        return this._cornerOnTheSameSideAsHumansMove();
+      }
+    };
 
-    // }
+    this._cornerOnTheSameSideAsHumansMove = function(){
+      var opposite  = board.oppositeCell(board.firstCell),
+          adjacents = board.adjacentCells(board.humanLast);
+      return adjacents.find(function(cell){
+        return board.cellType(cell) === 'corner' && cell !== opposite;
+      });
+    };
+
+    this._cornerBetweenHumansMoves = function(){
+      var adjacents   = board.adjacentCells(board.firstCell),
+          humansLines = board.singleMarkLines(this.humansMark, 1),
+          lines       = humansLines.filter(function(line){
+            return Helper.commonValues(line, adjacents).length > 0;
+          });
+      return board.findIntersections(lines)[0];
+    };
 
     this._commonSenseStrategy = function(){
       var cell;
       (cell = this.winningCell()) !== undefined || (cell = this.threatCell()) !== undefined;
       return cell;
-    };
+    };// shortcircuiting again
 
     this.basicStrategy = function(){
       // fallback if there are no strategic moves to be made
@@ -156,7 +162,6 @@ define([], function() {
       var cell,
           line,
           available,
-          board = this.board,
           aiOnlyLines = board.singleMarkLines(this.mark, 1),
           emptyLines = board.winningCombos.filter(function(combination){
             return board.availableOnAGivenLine(combination).length === board.size;
@@ -178,21 +183,21 @@ define([], function() {
       return cell;
     };
 
-    function onlyCornerAndCenterSoFar(board){
+    function onlyCornerAndCenterSoFar(){
       var humansCellType  = board.cellType(board.humanLast),
           aiCellType      = board.cellType(board.aiLast),
           playedTypes     = [humansCellType, aiCellType];
       return playedTypes.includes('center') && playedTypes.includes('corner');
     }
 
-    function fillInDiagonal(board){
+    function fillInDiagonal(){
       var diagonal = board.winningCombos.find(function(combination){
         return board.availableOnAGivenLine(combination).length === 1;
       });
       return board.availableOnAGivenLine(diagonal)[0];
     }
 
-    function nonOppositeNonAdjacentCorner(board){
+    function cornerOppositeToHumansMove(){
       var adjacents   = board.adjacentCells(board.humanLast),
           opposite    = board.oppositeCell(board.aiLast),
           aptCorners  = board.availableOfType('corner').filter(function(corner){
@@ -201,13 +206,11 @@ define([], function() {
       return Helper.randomElement(aptCorners);
     }
 
-    function firstCellCenterOrColumnFull(board){
+    function firstCellCenterOrColumnFull(){
       var firstCellType   = board.cellType(board.firstCell),
           movesSoFar      = board.movesSoFar();
       return firstCellType === 'center' && movesSoFar <= 3 || board.singleFullLine() && firstCellType === 'edge';
     }
-
-    // function 
   };
 
   return JSTicTacToe.AIPlayer;
