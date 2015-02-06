@@ -7,8 +7,8 @@ define([], function(){
   describe('Board', function(){
     var board;
     beforeEach(function(){
-      var game = new JSTicTacToe.Game('human');//still need this, because of winning combinations??
-      board = game.board;
+      board = new JSTicTacToe.Board();
+      board.ai = new JSTicTacToe.AIPlayer(board, 'human');
     });
 
     it('is empty at the start', function(){
@@ -169,12 +169,6 @@ define([], function(){
     });
 
     describe('#singleMarkLines', function(){
-      // var game;
-
-      // beforeEach(function(){
-      //   game = new JSTicTacToe.Game('human');
-      // });
-
       describe('context: no two positions in a row belong to player x', function(){
         it('given the moves, for player "x" it returns correct lines when asking for 1 in a line, and no lines when asking for 2', function(){
           //

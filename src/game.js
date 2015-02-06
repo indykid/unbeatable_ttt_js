@@ -8,6 +8,7 @@ define([], function() {
 
     this.board = new JSTicTacToe.Board(this);
     this.ai = new JSTicTacToe.AIPlayer(this.board, firstPlayer);
+    this.board.ai = this.ai;
     this.winner = { player: undefined, mark: undefined };
     this.status = 'active'; // other states: won, drawn
 

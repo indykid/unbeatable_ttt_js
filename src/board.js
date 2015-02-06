@@ -3,9 +3,9 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
-  JSTicTacToe.Board = function(game){
+  JSTicTacToe.Board = function(){
     var Helper = JSTicTacToe.helper;
-    this.game = game;
+    // this.game = game;
     this.moves = [];
     this.size = 3;
     this.cellsAmount = Math.pow(this.size, 2);
@@ -14,6 +14,7 @@ define([], function() {
     this.firstCell;
     this.humansLastCell;
     this.aiLastCell;
+    this.ai; // gets assigned later
 
     this.addMove = function(cell, mark){
       var move = {};
@@ -27,7 +28,7 @@ define([], function() {
     };
 
     this._updateLastMoves = function(move){
-      if ( this.game.ai.mark === move.mark ){
+      if ( this.ai.mark === move.mark ){
         this.aiLastCell = move.cell;
       } else {
         this.humansLastCell = move.cell;

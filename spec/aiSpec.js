@@ -3,14 +3,13 @@
 define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPlayer) {
 
   describe('AIPlayer', function(){
-    var game,
-        board,
+    var board,
         ai;
 
     beforeEach(function(){
-      game = new Game('human');
-      ai = game.ai;
-      board = game.board;
+      board = new Board();
+      ai = new AIPlayer(board, 'human');
+      board.ai = ai;
     });
 
     it('has been assigned a mark', function(){
@@ -25,22 +24,22 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       describe('context: there is a potential win on a:', function(){
         it('row, returns a winning cell', function(){
           board.seed([0, 4, 8, 5, 7]);
-          expect(ai._winningCell(game)).toEqual(3);
+          expect(ai._winningCell()).toEqual(3);
         });
 
         it('first diagonal, returns a winning cell', function(){
           board.seed([6, 4, 3, 8, 2]);
-          expect(ai._winningCell(game)).toEqual(0);
+          expect(ai._winningCell()).toEqual(0);
         });
 
         it('second diagonal, returns a winning cell', function(){
           board.seed([0, 4, 1, 6, 8]);
-          expect(ai._winningCell(game)).toEqual(2);
+          expect(ai._winningCell()).toEqual(2);
         });
 
         it('column, returns a winning cell', function(){
           board.seed([0, 2, 4, 8, 6]);
-          expect(ai._winningCell(game)).toEqual(5);
+          expect(ai._winningCell()).toEqual(5);
         });
 
       });
@@ -48,12 +47,12 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       describe('context: no winning move', function(){
         it('returns undefined', function(){
           board.seed([0, 2, 5]);
-          expect(ai._winningCell(game)).toBeUndefined();
+          expect(ai._winningCell()).toBeUndefined();
         });
 
         it('returns undefined', function(){
           board.seed([0, 2, 4]);
-          expect(ai._winningCell(game)).toBeUndefined();
+          expect(ai._winningCell()).toBeUndefined();
         });
 
       });
@@ -63,22 +62,22 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       describe('context: there is a threat on a:', function(){
         it('first diagonal, returns threat cell', function(){
           board.seed([4, 6, 8]);
-          expect(ai._threatCell(game)).toEqual(0);
+          expect(ai._threatCell()).toEqual(0);
         });
 
         it('second diagonal, returns threat cell', function(){
           board.seed([2, 4, 8]);
-          expect(ai._threatCell(game)).toEqual(5);
+          expect(ai._threatCell()).toEqual(5);
         });
 
         it('row, returns threat cell', function(){
           board.seed([0, 4, 1]);
-          expect(ai._threatCell(game)).toEqual(2);
+          expect(ai._threatCell()).toEqual(2);
         });
 
         it('column, returns threat cell', function(){
           board.seed([4, 5, 7]);
-          expect(ai._threatCell(game)).toEqual(1);
+          expect(ai._threatCell()).toEqual(1);
         });
       });
 
@@ -100,8 +99,9 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
 
       describe('context: ai plays first', function(){
         it('assigns correct strategy', function(){
-          game = new Game('ai');
-          ai = game.ai;
+          board = new Board();
+          ai = new AIPlayer(board, 'ai');
+          board.ai = ai;
           ai._findStrategy();
           expect(ai.strategy).toEqual('firstPlayer');
         });
@@ -110,9 +110,9 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
 
     describe('_strategyAsFirst', function(){
       beforeEach(function(){
-        game = new Game('ai');
-        ai = game.ai;
-        board = game.board;
+        board = new Board();
+        ai = new AIPlayer(board, 'ai');
+        board.ai = ai;
       });
 
       describe('context: first move', function(){
