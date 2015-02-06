@@ -7,7 +7,18 @@ define([], function() {
   JSTicTacToe.UI = function(){
     var board;
 
-    this.setElements = function(){
+    this.setupUI = function(){
+      this._setElements();
+      this._setFirstPlayerListener();
+      this._setListenerOnCells();
+    };
+
+    this.updateUI = function(){
+      this._updateBoardView();
+      this._updateSidebar();
+    };
+
+    this._setElements = function(){
       this.grid           = $('#grid');
       this.emptyGridCells = $('td:not(.inactive)');
       this.gridCells      = $('td');
@@ -20,7 +31,7 @@ define([], function() {
       this.winner         = $('#winner');
     };
 
-    this.setFirstPlayerListener = function(){
+    this._setFirstPlayerListener = function(){
       var ui = this;
       ui.playerChoices.on('click', function(){
         var firstPlayer = $(this).data('player');
@@ -29,16 +40,11 @@ define([], function() {
       });
     };
 
-    this.setListenerOnCells = function(){
+    this._setListenerOnCells = function(){
       var ui = this;
       ui.emptyGridCells.on('click', function(){
         humanPlayIfGameActive($(this));
       });
-    };
-
-    this.updateUI = function(){
-      this._updateBoardView();
-      this._updateSidebar();
     };
 
     this._prepareUI = function(){
