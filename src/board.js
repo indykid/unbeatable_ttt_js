@@ -4,7 +4,7 @@ var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
   JSTicTacToe.Board = function(game){
-    var Helper = JSTicTacToe.Helper;
+    var Helper = JSTicTacToe.helper;
     this.game = game;
     this.moves = [];
     this.size = 3;
@@ -58,7 +58,7 @@ define([], function() {
         return "corner";
       } else {
         return "edge";
-      };
+      }
     };
 
     this.availableOfType = function(cellType){
@@ -91,7 +91,7 @@ define([], function() {
         return marks.allDefinedValuesSame() && marks[0] === mark;
       }
       return false;
-    }
+    };
 
     this.singleFullLine = function(){
       var fullLines = this.winningCombos.filter(function(combination){
@@ -163,27 +163,6 @@ define([], function() {
         var mark = i % 2 === 0 ? 'x' : 'o';
         this.addMove(cell, mark);
       }.bind(this));
-    };
-
-    this.updateBoardView = function(){
-      this.moves.forEach(function(move){
-        var selector = 'td[data-position='+ move.cell +']',
-            text = move.mark;
-        $(selector).text(text).addClass('occupied');
-      });
-    };
-
-    this.updateUI = function(){
-      JSTicTacToe.status.text(this.game.status);
-      if (this.game.winner.player){
-        JSTicTacToe.winner.text(uiFriendlyPlayer(this.game.winner.player));
-        JSTicTacToe.gameStatus.hide();
-        JSTicTacToe.notice.show();
-      }
-      if (!this.game.isActive()){
-        $('td').addClass('occupied');
-        // JSTicTacToe.emptyGridPositions.off();
-      }
     };
 
     this.findIntersections = function(lines){
@@ -295,11 +274,6 @@ define([], function() {
     /****************
     private functions
     *****************/
-
-    function uiFriendlyPlayer(player){
-      var friendly = player === 'ai' ? 'computer' : 'you';
-      return friendly;
-    }
 
     function setPossibleCells(amount){
       var cells = [];

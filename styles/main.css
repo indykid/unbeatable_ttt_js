@@ -37,7 +37,7 @@ td {
   border: 3px solid silver;
 }
 
-td:not(.occupied):hover {
+td:not(.inactive):hover {
   border-color: #9B30FF;
   cursor: pointer;
 }
@@ -56,7 +56,7 @@ td:not(.occupied):hover {
 }
 
 #winner,
-.firstPlayer {
+.playerChoice {
   text-transform: uppercase;
 }
 

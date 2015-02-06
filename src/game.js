@@ -11,10 +11,6 @@ define([], function() {
     this.winner = { player: undefined, mark: undefined };
     this.status = 'active'; // other states: won, drawn
 
-    // this.addToBoard = function(position, mark){
-    //   this.board.addMove(position, mark);
-    // }
-
     this.isActive = function(){
       return ( !this.isWon() && !this.isDrawn() );
     };
@@ -26,7 +22,7 @@ define([], function() {
     this.isDrawn = function(){
       return this.board.available().length < 1 && !this.isWon();
     };
-    
+
     this.checkAndUpdateGameState = function(){
       var winnerMark = this.winnerMark();
       if (winnerMark){
@@ -59,15 +55,14 @@ define([], function() {
       if (this.isPlayerTurn(this.ai.humansMark)){
         this.board.addMove(cell, this.ai.humansMark);
         this.checkAndUpdateGameState();
-        this.board.updateBoardView();
-        this.board.updateUI();
+        JSTicTacToe.ui.updateUI();
       } else {
         alert('easy tiger, not your turn');
       }
       if (this.isActive() && this.isPlayerTurn(this.ai.mark)){
         this.ai.play();
-      } 
-    }
+      }
+    };
 
     this.setWinner = function(winner, mark){
       this.winner['player'] = winner;
@@ -77,7 +72,7 @@ define([], function() {
     function findWinner(mark, aiMark){
       var winner = mark === aiMark ? 'ai' : 'human';
       return winner;
-    } 
+    }
 
     function isOddMove(movesSoFar){
       return movesSoFar % 2 === 0;

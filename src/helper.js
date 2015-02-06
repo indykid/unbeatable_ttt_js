@@ -3,7 +3,7 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define([], function(){
-  
+
   return JSTicTacToe.Helper = function(){
 
   /* ================================================
@@ -72,7 +72,7 @@ define([], function(){
       var index = Math.floor(Math.random() * myArray.length);
       return myArray[index];
     }
-    
+
     this.commonValues = function(a, b){
       var result = a.filter(function(n) {
         return b.includes(n);

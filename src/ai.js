@@ -5,7 +5,7 @@ var JSTicTacToe = JSTicTacToe || {};
 define([], function() {
 
   JSTicTacToe.AIPlayer = function(board, firstPlayer){
-    var Helper = JSTicTacToe.Helper;
+    var Helper = JSTicTacToe.helper;
 
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
@@ -13,9 +13,8 @@ define([], function() {
     this.play = function(){
       var cell = this._findCell();
       board.addMove(cell, this.mark);
-      board.game.checkAndUpdateGameState();//???
-      board.updateBoardView();//UI
-      board.updateUI();//UI
+      JSTicTacToe.game.checkAndUpdateGameState();
+      JSTicTacToe.ui.updateUI();
     };
 
     this._winningCell = function(){

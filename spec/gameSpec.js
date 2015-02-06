@@ -2,17 +2,17 @@
 
 var JSTicTacToe = JSTicTacToe || {};
 
-define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (Board, Game, AIPlayer, Helper) { 
-  JSTicTacToe.Helper = new Helper();
-  JSTicTacToe.Helper.bootstrapArray();
+define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (Board, Game, AIPlayer, Helper) {
+  JSTicTacToe.helper = new Helper();
+  JSTicTacToe.helper.bootstrapArray();
   JSTicTacToe.Board = Board;
   JSTicTacToe.AIPlayer = AIPlayer;
   JSTicTacToe.Game = Game;
-  
+
   describe('Game', function(){
     var game;
     beforeEach(function(){
-      game = new JSTicTacToe.Game('human');
+      game = new Game('human');
     });
 
     it('has an empty board at the start', function(){
