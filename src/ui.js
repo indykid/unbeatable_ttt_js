@@ -18,6 +18,18 @@ define([], function() {
       this._updateSidebar();
     };
 
+    this.showWrongTurnMessage = function(){
+      alert('Easy tiger, not your turn');
+    };
+
+    this.showGameOver = function(){
+      alert('Game over');
+    };
+
+    this.showCellTakenMessage = function(){
+      alert('This cell is occupied, please try another one');
+    };
+
     this._setElements = function(){
       this.grid           = $('#grid');
       this.emptyGridCells = $('td:not(.inactive)');
@@ -35,8 +47,15 @@ define([], function() {
       var ui = this;
       this.playerChoices.on('click', function(){
         var firstPlayer = $(this).data('player');
-        ui.startGame(firstPlayer);
+        ui._startGame(firstPlayer);
       });
+    };
+
+    this._startGame = function(firstPlayer){
+      JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
+      board = JSTicTacToe.game.board;
+      this._prepareUI();
+      JSTicTacToe.game._aiMoveIfCorrectTurnAndActive();
     };
 
     this._setListenerOnCells = function(){
@@ -82,32 +101,17 @@ define([], function() {
       }
     };
 
-    this.showWrongTurnMessage = function(){
-      alert('Easy tiger, not your turn');
-    };
-
-    this.showGameOver = function(){
-      alert('Game over');
-    };
-
-    this.showCellTakenMessage = function(){
-      alert('This cell is occupied, please try another one');
-    };
-
-    this.startGame = function(firstPlayer){
-      JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
-      board = JSTicTacToe.game.board;
-      this._prepareUI();
-      JSTicTacToe.game._aiMoveIfCorrectTurnAndActive();
-    };
+    /*******************
+      private functions
+    ********************/
 
     function winningPlayer(){
       return uiFriendlyPlayer(gameWinner());
-    };
+    }
 
     function uiFriendlyPlayer(player){
       return player === 'ai' ? 'computer' : 'you';
-    };
+    }
 
     function gameWinner(){
       return JSTicTacToe.game.winner.player;

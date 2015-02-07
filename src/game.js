@@ -4,7 +4,7 @@ var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
 
-  return JSTicTacToe.Game = function(firstPlayer){
+  JSTicTacToe.Game = function(firstPlayer){
 
     this.board = new JSTicTacToe.Board();
     this.ai = new JSTicTacToe.AIPlayer(this.board, firstPlayer);
@@ -34,6 +34,18 @@ define([], function() {
       this._aiMoveIfCorrectTurnAndActive();
     };//*
 
+    this._isPlayerTurn = function(mark){
+      var movesSoFar = this.board.moves.length;
+      switch (mark){
+        case 'x':
+          return isOddMove(movesSoFar);
+        case 'o':
+          return !isOddMove(movesSoFar);
+      }
+    };
+
+    /***************************************/
+
     this._setWinner = function(winner, mark){
       this.winner['player'] = winner;
       this.winner['mark'] = mark;
@@ -41,7 +53,7 @@ define([], function() {
 
     this._humanMoveIfValid = function(cell){
       this._humanMoveIfActiveCheck(cell);
-    };
+    };//*
 
     this._humanMoveIfActiveCheck = function(cell){
       if (this.isActive()){
@@ -49,7 +61,7 @@ define([], function() {
       } else {
         JSTicTacToe.ui.showGameOver();
       }
-    };
+    };//*
 
     this._humanMoveIfCellEmptyCheck = function(cell){
       if (this.board.isCellEmpty(cell)){
@@ -57,7 +69,7 @@ define([], function() {
       } else {
         JSTicTacToe.ui.showCellTakenMessage();
       }
-    };
+    };//*
 
     this._humanMoveIfCorrectTurnCheck = function(cell){
       var mark = this.ai.humansMark;
@@ -68,7 +80,7 @@ define([], function() {
       } else {
         JSTicTacToe.ui.showWrongTurnMessage();
       }
-    };
+    };//*
 
     this._aiMoveIfCorrectTurnAndActive = function(){
       if (this.isActive() && this._isPlayerTurn(this.ai.mark)){
@@ -76,17 +88,7 @@ define([], function() {
         this.checkAndUpdateGameState();
         JSTicTacToe.ui.updateUI();
       }
-    };
-
-    this._isPlayerTurn = function(mark){
-      var movesSoFar = this.board.moves.length;
-      switch (mark){
-        case 'x':
-          return isOddMove(movesSoFar);
-        case 'o':
-          return !isOddMove(movesSoFar);
-      }
-    };
+    };//*
 
     /**********************************************
     untested, but only used inside tested functions
@@ -106,7 +108,6 @@ define([], function() {
       this.status = 'drawn';
     };
 
-
     function findWinner(mark, aiMark){
       var winner = mark === aiMark ? 'ai' : 'human';
       return winner;
@@ -115,6 +116,7 @@ define([], function() {
     function isOddMove(movesSoFar){
       return movesSoFar % 2 === 0;
     }
+  };
 
-  }
+  return JSTicTacToe.Game;
 });

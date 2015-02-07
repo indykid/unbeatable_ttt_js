@@ -4,7 +4,7 @@ var JSTicTacToe = JSTicTacToe || {};
 
 define([], function(){
 
-  return JSTicTacToe.Helper = function(){
+  JSTicTacToe.Helper = function(){
 
   /* ================================================
       ARRAY EXTENSIONS:
@@ -26,7 +26,7 @@ define([], function(){
             if ( this[0] === undefined || this[i] !== this[0] ){
               return false;
             }
-          };
+          }
         return true;
       };
 
@@ -80,4 +80,6 @@ define([], function(){
       return result;
     };
   };
+
+  return JSTicTacToe.Helper;
 });
