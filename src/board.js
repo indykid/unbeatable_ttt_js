@@ -6,28 +6,23 @@ define([], function() {
   JSTicTacToe.Board = function(size){
     var Helper      = JSTicTacToe.helper,
         DEFAULTSIZE = 3;
-    // this.game = game;
     this.moves = [];
     this.size = size !== undefined ? size : DEFAULTSIZE;
     this.cellsAmount = Math.pow(this.size, 2);
     this.possibleCells = setPossibleCells(this.cellsAmount);
+    this.winningCombos = setWinningCombos(this);
     this.available = this.possibleCells.slice();
     this.taken = [];
-    this.winningCombos = setWinningCombos(this);
-    // get assigned later:
-    this.firstCell;
-    this.humansLastCell;
-    this.aiLastCell;
-    this.ai;
+    // these get assigned later:
+    // this.firstCell;
+    // this.humansLastCell;
+    // this.aiLastCell;
+    // this.ai;
 
     this.addMove = function(cell, mark){
       var move = {};
       move['cell'] = cell;
       move['mark'] = mark;
-
-      if (this._isPristine()) this.firstCell = cell;
-
-      this.moves.push(move);
       this._updateItself(move);
     };
 
@@ -147,34 +142,101 @@ define([], function() {
       }.bind(this));
     };
 
-    // ***********************untested pi
-
     this.movesSoFar = function(){
       return this.moves.length;
-    };
+    };//*
 
     this.firstCellType = function(){
       return this.cellType(this.firstCell);
-    };
-
-    // ****************TESTED
+    };//*
 
     this._isPristine = function(){
       return this.moves.length === 0;
     };
 
-    this._updateLastMoves = function(move){
-      if ( this.ai.mark === move.mark ){
-        this.aiLastCell = move.cell;
-      } else {
-        this.humansLastCell = move.cell;
-      }
+    this._updateItself = function(move){
+      this._checkToSetFirstCell(move);
+      this._updateMoves(move);
+      this._updateLastMoves(move);
+      this._updateAvailable(move);
+      this._updateTaken(move);
     };
 
+    /***********************************************
+    functions with very specific context, used in ai
+    ************************************************/
 
-/********************
-NEWLY ADDED
-**********************/
+    this.fillInLine = function(){
+      var line = this._lineWithOneFreeCell();
+      return this.availableAmong(line)[0];
+    };
+
+    this.cornerOrCenter = function(){
+      var center = this.center(),
+          corner = Helper.anyFrom(this.availableOfType('corner'));
+      return Helper.anyFrom([corner, center]);
+    };//*
+
+    this.emptyLines = function(){
+      return  this.winningCombos.filter(function(combo){
+                return this.availableAmong(combo).length === this.size;
+              }.bind(this));
+    };//*
+
+    this.findNonOppositeCorner = function(cells){
+      var opposite = this.oppositeCell(this.firstCell),
+          cell     = cells.find(function(cell){
+            return this.cellType(cell) === 'corner' && cell !== opposite;
+          }.bind(this));
+      return cell;
+    };//*
+
+    this.onlyCornerAndCenterSoFar = function(){
+      var humansCellType  = this.cellType(this.humansLastCell),
+          aiCellType      = this.cellType(this.aiLastCell),
+          playedTypes     = [humansCellType, aiCellType];
+      return playedTypes.includes('center') && playedTypes.includes('corner');
+    };//*
+
+    this.cornerOppositeToHumansMove = function(){
+      var adjacents   = this.adjacentCells(this.humansLastCell),
+          opposite    = this.oppositeCell(this.aiLastCell),
+          aptCorners  = this.availableOfType('corner').filter(function(corner){
+            return corner !== opposite && !adjacents.includes(corner);
+          });
+      return Helper.anyFrom(aptCorners);
+    };//*
+
+    this.firstCellCenterOrColumnFull = function(){
+      return this.singleFullColumn() || this.firstCellCenterFirstOrSecondMove();
+    };//*
+
+    this.firstCellCenterFirstOrSecondMove = function(){
+      return this.firstCellType() === 'center' && this.movesSoFar() <= 3;
+    };//*
+
+    this.singleFullColumn = function(){
+      return this.singleFullLine() && this.firstCellType() === 'edge';
+    };//*
+
+    this.cornerBetweenHumansMoves = function(humansMark){
+      var adjacents   = this.adjacentCells(this.firstCell),
+          humansLines = this.singleMarkLines(humansMark, 1),
+          lines       = humansLines.filter(function(line){
+                          return Helper.common(line, adjacents).length > 0;
+                        });
+      return this.findIntersections(lines)[0];
+    };//*
+
+    this.cornerOnTheSameSideAsHumansMove = function(){
+      var adjacents = this.adjacentCells(this.humansLastCell);
+      return this.findNonOppositeCorner(adjacents);
+    };//*
+
+    /******************************************************
+    untested, only used in methods which are tested though
+    *******************************************************/
+
     this._takenAmong = function(cells){
       return  cells.filter(function(cell){
                 return !this.isCellEmpty(cell);
@@ -199,18 +261,30 @@ NEWLY ADDED
       if ((cell - 1) === this.possibleCells[0] || (cell + 1) === this.possibleCells.last()){
         return [cell + 1, cell - 1];
       } else {
-        return [cell - this.size, cell + this.size]
+        return [cell - this.size, cell + this.size];
       }
     };
 
+    this._lineWithOneFreeCell = function(){
+      return  this.winningCombos.find(function(combo){
+                return this.availableAmong(combo).length === 1;
+              }.bind(this));
+    };
 
+    this._updateLastMoves = function(move){
+      if ( this.ai.mark === move.mark ){
+        this.aiLastCell = move.cell;
+      } else {
+        this.humansLastCell = move.cell;
+      }
+    };
 
-    // ****************************
+    this._checkToSetFirstCell = function(move){
+      if ( this._isPristine() ) this.firstCell = move.cell;
+    };
 
-    this._updateItself = function(move){
-      this._updateLastMoves(move);
-      this._updateAvailable(move);
-      this._updateTaken(move);
+    this._updateMoves = function(move){
+      this.moves.push(move);
     };
 
     this._updateAvailable = function(move){
@@ -222,86 +296,9 @@ NEWLY ADDED
       this.taken.push(move.cell);
     };
 
-    this._lineWithOneFreeCell = function(){
-      return  this.winningCombos.find(function(combo){
-                return this.availableAmong(combo).length === 1;
-              }.bind(this));
-    };
-
-
-/***********************
-  one-off use functions
-*************************/
-    this.cornerOrCenter = function(){
-      var center = this.center(),
-          corner = Helper.anyFrom(this.availableOfType('corner'));
-      return Helper.anyFrom([corner, center]);
-    };
-
-    this.emptyLines = function(){
-      return  this.winningCombos.filter(function(combination){
-                return this.availableAmong(combination).length === this.size;
-              }.bind(this));
-    };
-
-    this.findNonOppositeCorner = function(cells){
-      var opposite = this.oppositeCell(this.firstCell),
-          cell     = cells.find(function(cell){
-            return this.cellType(cell) === 'corner' && cell !== opposite;
-          }.bind(this));
-      return cell;
-    };
-
-    this.onlyCornerAndCenterSoFar = function(){
-      var humansCellType  = this.cellType(this.humansLastCell),
-          aiCellType      = this.cellType(this.aiLastCell),
-          playedTypes     = [humansCellType, aiCellType];
-      return playedTypes.includes('center') && playedTypes.includes('corner');
-    };
-
-    this.fillInLine = function(){
-      var line = this._lineWithOneFreeCell();
-      return this.availableAmong(line)[0];
-    };
-
-    this.cornerOppositeToHumansMove = function(){
-      var adjacents   = this.adjacentCells(this.humansLastCell),
-          opposite    = this.oppositeCell(this.aiLastCell),
-          aptCorners  = this.availableOfType('corner').filter(function(corner){
-            return corner !== opposite && !adjacents.includes(corner);
-          });
-      return Helper.anyFrom(aptCorners);
-    };
-
-    this.firstCellCenterOrColumnFull = function(){
-      return this.singleFullColumn() || this.firstCellCenterFirstOrSecondMove();
-    };
-
-    this.firstCellCenterFirstOrSecondMove = function(){
-      return this.firstCellType() === 'center' && this.movesSoFar() <= 3;
-    };
-
-    this.singleFullColumn = function(){
-      return this.singleFullLine() && this.firstCellType() === 'edge';
-    };
-
-    this.cornerBetweenHumansMoves = function(humansMark){
-      var adjacents   = this.adjacentCells(this.firstCell),
-          humansLines = this.singleMarkLines(humansMark, 1),
-          lines       = humansLines.filter(function(line){
-                          return Helper.common(line, adjacents).length > 0;
-                        });
-      return this.findIntersections(lines)[0];
-    };
-
-    this.cornerOnTheSameSideAsHumansMove = function(){
-      var adjacents = this.adjacentCells(this.humansLastCell);
-      return this.findNonOppositeCorner(adjacents);
-    };
-
-    /****************
-    private functions
-    *****************/
+    /****************************************************
+    private functions needed for some initial board setup
+    *****************************************************/
 
     function setPossibleCells(amount){
       var cells = [];
@@ -327,36 +324,34 @@ NEWLY ADDED
     }
 
     function setFirstDiagonal(board, combos){
-      var startIndex = 0,
-          endIndex = board.cellsAmount - 1,
-          increment = board.size + 1,
-          firstDiagonal = [];
-
-      firstDiagonal = setLine(startIndex, endIndex, increment);
+      var startIndex    = 0,
+          endIndex      = board.cellsAmount - 1,
+          increment     = board.size + 1,
+          firstDiagonal = setLine(startIndex, endIndex, increment);
       addWinningCombination(firstDiagonal, combos);
     }
 
     function setSecondDiagonal(board, combos){
-      var startIndex = board.size - 1,
-          endIndex = board.cellsAmount - board.size,
-          increment = board.size - 1,
+      var startIndex     = board.size - 1,
+          endIndex       = board.cellsAmount - board.size,
+          increment      = board.size - 1,
           secondDiagonal = setLine(startIndex, endIndex, increment);
       addWinningCombination(secondDiagonal, combos);
     }
 
     function setRow(rowNumber, board, combos){
       var startIndex = rowNumber * board.size,
-          endIndex = startIndex + (board.size - 1),
-          increment = 1,
-          row = setLine(startIndex, endIndex, increment);
+          endIndex   = startIndex + (board.size - 1),
+          increment  = 1,
+          row        = setLine(startIndex, endIndex, increment);
       addWinningCombination(row, combos);
     }
 
     function setColumn(columnNumber, board, combos){
       var startIndex = columnNumber,
-          endIndex = startIndex + (board.size * (board.size - 1)),
-          increment = board.size,
-          column = setLine(startIndex, endIndex, increment);
+          endIndex   = startIndex + (board.size * (board.size - 1)),
+          increment  = board.size,
+          column     = setLine(startIndex, endIndex, increment);
       addWinningCombination(column, combos);
     }
 
@@ -372,5 +367,6 @@ NEWLY ADDED
       combos.push(combination);
     }
   };
+
   return JSTicTacToe.Board;
 });

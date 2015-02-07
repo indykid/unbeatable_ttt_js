@@ -53,6 +53,7 @@ define([], function(){
           expect(board.isCellEmpty(0)).toBe(false);
         });
       });
+
       describe('context: cell is unoccupied', function(){
         it('returns true', function(){
           expect(board.isCellEmpty(0)).toBe(true);
@@ -89,6 +90,7 @@ define([], function(){
         expect(board.availableOfType('edge').ascending()).toEqual([1, 3, 7]);
         expect(board.availableOfType('center')).toEqual([4]);
       });
+
       it('return empty array if no available cells of a given type', function(){
         board.seed([4, 2, 5]);
         expect(board.availableOfType('center')).toEqual([]);
@@ -107,6 +109,7 @@ define([], function(){
           expect(board.singlePlayerCells([2, 5, 8]), 1, 'x').toBe(false);
         });
       });
+
       describe('context: only 1 move on a line', function(){
         it('returns true when asking for 1 of the same', function(){
           board.seed([4, 3]);
@@ -140,12 +143,14 @@ define([], function(){
           expect(board.singleFullLine()).toBe(true);
         });
       });
+
       describe('context: one full line and one more half full', function(){
         it('returns false', function(){
           board.seed([1, 4, 7, 3]);
           expect(board.singleFullLine()).toBe(false);
         });
       });
+
       describe('context: more than one full line', function(){
         it('returns false', function(){
           board.seed([1, 4, 7, 3, 5]);
@@ -162,6 +167,7 @@ define([], function(){
             expect(board.singleMarkLines('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
           });
         });
+
         describe('context: asking for "x" only lines with two cells occupied', function(){
           it('it returns empty array', function(){
             board.seed([8, 2, 3, 1]);
@@ -190,11 +196,13 @@ define([], function(){
           expect(board.oppositeCell(6)).toEqual(2);
         });
       });
+
       describe('context: when given corner', function(){
         it('returns symmetrically opposite cell', function(){
           expect(board.oppositeCell(1)).toEqual(7);
         });
       });
+
       describe('context: when given center', function(){
         it('returns undefined', function(){
           expect(board.oppositeCell(4)).toBeUndefined();
@@ -213,6 +221,7 @@ define([], function(){
         expect(board.adjacentCells(7).ascending()).toEqual([6, 8]);
         expect(board.adjacentCells(8).ascending()).toEqual([5, 7]);
       });
+
       it('returns undefined for center', function(){
         expect(board.adjacentCells(4)).toBeUndefined();
       });
@@ -226,6 +235,7 @@ define([], function(){
           expect(board.findIntersections([line1, line2])).toEqual([1]);
         });
       });
+
       describe('context: given 3 lines', function(){
         it('returns array with intersections', function(){
           var line1 = [0, 1, 2];
@@ -243,33 +253,12 @@ define([], function(){
           expect(board.findFork('x')).toEqual(6);
         });
       });
+
       describe('context: fork is not available for a given mark', function(){
         it('returns undefined', function(){
           board.seed([0, 4, 8, 5, 3, 6]);
           expect(board.findFork('x')).toBeUndefined();
         });
-      });
-    });
-
-    describe('#_isPristine', function(){
-      describe('context: no moves have been made', function(){
-        it('returns true', function(){
-          expect(board._isPristine()).toBe(true);
-        });
-      });
-      describe('context: moves have been made', function(){
-        it('returns false', function(){
-          board.addMove(0, 'x');
-          expect(board._isPristine()).toBe(false);
-        });
-      });
-    });
-
-    describe('_updateLastMoves', function(){
-      it('updates humanLastMove and aiLastMove', function(){
-        board.seed([0, 1]);
-        expect(board.humansLastCell).toEqual(0);
-        expect(board.aiLastCell).toEqual(1);
       });
     });
 
@@ -286,6 +275,48 @@ define([], function(){
         var marks = board._getMarksFor([0, 1, 7, 4]);
         expect(board.taken).toEqual([0, 1, 7, 4]);
         expect(marks).toEqual(['x', 'o', 'x', 'o']);
+      });
+    });
+
+    describe('#_isPristine', function(){
+      describe('context: no moves have been made', function(){
+        it('returns true', function(){
+          expect(board._isPristine()).toBe(true);
+        });
+      });
+
+      describe('context: moves have been made', function(){
+        it('returns false', function(){
+          board.addMove(0, 'x');
+          expect(board._isPristine()).toBe(false);
+        });
+      });
+    });
+
+    describe('_updateItself', function(){
+      it('updates boards properties: firstCell, aiLastCell, humansLastCell, available and taken after each move', function(){
+        board.addMove(0, 'x');
+        expect(board.firstCell).toEqual(0);
+        expect(board.aiLastCell).toBeUndefined();
+        expect(board.humansLastCell).toEqual(0);
+        expect(board.available).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+        expect(board.taken).toEqual([0]);
+
+        board.addMove(1, 'o');
+        expect(board.firstCell).toEqual(0);
+        expect(board.aiLastCell).toEqual(1);
+        expect(board.humansLastCell).toEqual(0);
+        expect(board.available).toEqual([2, 3, 4, 5, 6, 7, 8]);
+        expect(board.taken).toEqual([0, 1]);
+      })
+    });
+
+    describe('fillInLine', function(){
+      describe('context: this is only used when there are only two moves on the board', function(){
+        it('returns move which makes line full', function(){
+          board.seed([2, 4]);
+          expect(board.fillInLine()).toEqual(6);
+        });
       });
     });
   });
