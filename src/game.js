@@ -13,62 +13,99 @@ define([], function() {
     this.status = 'active'; // other states: won, drawn
 
     this.isActive = function(){
-      return ( !this.isWon() && !this.isDrawn() );
+      return this.status === 'active';
     };
 
     this.isWon = function(){
       return this.winner.player !== undefined;
     };
 
-    this.isDrawn = function(){
-      return this.board.available.length < 1 && !this.isWon();
-    };
-
     this.checkAndUpdateGameState = function(){
-      var winnerMark = this.winnerMark();
+      var winnerMark = this.board.winnerMark();
       if (winnerMark){
-        var winner = findWinner(winnerMark, this.ai.mark);
-        this.setWinner(winner, winnerMark);
-        this.status = 'won';
-      } else if ( this.isDrawn() ){
-        this.status = 'drawn';
-      }
-    }
-
-    this.winnerMark = function(){
-      var singlePlayerFullLine = this.board.winningCombos.find(function(combo){
-        return this.board.singlePlayerCells(combo, this.board.size, this.ai.humansMark) || this.board.singlePlayerCells(combo, this.board.size, this.ai.mark);
-      }.bind(this));
-      if (singlePlayerFullLine !== undefined){
-        return this.board.getMark(singlePlayerFullLine[0]);
+        this._updateAsWon(winnerMark);
+      } else if (this._isDrawn()){
+        this._updateAsDrawn();
       }
     };
 
-    this.isPlayerTurn = function(mark){
-      var movesSoFar = this.board.moves.length;
-      if ( (isOddMove(movesSoFar) && mark === 'x') || (!isOddMove(movesSoFar) && mark === 'o') ){
-        return true;
-      }
-      return false;
-    }
+    this.play = function(cell){
+      this._humanMoveIfValid(cell);
+      this._aiMoveIfCorrectTurnAndActive();
+    };//*
 
-    this.humanPlay = function(cell){
-      if (this.isPlayerTurn(this.ai.humansMark)){
-        this.board.addMove(cell, this.ai.humansMark);
+    this._setWinner = function(winner, mark){
+      this.winner['player'] = winner;
+      this.winner['mark'] = mark;
+    };//*
+
+    this._humanMoveIfValid = function(cell){
+      this._humanMoveIfActiveCheck(cell);
+    };
+
+    this._humanMoveIfActiveCheck = function(cell){
+      if (this.isActive()){
+        this._humanMoveIfCellEmptyCheck(cell);
+      } else {
+        JSTicTacToe.ui.showGameOver();
+      }
+    };
+
+    this._humanMoveIfCellEmptyCheck = function(cell){
+      if (this.board.isCellEmpty(cell)){
+        this._humanMoveIfCorrectTurnCheck(cell);
+      } else {
+        JSTicTacToe.ui.showCellTakenMessage();
+      }
+    };
+
+    this._humanMoveIfCorrectTurnCheck = function(cell){
+      var mark = this.ai.humansMark;
+      if (this._isPlayerTurn(mark)){
+        this.board.addMove(cell, mark);
         this.checkAndUpdateGameState();
         JSTicTacToe.ui.updateUI();
       } else {
-        alert('easy tiger, not your turn');
-      }
-      if (this.isActive() && this.isPlayerTurn(this.ai.mark)){
-        this.ai.play();
+        JSTicTacToe.ui.showWrongTurnMessage();
       }
     };
 
-    this.setWinner = function(winner, mark){
-      this.winner['player'] = winner;
-      this.winner['mark'] = mark;
-    }
+    this._aiMoveIfCorrectTurnAndActive = function(){
+      if (this.isActive() && this._isPlayerTurn(this.ai.mark)){
+        this.ai.move();
+        this.checkAndUpdateGameState();
+        JSTicTacToe.ui.updateUI();
+      }
+    };
+
+    this._isPlayerTurn = function(mark){
+      var movesSoFar = this.board.moves.length;
+      switch (mark){
+        case 'x':
+          return isOddMove(movesSoFar);
+        case 'o':
+          return !isOddMove(movesSoFar);
+      }
+    };
+
+    /**********************************************
+    untested, but only used inside tested functions
+    ***********************************************/
+
+    this._isDrawn = function(){
+      return this.board.available.length < 1 && !this.isWon();
+    };
+
+    this._updateAsWon = function(winnerMark){
+      var winningPlayer = findWinner(winnerMark, this.ai.mark);
+      this._setWinner(winningPlayer, winnerMark);
+      this.status = 'won';
+    };
+
+    this._updateAsDrawn = function(){
+      this.status = 'drawn';
+    };
+
 
     function findWinner(mark, aiMark){
       var winner = mark === aiMark ? 'ai' : 'human';

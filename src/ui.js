@@ -33,17 +33,16 @@ define([], function() {
 
     this._setFirstPlayerListener = function(){
       var ui = this;
-      ui.playerChoices.on('click', function(){
+      this.playerChoices.on('click', function(){
         var firstPlayer = $(this).data('player');
-        startGame(firstPlayer);
-        ui._prepareUI();
+        ui.startGame(firstPlayer);
       });
     };
 
     this._setListenerOnCells = function(){
-      var ui = this;
-      ui.emptyGridCells.on('click', function(){
-        humanPlayIfGameActive($(this));
+      this.emptyGridCells.on('click', function(){
+        var cell = $(this).data('cell');
+        JSTicTacToe.game.play(cell);
       });
     };
 
@@ -83,40 +82,24 @@ define([], function() {
       }
     };
 
-    function startGame(firstPlayer){
+    this.showWrongTurnMessage = function(){
+      alert('Easy tiger, not your turn');
+    };
+
+    this.showGameOver = function(){
+      alert('Game over');
+    };
+
+    this.showCellTakenMessage = function(){
+      alert('This cell is occupied, please try another one');
+    };
+
+    this.startGame = function(firstPlayer){
       JSTicTacToe.game = new JSTicTacToe.Game(firstPlayer);
       board = JSTicTacToe.game.board;
-
-      if (firstPlayer == 'ai'){
-        JSTicTacToe.game.ai.play();
-      }
-    }
-
-    function humanPlayIfGameActive(clickedCell){
-      if (JSTicTacToe.game.isActive()){
-        playCellIfEmpty(clickedCell);
-      } else {
-        showGameOver();
-      }
-    }
-
-    function playCellIfEmpty(clickedCell){
-      var cell = clickedCell.data('cell');
-
-      if (board.isCellEmpty(cell)){
-        JSTicTacToe.game.humanPlay(cell);
-      } else {
-        showCellTakenMessage();
-      }
-    }
-
-    function showGameOver(){
-      alert('Game over');
-    }
-
-    function showCellTakenMessage(){
-      alert('This cell is occupied, please try another one');
-    }
+      this._prepareUI();
+      JSTicTacToe.game._aiMoveIfCorrectTurnAndActive();
+    };
 
     function winningPlayer(){
       return uiFriendlyPlayer(gameWinner());
