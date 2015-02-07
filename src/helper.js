@@ -10,16 +10,16 @@ define([], function(){
       ARRAY EXTENSIONS:
     ================================================*/
     this.bootstrapArray = function(){
+
       Array.prototype.includes = function(value){
-        'use strict';
         return (this.indexOf(value) !== -1) ? true : false;
-      }
+      };
 
       Array.prototype.ascending = function(){
         return this.sort(function(a, b){
           return a - b;
         });
-      }
+      };
 
       Array.prototype.allDefinedValuesSame = function(){
           for (var i = 1; i < this.length; i++) {
@@ -28,11 +28,11 @@ define([], function(){
             }
           };
         return true;
-      }
+      };
 
-      Array.prototype.lastElement = function(){
+      Array.prototype.last = function(){
         return this[this.length - 1];
-      }
+      };
 
       if (!Array.prototype.find) {
         Array.prototype.find = function(predicate) {
@@ -56,7 +56,7 @@ define([], function(){
           return undefined;
         };
       }
-    }
+    };
 
   /* ================================================
      GENERAL HELPERS:
@@ -65,19 +65,19 @@ define([], function(){
       return data.sort(function(){
         return 0.5 - Math.random();
       });
-    }
+    };
 
     this.anyFrom = function(data){
-      var myArray = this.randomize(data);
-      var index = Math.floor(Math.random() * myArray.length);
+      var myArray = this.randomize(data),
+          index   = Math.floor(Math.random() * myArray.length);
       return myArray[index];
-    }
+    };
 
-    this.commonValues = function(a, b){
+    this.common = function(a, b){
       var result = a.filter(function(n) {
         return b.includes(n);
       });
       return result;
-    }
-  }
+    };
+  };
 });

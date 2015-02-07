@@ -6,7 +6,7 @@ define([], function() {
 
   return JSTicTacToe.Game = function(firstPlayer){
 
-    this.board = new JSTicTacToe.Board(this);
+    this.board = new JSTicTacToe.Board();
     this.ai = new JSTicTacToe.AIPlayer(this.board, firstPlayer);
     this.board.ai = this.ai;
     this.winner = { player: undefined, mark: undefined };
@@ -21,7 +21,7 @@ define([], function() {
     };
 
     this.isDrawn = function(){
-      return this.board.available().length < 1 && !this.isWon();
+      return this.board.available.length < 1 && !this.isWon();
     };
 
     this.checkAndUpdateGameState = function(){
@@ -37,7 +37,7 @@ define([], function() {
 
     this.winnerMark = function(){
       var singlePlayerFullLine = this.board.winningCombos.find(function(combo){
-        return this.board.singlePlayerLine(combo, this.board.size, this.ai.humansMark) || this.board.singlePlayerLine(combo, this.board.size, this.ai.mark);
+        return this.board.singlePlayerCells(combo, this.board.size, this.ai.humansMark) || this.board.singlePlayerCells(combo, this.board.size, this.ai.mark);
       }.bind(this));
       if (singlePlayerFullLine !== undefined){
         return this.board.getMark(singlePlayerFullLine[0]);

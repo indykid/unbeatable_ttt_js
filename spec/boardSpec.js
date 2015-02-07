@@ -23,38 +23,24 @@ define([], function(){
     });
 
     describe('#getMark', function(){
-      it('returns mark played with in the given position', function(){
+      it('returns mark played with in the given cell', function(){
         board.seed([0, 1]);
         expect(board.getMark(0)).toEqual('x');
         expect(board.getMark(1)).toEqual('o');
       });
     });
 
-    describe('#available', function(){
-      it('returns only unoccupied positions', function(){
-        board.seed([5, 7, 0, 4]);
-        expect(board.available().ascending()).toEqual([1, 2, 3, 6, 8]);
-      });
-    });
-
-    describe('#takenCells', function(){
-      it('returns only occupied cells', function(){
-        board.seed([5, 7, 0, 4]);
-        expect(board.takenCells()).toEqual([5, 7, 0, 4]);
-      });
-    });
-
     describe('#cellType', function(){
-      it('returns "corner" position type if corner is given', function(){
+      it('returns "corner" cell type if corner is given', function(){
         expect(board.cellType(0)).toEqual('corner');
         expect(board.cellType(8)).toEqual('corner');
       });
 
-      it('returns "center" position type if center is given', function(){
+      it('returns "center" cell type if center is given', function(){
         expect(board.cellType(4)).toEqual('center');
       });
 
-      it('returns "edge" position type if edge is given', function(){
+      it('returns "edge" cell type if edge is given', function(){
         expect(board.cellType(1)).toEqual('edge');
         expect(board.cellType(5)).toEqual('edge');
       });
@@ -74,75 +60,75 @@ define([], function(){
       });
     });
 
-    describe('#availableOnAGivenLine', function(){
+    describe('#availableAmong', function(){
       describe('context: line is empty', function(){
-        it('returns all positions of a line', function(){
-          expect(board.availableOnALine([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
+        it('returns all cells of a line', function(){
+          expect(board.availableAmong([0, 1, 2]).ascending()).toEqual([0, 1, 2]);
         });
       });
 
-      describe('context: line has one position occupied', function(){
-        it('returns all positions except occupied one', function(){
+      describe('context: line has one cell occupied', function(){
+        it('returns all cells except occupied one', function(){
           board.addMove(4, 'x');
-          expect(board.availableOnALine([0, 4, 8]).ascending()).toEqual([0, 8]);
+          expect(board.availableAmong([0, 4, 8]).ascending()).toEqual([0, 8]);
         });
       });
 
       describe('context: line is full', function(){
         it('returns an empty array', function(){
           board.seed([0, 1, 2]);
-          expect(board.availableOnALine([0, 1, 2])).toEqual([]);
+          expect(board.availableAmong([0, 1, 2])).toEqual([]);
         });
       });
     });
 
     describe('#availableOfType', function(){
-      it('only returns available positions of a given type', function(){
+      it('only returns available cells of a given type', function(){
         board.seed([2, 5]);
         expect(board.availableOfType('corner').ascending()).toEqual([0, 6, 8]);
         expect(board.availableOfType('edge').ascending()).toEqual([1, 3, 7]);
         expect(board.availableOfType('center')).toEqual([4]);
       });
-      it('return empty array if no available positions of a given type', function(){
+      it('return empty array if no available cells of a given type', function(){
         board.seed([4, 2, 5]);
         expect(board.availableOfType('center')).toEqual([]);
       });
     });
 
-    describe('#singlePlayerLine', function(){
+    describe('#singlePlayerCells', function(){
       describe('context: only 2 moves on a line, both by the same player', function(){
         it('returns true if asking for 2 of the same', function(){
           board.seed([4, 3, 8]);
-          expect(board.singlePlayerLine([0, 4, 8], 2, 'x')).toBe(true);
+          expect(board.singlePlayerCells([0, 4, 8], 2, 'x')).toBe(true);
         });
 
         it('returns false if asking for 1 of the same', function(){
           board.seed([1, 2, 3, 8]);
-          expect(board.singlePlayerLine([2, 5, 8]), 1, 'x').toBe(false);
+          expect(board.singlePlayerCells([2, 5, 8]), 1, 'x').toBe(false);
         });
       });
       describe('context: only 1 move on a line', function(){
         it('returns true when asking for 1 of the same', function(){
           board.seed([4, 3]);
-          expect(board.singlePlayerLine([1, 4, 7], 1, 'x')).toBe(true);
-          expect(board.singlePlayerLine([0, 3, 6], 1, 'o')).toBe(true);
+          expect(board.singlePlayerCells([1, 4, 7], 1, 'x')).toBe(true);
+          expect(board.singlePlayerCells([0, 3, 6], 1, 'o')).toBe(true);
         });
 
         it('returns false when asking for 2 of the same', function(){
           board.addMove(5, 'x');
-          expect(board.singlePlayerLine([3, 4, 5], 2, 'x')).toBe(false);
+          expect(board.singlePlayerCells([3, 4, 5], 2, 'x')).toBe(false);
         });
       });
 
       describe('context: 2 moves on a line, by different players', function(){
         it('returns false when asking for 1 of the same', function(){
           board.seed([4, 8, 3]);
-          expect(board.singlePlayerLine([0, 4, 8], 1, 'x')).toBe(false);
+          expect(board.singlePlayerCells([0, 4, 8], 1, 'x')).toBe(false);
         });
 
         it('returns false when asking for 2 of the same', function(){
           board.seed([8, 2, 3, 1]);
-          expect(board.singlePlayerLine([2, 5, 8], 2, 'x')).toBe(false);
+          expect(board.singlePlayerCells([2, 5, 8], 2, 'x')).toBe(false);
         });
       });
     });
@@ -169,54 +155,90 @@ define([], function(){
     });
 
     describe('#singleMarkLines', function(){
-      describe('context: no two positions in a row belong to player x', function(){
-        it('given the moves, for player "x" it returns correct lines when asking for 1 in a line, and no lines when asking for 2', function(){
-          //
-          board.seed([8, 2, 3, 1]);
-          expect(board.singleMarkLines('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
-          expect(board.singleMarkLines('x', 2)).toEqual([]);
+      describe('context: "x" only lines with single cell and "o" only lines with two cells are present', function(){
+        describe('context: asking for "x" only lines with single cell occupied', function(){
+          it('it returns correct line', function(){
+            board.seed([8, 2, 3, 1]);
+            expect(board.singleMarkLines('x', 1)).toEqual([[0, 4, 8], [0, 3, 6], [3, 4, 5], [6, 7, 8]]);
+          });
         });
-        it('given the moves, for player "o" it returns correct lines when asking for 2 or 1 moves in a line', function(){
-          board.seed([8, 2, 3, 1]);
-          expect(board.singleMarkLines('o', 1)).toEqual([[2, 4, 6], [1, 4, 7]]);
-          expect(board.singleMarkLines('o', 2)).toEqual([[0, 1, 2]]);
+        describe('context: asking for "x" only lines with two cells occupied', function(){
+          it('it returns empty array', function(){
+            board.seed([8, 2, 3, 1]);
+            expect(board.singleMarkLines('x', 2)).toEqual([]);
+          });
         });
+
+        describe('context: asking for "o" only lines with two cells occupied', function(){
+          it('returns correct lines', function(){
+            board.seed([8, 2, 3, 1]);
+            expect(board.singleMarkLines('o', 2)).toEqual([[0, 1, 2]]);
+          });
+        });
+      });
+    });
+
+    describe('#center', function(){
+      it('returns correct cell', function(){
+        expect(board.center()).toEqual(4);
       });
     });
 
     describe('#oppositeCell', function(){
-      it('returns symmetrically opposite position', function(){
-        expect(board.oppositeCell(1)).toEqual(7);
-        expect(board.oppositeCell(6)).toEqual(2);
-        expect(board.oppositeCell(8)).toEqual(0);
-        expect(board.oppositeCell(3)).toEqual(5);
+      describe('context: when given corner', function(){
+        it('returns symmetrically opposite cell', function(){
+          expect(board.oppositeCell(6)).toEqual(2);
+        });
+      });
+      describe('context: when given corner', function(){
+        it('returns symmetrically opposite cell', function(){
+          expect(board.oppositeCell(1)).toEqual(7);
+        });
+      });
+      describe('context: when given center', function(){
+        it('returns undefined', function(){
+          expect(board.oppositeCell(4)).toBeUndefined();
+        });
       });
     });
 
     describe('#adjacentCells', function(){
-      it('returns array with correct positions for a given one (does not incl center)', function(){
+      it('returns array with correct cells for a corner or edge cell)', function(){
         expect(board.adjacentCells(0)).toEqual([1, 3]);
         expect(board.adjacentCells(1).ascending()).toEqual([0, 2]);
         expect(board.adjacentCells(2).ascending()).toEqual([1, 5]);
         expect(board.adjacentCells(3).ascending()).toEqual([0, 6]);
+        expect(board.adjacentCells(5).ascending()).toEqual([2, 8]);
         expect(board.adjacentCells(6).ascending()).toEqual([3, 7]);
         expect(board.adjacentCells(7).ascending()).toEqual([6, 8]);
+        expect(board.adjacentCells(8).ascending()).toEqual([5, 7]);
+      });
+      it('returns undefined for center', function(){
+        expect(board.adjacentCells(4)).toBeUndefined();
       });
     });
 
     describe('#findIntersections', function(){
-      it('returns intersections for 2 or 3 lines', function(){
-        var line1 = [0, 1, 2];
-        var line2 = [1, 4, 7];
-        var line3 = [2, 5, 8];
-        expect(board.findIntersections([line1, line2])).toEqual([1]);
-        expect(board.findIntersections([line1, line2, line3])).toEqual([1, 2]);
+      describe('context: given 2 lines', function(){
+        it('returns array with intersections', function(){
+          var line1 = [0, 1, 2];
+          var line2 = [1, 4, 7];
+          expect(board.findIntersections([line1, line2])).toEqual([1]);
+        });
+      });
+      describe('context: given 3 lines', function(){
+        it('returns array with intersections', function(){
+          var line1 = [0, 1, 2];
+          var line2 = [1, 4, 7];
+          var line3 = [2, 5, 8];
+          expect(board.findIntersections([line1, line2, line3])).toEqual([1, 2]);
+        });
       });
     });
 
     describe('#findFork', function(){
       describe('context: fork is available for a given mark', function(){
-        it('returns a position that creates a fork', function(){
+        it('returns a cell that creates a fork', function(){
           board.seed([2, 0, 8, 5]);
           expect(board.findFork('x')).toEqual(6);
         });
@@ -229,22 +251,16 @@ define([], function(){
       });
     });
 
-    describe('#center', function(){
-      it('always returns 4 for 3x3 grid', function(){
-        expect(board.center()).toEqual(4);
-      });
-    });
-
-    describe('#isPristine', function(){
+    describe('#_isPristine', function(){
       describe('context: no moves have been made', function(){
         it('returns true', function(){
-          expect(board.isPristine()).toBe(true);
+          expect(board._isPristine()).toBe(true);
         });
       });
       describe('context: moves have been made', function(){
         it('returns false', function(){
           board.addMove(0, 'x');
-          expect(board.isPristine()).toBe(false);
+          expect(board._isPristine()).toBe(false);
         });
       });
     });
@@ -257,7 +273,7 @@ define([], function(){
       });
     });
 
-    describe('#anyOpenCorner', function(){
+    describe('#anyFreeCorner', function(){
       it('returns a random open corner', function(){
         board.seed([0, 1]);
         expect([2, 6, 8]).toContain(board.anyFreeCorner())
@@ -265,16 +281,12 @@ define([], function(){
     });
 
     describe('#seed', function(){
-      it('fills board with given positions', function(){
-        board.seed([0, 1, 7, 4], 'x');
-        var marks = board.moves.map(function(move){
-          return move.mark;
-        });
-
-        expect(board.takenCells()).toEqual([0, 1, 7, 4]);
+      it('fills board with given cells', function(){
+        board.seed([0, 1, 7, 4]);
+        var marks = board._getMarksFor([0, 1, 7, 4]);
+        expect(board.taken).toEqual([0, 1, 7, 4]);
         expect(marks).toEqual(['x', 'o', 'x', 'o']);
       });
     });
-
   });
 });

@@ -21,7 +21,7 @@ define([], function() {
       var winLine = board.singleMarkLines(this.mark, (board.size - 1))[0];
 
       if (winLine){
-        return board.availableOnALine(winLine)[0];
+        return board.availableAmong(winLine)[0];
       }
     };
 
@@ -29,7 +29,7 @@ define([], function() {
       var threatLine = board.singleMarkLines(this.humansMark, (board.size - 1))[0];
 
       if (threatLine){
-        return board.availableOnALine(threatLine)[0];
+        return board.availableAmong(threatLine)[0];
       }
     };
 
@@ -63,9 +63,9 @@ define([], function() {
           line      = Helper.anyFrom(aiLines) || Helper.anyFrom(board.emptyLines());
 
       if (line){
-        return Helper.anyFrom(board.availableOnALine(line));
+        return Helper.anyFrom(board.availableAmong(line));
       } else {
-        return Helper.anyFrom(board.available());
+        return Helper.anyFrom(board.available);
       }
     };
 

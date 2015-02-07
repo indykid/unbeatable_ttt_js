@@ -3,36 +3,32 @@
 var JSTicTacToe = JSTicTacToe || {};
 
 define([], function() {
-  JSTicTacToe.Board = function(){
-    var Helper = JSTicTacToe.helper;
+  JSTicTacToe.Board = function(size){
+    var Helper      = JSTicTacToe.helper,
+        DEFAULTSIZE = 3;
     // this.game = game;
     this.moves = [];
-    this.size = 3;
+    this.size = size !== undefined ? size : DEFAULTSIZE;
     this.cellsAmount = Math.pow(this.size, 2);
     this.possibleCells = setPossibleCells(this.cellsAmount);
+    this.available = this.possibleCells.slice();
+    this.taken = [];
     this.winningCombos = setWinningCombos(this);
+    // get assigned later:
     this.firstCell;
     this.humansLastCell;
     this.aiLastCell;
-    this.ai; // gets assigned later
+    this.ai;
 
     this.addMove = function(cell, mark){
       var move = {};
       move['cell'] = cell;
       move['mark'] = mark;
 
-      if (this.isPristine()) this.firstCell = cell;
+      if (this._isPristine()) this.firstCell = cell;
 
       this.moves.push(move);
-      this._updateLastMoves(move);
-    };
-
-    this._updateLastMoves = function(move){
-      if ( this.ai.mark === move.mark ){
-        this.aiLastCell = move.cell;
-      } else {
-        this.humansLastCell = move.cell;
-      }
+      this._updateItself(move);
     };
 
     this.getMark = function(cell){
@@ -42,13 +38,6 @@ define([], function() {
       if (playerMove){
         return playerMove.mark;
       }
-    };
-
-    this.available = function(){
-      var available = this.possibleCells.filter(function(cell){
-        return !this.takenCells().includes(cell);
-      }.bind(this));
-      return available;
     };
 
     this.cellType = function(cell){
@@ -62,55 +51,41 @@ define([], function() {
       }
     };
 
-    this.availableOfType = function(cellType){
-      var available = this.available(),
-          availableOfType = available.filter(function(cell){
-            return this.cellType(cell) === cellType;
-          }.bind(this));
-      return availableOfType;
-    };
-
     this.isCellEmpty = function(cell) {
-      return this.available().includes(cell);
+      return this.available.includes(cell);
     };
 
-    this.availableOnALine = function(line){
-      var available = line.filter(function(cell){
-        return this.isCellEmpty(cell);
-      }.bind(this));
-      return available;
+    this.availableAmong = function(cells){
+      return  cells.filter(function(cell){
+                return this.isCellEmpty(cell);
+              }.bind(this));
     };
 
-    this.singlePlayerLine = function(line, howMany, mark){
-      var takenOnALine = line.filter(function(cell){
-        return !this.isCellEmpty(cell);
-      }.bind(this));
+    this.availableOfType = function(cellType){
+      return  this.available.filter(function(cell){
+                return this.cellType(cell) === cellType;
+              }.bind(this));
+    };
+
+    this.singlePlayerCells = function(cells, howMany, mark){
+      var takenOnALine = this._takenAmong(cells);
       if (takenOnALine.length === howMany){
-        var marks = takenOnALine.map(function(cell){
-          return this.getMark(cell);
-        }.bind(this));
-        return marks.allDefinedValuesSame() && marks[0] === mark;
+        var marks = this._getMarksFor(takenOnALine);
+        return marks[0] === mark && marks.allDefinedValuesSame();
       }
       return false;
     };
 
     this.singleFullLine = function(){
       var fullLines = this.winningCombos.filter(function(combination){
-        return this.availableOnALine(combination).length === 0;
+        return this.availableAmong(combination).length === 0;
       }.bind(this));
-      return fullLines.length === 1 && this.takenCells().length === this.size;
+      return fullLines.length === 1 && this.taken.length === this.size;
     };
 
     this.singleMarkLines = function(mark, howMany){
-      var lines = this.winningCombos.filter(function(combination){
-        return this.singlePlayerLine(combination, howMany, mark);
-      }.bind(this));
-      return lines;
-    };
-
-    this.emptyLines = function(){
       return  this.winningCombos.filter(function(combination){
-                return this.availableOnALine(combination).length === this.size;
+                return this.singlePlayerCells(combination, howMany, mark);
               }.bind(this));
     };
 
@@ -118,67 +93,36 @@ define([], function() {
       return  this.possibleCells.find(function(cell){
                 return this.cellType(cell) === 'center';
               }.bind(this));
-    }
+    };
 
     this.oppositeCell = function(cell){
-      var reverseOrder = this.possibleCells.slice().reverse();
-      return reverseOrder[cell];
+      if (this.cellType(cell) !== 'center'){
+        return this.possibleCells.slice().reverse()[cell];
+      }
     };
 
     this.adjacentCells = function(cell){
-      var cells;
       switch ( this.cellType(cell)){
         case 'corner':
-          if ( cell < this.center()){
-            cells = [this.possibleCells[0] + 1, cell + this.size];
-          } else {
-            cells = [this.possibleCells.lastElement() - 1, cell - this.size];
-          }
-          break;
+          return this._adjacentForCorner(cell);
         case 'edge':
-          if ((cell - 1) === this.possibleCells[0] || (cell + 1) === this.possibleCells.lastElement()){
-            cells = [cell + 1, cell - 1];
-          } else {
-            cells = [cell - this.size, cell + this.size]
-          }
-          break;
+          return this._adjacentForEdge(cell);
       }
-      return cells;
-    };
-
-    this.takenCells = function(){
-      var taken = this.moves.map(function(move){
-        return move.cell;
-      });
-      return taken;
-    };
-
-    this.lineWithOneFreeCell = function(){
-      return  this.winningCombos.find(function(combo){
-                return this.availableOnALine(combo).length === 1;
-              }.bind(this));
-    };
-
-    this.seed = function(cells){
-      cells.forEach(function(cell, i){
-        var mark = i % 2 === 0 ? 'x' : 'o';
-        this.addMove(cell, mark);
-      }.bind(this));
     };
 
     this.findIntersections = function(lines){
       var intersections = [];
       for ( var i = 0; i < lines.length - 1; i++ ){
-        var intersection = Helper.commonValues(lines[i], lines[i+1])[0];
+        var intersection = Helper.common(lines[i], lines[i+1])[0];
         if (intersection !== undefined){
           intersections.push(intersection);
         }
       }
       if (lines.length === this.size){
-        intersections.push(Helper.commonValues(lines[0], lines.lastElement())[0]);
+        intersections.push(Helper.common(lines[0], lines.last())[0]);
       };
       return intersections;
-    }; // TODO: refactor?
+    };
 
     this.findFork = function(mark){
       var lines = this.singleMarkLines(mark, 1);
@@ -189,20 +133,6 @@ define([], function() {
             }.bind(this));
         return Helper.anyFrom(potentialCells);
       }
-    }; // find an empty intersection of singleMarkedLines for given mark
-
-    this.isPristine = function(){
-      return this.moves.length === 0;
-    };
-
-    this.movesSoFar = function(){
-      return this.moves.length;
-    };
-
-    this.cornerOrCenter = function(){
-      var center = this.center(),
-          corner = Helper.anyFrom(this.availableOfType('corner'));
-      return Helper.anyFrom([corner, center]);
     };
 
     this.anyFreeCorner = function(){
@@ -210,13 +140,110 @@ define([], function() {
       return Helper.anyFrom(corners);
     };
 
+    this.seed = function(cells){
+      cells.forEach(function(cell, i){
+        var mark = i % 2 === 0 ? 'x' : 'o';
+        this.addMove(cell, mark);
+      }.bind(this));
+    };
+
+    // ***********************untested pi
+
+    this.movesSoFar = function(){
+      return this.moves.length;
+    };
+
     this.firstCellType = function(){
       return this.cellType(this.firstCell);
     };
 
+    // ****************TESTED
+
+    this._isPristine = function(){
+      return this.moves.length === 0;
+    };
+
+    this._updateLastMoves = function(move){
+      if ( this.ai.mark === move.mark ){
+        this.aiLastCell = move.cell;
+      } else {
+        this.humansLastCell = move.cell;
+      }
+    };
+
+
+/********************
+NEWLY ADDED
+**********************/
+    this._takenAmong = function(cells){
+      return  cells.filter(function(cell){
+                return !this.isCellEmpty(cell);
+              }.bind(this));
+    };
+
+    this._getMarksFor = function(cells){
+      return  cells.map(function(cell){
+                return this.getMark(cell);
+              }.bind(this));
+    };
+
+    this._adjacentForCorner = function(cell){
+      if ( cell < this.center()){
+        return [this.possibleCells[0] + 1, cell + this.size];
+      } else {
+        return [this.possibleCells.last() - 1, cell - this.size];
+      }
+    };
+
+    this._adjacentForEdge = function(cell){
+      if ((cell - 1) === this.possibleCells[0] || (cell + 1) === this.possibleCells.last()){
+        return [cell + 1, cell - 1];
+      } else {
+        return [cell - this.size, cell + this.size]
+      }
+    };
+
+
+
+    // ****************************
+
+    this._updateItself = function(move){
+      this._updateLastMoves(move);
+      this._updateAvailable(move);
+      this._updateTaken(move);
+    };
+
+    this._updateAvailable = function(move){
+      var index = this.available.indexOf(move.cell);
+      this.available.splice(index, 1);
+    };
+
+    this._updateTaken = function(move){
+      this.taken.push(move.cell);
+    };
+
+    this._lineWithOneFreeCell = function(){
+      return  this.winningCombos.find(function(combo){
+                return this.availableAmong(combo).length === 1;
+              }.bind(this));
+    };
+
+
 /***********************
   one-off use functions
 *************************/
+    this.cornerOrCenter = function(){
+      var center = this.center(),
+          corner = Helper.anyFrom(this.availableOfType('corner'));
+      return Helper.anyFrom([corner, center]);
+    };
+
+    this.emptyLines = function(){
+      return  this.winningCombos.filter(function(combination){
+                return this.availableAmong(combination).length === this.size;
+              }.bind(this));
+    };
+
     this.findNonOppositeCorner = function(cells){
       var opposite = this.oppositeCell(this.firstCell),
           cell     = cells.find(function(cell){
@@ -233,8 +260,8 @@ define([], function() {
     };
 
     this.fillInLine = function(){
-      var line = this.lineWithOneFreeCell();
-      return this.availableOnALine(line)[0];
+      var line = this._lineWithOneFreeCell();
+      return this.availableAmong(line)[0];
     };
 
     this.cornerOppositeToHumansMove = function(){
@@ -262,8 +289,8 @@ define([], function() {
       var adjacents   = this.adjacentCells(this.firstCell),
           humansLines = this.singleMarkLines(humansMark, 1),
           lines       = humansLines.filter(function(line){
-            return Helper.commonValues(line, adjacents).length > 0;
-          });
+                          return Helper.common(line, adjacents).length > 0;
+                        });
       return this.findIntersections(lines)[0];
     };
 

@@ -263,7 +263,7 @@ define(["../src/board", "../src/game", "../src/ai"], function(Board, Game, AIPla
       describe('context: no ai only lines and no empty lines', function(){
         it('returns any empty cell', function(){
           board.seed([1, 4, 6, 3, 5]);
-          expect(board.available()).toContain(ai._basicStrategy());
+          expect(board.available).toContain(ai._basicStrategy());
         });
       });
     });
