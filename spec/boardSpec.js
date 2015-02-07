@@ -319,5 +319,74 @@ define([], function(){
         });
       });
     });
+
+    describe('#winnerMark', function(){
+      describe('context: human won on a ...', function(){
+        describe('fist diagonal', function(){
+          it('returns x mark', function(){
+            board.seed([0, 6, 4, 5, 8]);
+            expect(board.winnerMark()).toEqual('x')
+          });
+        });
+
+        describe('second diagonal', function(){
+          it('returns x mark', function(){
+            board.seed([2, 3, 4, 5, 6]);
+            expect(board.winnerMark()).toEqual('x')
+          });
+        });
+
+        describe('row', function(){
+          it('returns x mark', function(){
+            board.seed([0, 4, 1, 5, 2]);
+            expect(board.winnerMark()).toEqual('x')
+          });
+        });
+
+        describe('column', function(){
+          it('returns x mark', function(){
+            board.seed([0, 4, 3, 5, 6]);
+            expect(board.winnerMark()).toEqual('x')
+          });
+        });
+      });
+
+      describe('context: AI won on a ...', function(){
+        describe('first diagonal', function(){
+          it('returns o mark', function(){
+            board.seed([6, 0, 5, 4, 1, 8]);
+            expect(board.winnerMark()).toEqual('o')
+          });
+        });
+
+        describe('second diagonal', function(){
+          it('returns o mark', function(){
+            board.seed([3, 2, 5, 4, 7, 6]);
+            expect(board.winnerMark()).toEqual('o')
+          });
+        });
+
+        describe('row', function(){
+          it('returns o mark', function(){
+            board.seed([4, 0, 5, 1, 7, 2]);
+            expect(board.winnerMark()).toEqual('o')
+          });
+        });
+
+        describe('column', function(){
+          it('returns o mark', function(){
+            board.seed([4, 0, 5, 3, 7, 6]);
+            expect(board.winnerMark()).toEqual('o')
+          });
+        });
+      });
+
+      describe('context: no one won', function(){
+        it('returns false', function(){
+          board.seed([2, 3, 1]);
+          expect(board.winnerMark()).toBeUndefined();
+        });
+      });
+    });
   });
 });

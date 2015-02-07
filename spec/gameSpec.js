@@ -15,110 +15,82 @@ define(["../src/board", "../src/game", "../src/ai", "../src/helper"], function (
       game = new Game('human');
     });
 
-    it('has an empty board at the start', function(){
-      expect(game.board).not.toBeUndefined();
-      expect(game.board.moves).toEqual([]);
+    it('has a board', function(){
+      expect(game.board).toBeDefined();
     });
 
-    describe('#winnerMark', function(){
-      describe('context: human won on a ...', function(){
-        describe('fist diagonal', function(){
-          it('returns x mark', function(){
-            game.board.seed([0, 6, 4, 5, 8]);
-            expect(game.winnerMark()).toEqual('x')
-          });
-        });
-        describe('second diagonal', function(){
-          it('returns x mark', function(){
-            game.board.seed([2, 3, 4, 5, 6]);
-            expect(game.winnerMark()).toEqual('x')
-          });
-        });
-        describe('row', function(){
-          it('returns x mark', function(){
-            game.board.seed([0, 4, 1, 5, 2]);
-            expect(game.winnerMark()).toEqual('x')
-          });
-        });
-        describe('column', function(){
-          it('returns x mark', function(){
-            game.board.seed([0, 4, 3, 5, 6]);
-            expect(game.winnerMark()).toEqual('x')
-          });
+    it('has an AI player', function(){
+      expect(game.ai).toBeDefined();
+    });
+
+    it('has status of active to begin with', function(){
+      expect(game.status).toEqual('active');
+    });
+
+    it('no winner at a start', function(){
+      expect(game.winner.player).toBeUndefined();
+      expect(game.winner.mark).toBeUndefined();
+    });
+
+    describe('#checkAndUpdateGameState', function(){
+      describe('context: no winner yet, moves are available', function(){
+        it('updates its winner and status correctly', function(){
+          game.board.seed([0, 2]);
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('active');
+          expect(game.winner.player).toBeUndefined();
         });
       });
 
-      describe('context: AI won on a ...', function(){
-        describe('first diagonal', function(){
-          it('returns o mark', function(){
-            game.board.seed([6, 0, 5, 4, 1, 8]);
-            expect(game.winnerMark()).toEqual('o')
-          });
-        });
-        describe('second diagonal', function(){
-          it('returns o mark', function(){
-            game.board.seed([3, 2, 5, 4, 7, 6]);
-            expect(game.winnerMark()).toEqual('o')
-          });
-        });
-        describe('row', function(){
-          it('returns o mark', function(){
-            game.board.seed([4, 0, 5, 1, 7, 2]);
-            expect(game.winnerMark()).toEqual('o')
-          });
-        });
-        describe('column', function(){
-          it('returns o mark', function(){
-            game.board.seed([4, 0, 5, 3, 7, 6]);
-            expect(game.winnerMark()).toEqual('o')
-          });
+      describe('there is a winner', function(){
+        it('updates its winner and status correctly', function(){
+          game.board.seed([0, 1, 4, 2]);
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('active');
+          expect(game.winner.player).toBeUndefined();
+
+          game.board.addMove(8, 'x');
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('won');
+          expect(game.winner.player).toEqual('human');
         });
       });
 
-      describe('context: no one won', function(){
-        it('returns false', function(){
-          game.board.seed([2, 3, 1]);
-          expect(game.winnerMark()).toBeUndefined();
-        });
+      describe('no winner and no moves left', function(){
+        it('updates its winner and status correctly', function(){
+          game.board.seed([0, 4, 8, 5, 3, 6, 2, 1]);
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('active');
+          expect(game.winner.player).toBeUndefined();
 
-        it('returns false', function(){
-          game.board.seed([3, 0, 4]);
-          expect(game.winnerMark()).toBeUndefined();
+          game.board.addMove(7, 'x');
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('drawn');
+          expect(game.winner.player).toBeUndefined();
         });
+      });
 
-        it('returns false', function(){
-          game.board.seed([6, 0, 8]);
-          expect(game.winnerMark()).toBeUndefined();
-        });
+      describe('context: there is a winner, and still and there are empty cells available', function(){
+        it('updates its winner and status correctly', function(){
+          game.board.seed([0, 1, 4, 2]);
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('active');
+          expect(game.winner.player).toBeUndefined();
 
-        it('returns false', function(){
-          game.board.seed([0, 1, 3]);
-          expect(game.winnerMark()).toBeUndefined();
+          game.board.addMove(8, 'x');
+          game.checkAndUpdateGameState();
+          expect(game.status).toEqual('won');
+          expect(game.winner.player).toEqual('human');
         });
       });
     });
 
-    describe('#isActive', function(){
-      describe('context: game is not won and still has available moves', function(){
-        it('returns true', function(){
-          game.board.seed([0, 1, 5, 3, 6, 7]);
-          game.checkAndUpdateGameState();
-          expect(game.isActive()).toBe(true)
-        });
-      });
-      describe('context: game is won and still has available moves', function(){
-        it('returns false', function(){
-          game.board.seed([0, 1, 4, 2, 8]);
-          game.checkAndUpdateGameState();
-          expect(game.isActive()).toBe(false)
-        });
-      });
-      describe('context: game is not won, but no available moves', function(){
-        it('returns false', function(){
-          game.board.seed([0, 4, 8, 5, 3, 6, 2, 1, 7]);
-          game.checkAndUpdateGameState();
-          expect(game.isActive()).toBe(false);
-        });
+    describe('_isPlayerTurn', function(){
+      it("returns true if it is given player's turn ", function(){
+        expect(game._isPlayerTurn('x')).toBe(true);
+        game.board.addMove(0, 'x');
+        expect(game._isPlayerTurn('x')).toBe(false);
+        expect(game._isPlayerTurn('o')).toBe(true);
       });
     });
   });

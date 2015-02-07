@@ -10,11 +10,9 @@ define([], function() {
     this.mark = (firstPlayer == 'ai') ? 'x' : 'o';
     this.humansMark = (this.mark == 'x') ? 'o' : 'x';
 
-    this.play = function(){
+    this.move = function(){
       var cell = this._findCell();
       board.addMove(cell, this.mark);
-      JSTicTacToe.game.checkAndUpdateGameState();
-      JSTicTacToe.ui.updateUI();
     };
 
     this._winningCell = function(){

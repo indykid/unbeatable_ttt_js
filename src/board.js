@@ -162,6 +162,20 @@ define([], function() {
       this._updateTaken(move);
     };
 
+    this.winningLine = function(){
+      var aiOnlyLine    = this.singleMarkLines(this.ai.mark, this.size)[0],
+          humanOnlyLine = this.singleMarkLines(this.ai.humansMark, this.size)[0];
+      if (aiOnlyLine) return aiOnlyLine;
+      if (humanOnlyLine) return humanOnlyLine;
+    };//*
+
+    this.winnerMark = function(){
+      var winningLine = this.winningLine();
+      if (winningLine !== undefined){
+        return this.getMark(winningLine[0]);
+      }
+    };
+
     /***********************************************
     functions with very specific context, used in ai
     ************************************************/
